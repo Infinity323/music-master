@@ -39,9 +39,11 @@ pip3 install -r requirements.txt
 
 ### TODO: PostgreSQL
 
+```bash
 host: localhost
 username: <%= ENV['DATABASE_USER'] %>
 password: <%= ENV['DATABASE_PASSWORD'] %>
+```
 
 
 ## Running
