@@ -39,7 +39,10 @@ pip3 install -r requirements.txt
 
 ### TODO: PostgreSQL
 
-Create a user `postgres` with password `password` and a database named `music_master`:
+host: localhost
+username: <%= ENV['DATABASE_USER'] %>
+password: <%= ENV['DATABASE_PASSWORD'] %>
+
 
 ## Running
 
