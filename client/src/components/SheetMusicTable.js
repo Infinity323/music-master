@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { baseUrl } from '../App';
+import loading_gif from '../assets/loading_gif.gif'
 
 function SheetMusicTable() {
   const [error, setError] = useState(null);
@@ -42,9 +43,17 @@ function SheetMusicTable() {
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return (
+      <div className="content">
+        Error: {error.message}
+      </div>
+    );
   } else if (!isLoaded) {
-    return <div>Loading...</div>;
+    return (
+      <div className="content">
+        <img src={loading_gif} width="50px" alt="Loading..."/>
+      </div>
+    );
   } else {
     return (
       <>
