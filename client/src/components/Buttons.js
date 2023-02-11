@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import backArrow from '../assets/back_arrow.png'
-import settingsIcon from '../assets/settings_icon.png'
-import lightMode from '../assets/light_mode.png'
-import darkMode from '../assets/dark_mode.png'
-import highContrast from '../assets/high_contrast.png'
+import backArrow from '../assets/images/back_arrow.png'
+import settingsIcon from '../assets/images/settings_icon.png'
+import lightMode from '../assets/images/light_mode.png'
+import darkMode from '../assets/images/dark_mode.png'
 
 export function BackButton() {
   const navigate = useNavigate();
@@ -20,16 +19,19 @@ export function SettingsButton() {
   const { style } = document.documentElement;
 
   function setLightMode() {
-
+    style.setProperty('--bg-color', 'ghostwhite');
+    style.setProperty('--text-color', 'black');
+    style.setProperty('--btn-color', '#E8EBF7');
+    style.setProperty('--hover-color', '#ACBED8');
+    style.setProperty('--select-color', '#D78521');
   }
 
   function setDarkMode() {
-    style.setProperty('--bg-color', 'gray');
-    style.setProperty('--text-color', 'white');
-  }
-
-  function setHighContrastMode() {
-
+    style.setProperty('--bg-color', '#313131');
+    style.setProperty('--text-color', 'gainsboro');
+    style.setProperty('--btn-color', '#414141');
+    style.setProperty('--hover-color', '#525252');
+    style.setProperty('--select-color', '#CA3E47');
   }
   
   return (
@@ -38,7 +40,6 @@ export function SettingsButton() {
       <div class="settings-menu">
         <img src={lightMode} alt="Settings" width="60px" onClick={() => setLightMode()}/>
         <img src={darkMode} alt="Settings" width="60px" onClick={() => setDarkMode()}/>
-        <img src={highContrast} alt="Settings" width="60px" onClick={() => setHighContrastMode()}/>
       </div>
     </div>
   );

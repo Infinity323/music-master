@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { baseUrl } from '../App';
-import loading_gif from '../assets/loading_gif.gif'
+import loading_gif from '../assets/images/loading_gif.gif'
 
 function SheetMusicTable() {
   const [error, setError] = useState(null);
