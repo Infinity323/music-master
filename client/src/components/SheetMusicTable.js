@@ -44,7 +44,7 @@ function SheetMusicTable() {
         <div className="btn medium" id="uploadMusic" onClick={openModal}>
           Upload
         </div>
-        <Modal isOpen={modalIsOpen} onRequestClose={closeModal}>
+        <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className="modal" overlayClassName="modal-overlay">
           Title: {title}
           <br/><input type="text" onChange={(e) => setTitle(e.target.value)}/><br/>
           Composer: {composer}
