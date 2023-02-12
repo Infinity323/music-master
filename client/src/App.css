@@ -13,16 +13,47 @@
 /********************/
 /*  General Styles  */
 /********************/
+html {
+  /* Black to show which regions will not be displayed on Pi */
+  background-color: black;
+}
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   user-select: none;
+  font-size: 20px;
+  min-width: 800px;
+  max-width: 800px;
+  min-height: 480px;
+  max-height: 480px;
 }
 div .content {
+  width: 600px;
+  margin: auto auto;
+  padding-top: 40px;
   text-align: center;
 }
 .title {
-  margin: 40px;
+  margin: 0px;
+  padding-bottom: 40px;
+  text-align: center;
+}
+.modal {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
+  background-color: var(--bg-color);
+  padding: 10px;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(1, 1, 1, 0.5);
 }
 
 /********************/
@@ -37,7 +68,6 @@ div .content {
   text-align: center;
   text-decoration: none;
   display: block;
-  font-size: 20px;
 }
 .btn.disabled {
   pointer-events: none;
@@ -57,14 +87,20 @@ div .content {
   height: 60px;
   padding: 5px 5px;
   overflow: hidden;
+  position: absolute;
+}
+.btn.small {
+  padding: 0px;
+  height: 30px;
+  width: 120px;
 }
 .btn.medium {
   width: 100px;
 }
-.btn#uploadMusic {
+.btn#uploadMusic, .btn#submitForm {
   float: left;
 }
-.btn#deleteMusic {
+.btn#deleteMusic, .btn#closeForm {
   float: right;
 }
 
@@ -86,15 +122,41 @@ table {
   border: 1px solid black;
   margin-left: auto;
   margin-right: auto;
-  font-size: 20px;
+  min-height: 400px;
+  max-height: 400px;
 }
 table tr.header {
   background-color: var(--btn-color);
   border: 1px solid black;
 }
+table tr.data {
+  text-align: left;
+}
 table tr.data:hover {
   background-color: var(--hover-color);
 }
-table tr.selected {
+table tr.data.selected {
   background-color: var(--select-color);
+}
+.tbody {
+  height: 300px;
+  overflow-y: scroll;
+}
+
+/********************/
+/*  Dropdowns/Input */
+/********************/
+select {
+  background-color: var(--btn-color);
+  color: var(--text-color);
+  font-size: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: left;
+}
+input {
+  font-size: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+input[type=file] {
+  display: none;
 }

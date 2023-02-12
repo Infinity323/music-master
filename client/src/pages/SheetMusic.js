@@ -5,7 +5,9 @@ function SheetMusic() {
   return (
     <>
       <BackButton/>
-      <SheetMusicTable/>
+      <div className="content">
+        <SheetMusicTable/>
+      </div>
     </>
   );
 }

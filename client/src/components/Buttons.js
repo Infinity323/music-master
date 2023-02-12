@@ -5,6 +5,8 @@ import settingsIcon from '../assets/images/settings_icon.png'
 import lightMode from '../assets/images/light_mode.png'
 import darkMode from '../assets/images/dark_mode.png'
 
+const { style } = document.documentElement;
+
 export function BackButton() {
   const navigate = useNavigate();
   return (
@@ -16,7 +18,6 @@ export function BackButton() {
 
 export function SettingsButton() {
   const [clicked, setClicked] = useState(false);
-  const { style } = document.documentElement;
 
   function setLightMode() {
     style.setProperty('--bg-color', 'ghostwhite');
