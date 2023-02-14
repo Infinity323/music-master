@@ -7,7 +7,7 @@ class Goal(db.Model):
     name = db.Column(db.String)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
-    tempo_percent_acuracy = db.Column(db.Float)
+    tempo_percent_accuracy = db.Column(db.Float)
     average_tempo = db.Column(db.Integer)
     tuning_percent_accuracy = db.Column(db.Float)
     dynamics_percent_accuracy = db.Column(db.Float)

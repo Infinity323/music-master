@@ -3,6 +3,8 @@ from flask import request, jsonify
 from app import app, db
 from models.sheetmusic import SheetMusic
 
+# SHEET MUSIC
+
 # Get all sheet music in database
 @app.get("/sheetmusic")
 def getAllSheetMusic():
@@ -18,9 +20,14 @@ def getSpecificSheetMusic(id: int):
 # Add sheet music to database
 @app.post("/sheetmusic")
 def addSheetMusic():
-    newId = 1
-    newTitle = request.form.get("title")
-    newSheetMusic = SheetMusic(newId, newTitle)
+    new_id = 1
+    new_title = request.form.get("title")
+    new_composer = request.form.get("new_composer")
+    new_instrument = request.form.get("instrument")
+    new_pdf_file_path = request.form.get("pdf_file_path")
+    new_data_file_path = request.form.get("data_file_path")
+    new_tempo = request.form.get("tempo")
+    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_pdf_file_path, new_data_file_path, new_tempo)
     db.session.add(newSheetMusic)
     db.session.commit()
     return newSheetMusic.serialize
