@@ -6,7 +6,7 @@ class Performance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     run_number = db.Column(db.Integer)
     date_time = db.Column(db.DateTime)
-    tempo_percent_acuracy = db.Column(db.Float)
+    tempo_percent_accuracy = db.Column(db.Float)
     average_tempo = db.Column(db.Integer)
     tuning_percent_accuracy = db.Column(db.Float)
     dynamics_percent_accuracy = db.Column(db.Float)
