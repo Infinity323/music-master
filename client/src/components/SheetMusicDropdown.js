@@ -13,7 +13,7 @@ const styles = {
     fontSize: 16,
     width: 300
   }),
-  option: (styles, { data, isDisabled, isFocused, isSelected }) => {
+  option: (styles) => {
     return {
       ...styles,
       backgroundColor: style.getPropertyValue('--bg-color'),
@@ -75,7 +75,7 @@ if (error) {
       <Select
         options={items.map(item => ({label: item.title, value: item.id}))}
         styles={styles}
-        maxMenuHeight={500}
+        maxMenuHeight={300}
       />
     </>
   );
