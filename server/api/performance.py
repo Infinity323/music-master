@@ -23,13 +23,14 @@ def getSpecificPerformance(id: int):
 def addPerformance():
     data = request.get_json()
     new_id = randint(1, 1000000)
+    new_sheet_music_id = data.get("sheet_music_id")
     new_run_number = data.get("run_number")
     new_date_time = data.get("date_time")
     new_tempo_percent_accuracy = data.get("tempo_percent_accuracy")
     new_average_tempo = data.get("average_tempo")
     new_tuning_percent_accuracy = data.get("tuning_percent_accuracy")
     new_dynamics_percent_accuracy = data.get("dynamics_percent_accuracy")
-    new_performance = Performance(new_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
+    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
     db.session.add(new_performance)
     db.session.commit()
     return new_performance.serialize

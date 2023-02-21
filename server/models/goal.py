@@ -4,6 +4,7 @@ class Goal(db.Model):
     __tablename__ = "goal"
 
     id = db.Column(db.Integer, primary_key=True)
+    sheet_music_id = db.Column(db.Integer, db.ForeignKey("sheet_music.id"))
     name = db.Column(db.String)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
@@ -13,8 +14,9 @@ class Goal(db.Model):
     dynamics_percent_accuracy = db.Column(db.Float)
 
 
-    def __init__(self, id: int, name: int, start_date, end_date, tempo_percent_accuracy: float, average_tempo: int, tuning_percent_accuracy: float, dynamics_percent_accuracy: float):
+    def __init__(self, id: int, sheet_music_id: int, name: int, start_date, end_date, tempo_percent_accuracy: float, average_tempo: int, tuning_percent_accuracy: float, dynamics_percent_accuracy: float):
         self.id = id
+        self.sheet_music_id = sheet_music_id
         self.name = name
         self.start_date = start_date
         self.end_date = end_date
