@@ -11,10 +11,12 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Initialize tables in database
 db = SQLAlchemy(app)
 import models.sheetmusic as _
-import models.goal as _
 import models.performance as _
+import models.goal as _
 with app.app_context():
     db.create_all()
 
 # Import endpoints from api subdirectory
 import api.sheetmusic as _
+import api.performance as _
+import api.goal as _
