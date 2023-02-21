@@ -1,4 +1,5 @@
-from flask import request, jsonify
+from flask import request
+from random import randint
 
 from app import app, db
 from models.performance import Performance
@@ -20,13 +21,14 @@ def getSpecificPerformance(id: int):
 # Add performance to database
 @app.post("/performance")
 def addPerformance():
-    new_id = 1
-    new_run_number = request.form.get("run_number")
-    new_date_time = request.form.get("date_time")
-    new_tempo_percent_accuracy = request.form.get("tempo_percent_accuracy")
-    new_average_tempo = request.form.get("average_tempo")
-    new_tuning_percent_accuracy = request.form.get("tuning_percent_accuracy")
-    new_dynamics_percent_accuracy = request.form.get("dynamics_percent_accuracy")
+    data = request.get_json()
+    new_id = randint(1, 1000000)
+    new_run_number = data.get("run_number")
+    new_date_time = data.get("date_time")
+    new_tempo_percent_accuracy = data.get("tempo_percent_accuracy")
+    new_average_tempo = data.get("average_tempo")
+    new_tuning_percent_accuracy = data.get("tuning_percent_accuracy")
+    new_dynamics_percent_accuracy = data.get("dynamics_percent_accuracy")
     new_performance = Performance(new_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
     db.session.add(new_performance)
     db.session.commit()
@@ -36,6 +38,9 @@ def addPerformance():
 @app.delete("/performance/<int:id>")
 def deletePerformance(id):
     performance = db.session.query(Performance).filter(Performance.id == id).first()
-    db.session.delete(performance)
-    db.session.commit()
-    return performance.serialize
+    if performance:
+        db.session.delete(performance)
+        db.session.commit()
+        return performance.serialize
+    else:
+        return {}

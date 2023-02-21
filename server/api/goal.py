@@ -1,4 +1,5 @@
-from flask import request, jsonify
+from flask import request
+from random import randint
 
 from app import app, db
 from models.goal import Goal
@@ -20,14 +21,15 @@ def getSpecificGoal(id: int):
 # Add goal to database
 @app.post("/goal")
 def addGoal():
-    new_id = 1
-    new_name = request.form.get("name")
-    new_start_date = request.form.get("start_date")
-    new_end_date = request.form.get("end_date")
-    new_tempo_percent_accuracy = request.form.get("tempo_percent_acuracy")
-    new_average_tempo = request.form.get("average_tempo")
-    new_tuning_percent_accuracy = request.form.get("tuning_percent_accuracy")
-    new_dynamics_percent_accuracy = request.form.get("dynamics_percent_accuracy")
+    data = request.get_json()
+    new_id = randint(1, 1000000)
+    new_name = data.get("name")
+    new_start_date = data.get("start_date")
+    new_end_date = data.get("end_date")
+    new_tempo_percent_accuracy = data.get("tempo_percent_accuracy")
+    new_average_tempo = data.get("average_tempo")
+    new_tuning_percent_accuracy = data.get("tuning_percent_accuracy")
+    new_dynamics_percent_accuracy = data.get("dynamics_percent_accuracy")
     new_goal = Goal(new_id, new_name, new_start_date, new_end_date, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
     db.session.add(new_goal)
     db.session.commit()
@@ -37,6 +39,9 @@ def addGoal():
 @app.delete("/goal/<int:id>")
 def deleteGoal(id):
     goal = db.session.query(Goal).filter(Goal.id == id).first()
-    db.session.delete(goal)
-    db.session.commit()
-    return goal.serialize
+    if goal:
+        db.session.delete(goal)
+        db.session.commit()
+        return goal.serialize
+    else:
+        return {}

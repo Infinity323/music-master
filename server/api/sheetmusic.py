@@ -22,7 +22,7 @@ def getSpecificSheetMusic(id: int):
 @app.post("/sheetmusic")
 def addSheetMusic():
     data = request.get_json()
-    new_id = randint(1, 1000000);
+    new_id = randint(1, 1000000)
     new_title = data.get("title")
     new_composer = data.get("composer")
     new_instrument = data.get("instrument")
@@ -38,6 +38,9 @@ def addSheetMusic():
 @app.delete("/sheetmusic/<int:id>")
 def deleteSheetMusic(id):
     sheetMusic = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
-    db.session.delete(sheetMusic)
-    db.session.commit()
-    return sheetMusic.serialize
+    if sheetMusic:
+        db.session.delete(sheetMusic)
+        db.session.commit()
+        return sheetMusic.serialize
+    else:
+        return {}
