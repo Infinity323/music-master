@@ -1,5 +1,4 @@
 import { BackButton } from "../components/Buttons";
-import PracticeHistoryGraph from "../components/PracticeHistoryGraph";
 import SheetMusicDropdown from "../components/SheetMusicDropdown";
 
 function PracticeHistory() {
@@ -8,7 +7,6 @@ function PracticeHistory() {
       <BackButton/>
       <div className="content">
         <SheetMusicDropdown/>
-        <PracticeHistoryGraph/>
       </div>
     </>
   );

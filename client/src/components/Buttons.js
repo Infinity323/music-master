@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import backArrow from '../assets/images/back_arrow.png'
 import settingsIcon from '../assets/images/settings_icon.png'
 import lightMode from '../assets/images/light_mode.png'
 import darkMode from '../assets/images/dark_mode.png'
-
-const { style } = document.documentElement;
+import { style } from '../App';
 
 export function BackButton() {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ export function BackButton() {
 }
 
 export function SettingsButton() {
-  const [clicked, setClicked] = useState(false);
+  const [clicked, setClicked] = useState(false);  
 
   function setLightMode() {
     style.setProperty('--bg-color', 'ghostwhite');
@@ -34,6 +33,10 @@ export function SettingsButton() {
     style.setProperty('--hover-color', '#525252');
     style.setProperty('--select-color', '#CA3E47');
   }
+  
+  useEffect(() => {
+    setLightMode();
+  }, [])
   
   return (
     <div className={clicked ? "btn settings expanded" : "btn settings"}onClick={() => setClicked(!clicked)}>

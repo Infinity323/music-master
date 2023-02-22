@@ -27,6 +27,7 @@ class Performance(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "sheet_music_id": self.sheet_music_id,
             "run_number": self.run_number,
             "date_time": self.date_time,
             "tempo_percent_accuracy": self.tempo_percent_accuracy,

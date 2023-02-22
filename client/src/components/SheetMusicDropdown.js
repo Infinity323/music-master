@@ -2,42 +2,42 @@ import { useEffect, useState } from 'react';
 import Select from 'react-select'
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
+import { style } from '../App';
+import PracticeHistoryGraph from "../components/PracticeHistoryGraph";
 
-const { style } = document.documentElement;
-
-const styles = {
-  control: (styles) => ({
-    ...styles,
-    backgroundColor: style.getPropertyValue('--btn-color'),
-    color: style.getPropertyValue('--text-color'),
-    fontSize: 16,
-    width: 300
-  }),
-  option: (styles) => {
-    return {
+function SheetMusicDropdown() {
+  const styles = {
+    control: (styles) => ({
       ...styles,
-      backgroundColor: style.getPropertyValue('--bg-color'),
+      backgroundColor: style.getPropertyValue('--btn-color'),
       color: style.getPropertyValue('--text-color'),
       fontSize: 16,
       width: 300
-    };
-  },
-  singleValue: (styles) => {
-    return {
-      ...styles,
-      color: style.getPropertyValue('--text-color')
-    };
-  },
-  menu: (styles) => {
-    return {
-      ...styles,
-      backgroundColor: style.getPropertyValue('--bg-color'),
-      width: 300
+    }),
+    option: (styles) => {
+      return {
+        ...styles,
+        backgroundColor: style.getPropertyValue('--bg-color'),
+        color: style.getPropertyValue('--text-color'),
+        fontSize: 16,
+        width: 300
+      };
+    },
+    singleValue: (styles) => {
+      return {
+        ...styles,
+        color: style.getPropertyValue('--text-color')
+      };
+    },
+    menu: (styles) => {
+      return {
+        ...styles,
+        backgroundColor: style.getPropertyValue('--bg-color'),
+        width: 300
+      };
     }
-  }
-};
+  };
 
-function SheetMusicDropdown() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
@@ -58,27 +58,31 @@ function SheetMusicDropdown() {
       )
   }, []);
 
-if (error) {
-  return (
-    <div className="content">
-      {error.name}: {error.message}
-    </div>
-  );
-} else if (!isLoaded) {
-  return (
-    <div className="content">
-      <img src={loading_gif} width="30px" alt="Loading..."/>
-    </div>
-  );
-} return (
-    <>
-      <Select
-        options={items.map(item => ({label: item.title, value: item.id}))}
-        styles={styles}
-        maxMenuHeight={300}
-      />
-    </>
-  );
+  if (error) {
+    return (
+      <div className="content">
+        {error.name}: {error.message}
+      </div>
+    );
+  } else if (!isLoaded) {
+    return (
+      <div className="content">
+        <img src={loading_gif} width="30px" alt="Loading..."/>
+      </div>
+    );
+  } else {
+    return (
+      <>
+        <Select
+          options={items.map(item => ({label: item.title, value: item.id}))}
+          styles={styles}
+          maxMenuHeight={300}
+          onChange={e => setSelected(e.value)}
+        />
+        <PracticeHistoryGraph selectedMusic={selected}/>
+      </>
+    );
+  }
 }
 
 export default SheetMusicDropdown;
