@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import Modal from 'react-modal'
@@ -39,7 +39,8 @@ function SheetMusicTable() {
     const [title, setTitle] = useState("");
     const [composer, setComposer] = useState("");
     const [instrument, setInstrument] = useState("");
-    const [file, setFile] = useState("");
+    const [file, setFile] = useState(null);
+    const inputRef = useRef();
 
     function openModal() {
       setModalIsOpen(true);
@@ -49,17 +50,14 @@ function SheetMusicTable() {
     }
 
     function postMusic() {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("composer", composer);
+      formData.append("instrument", instrument);
+      formData.append("file", file);
       fetch(baseUrl + "/sheetmusic", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          "title": title,
-          "composer": composer,
-          "instrument": instrument,
-          "pdf_file_path": file
-        })
+        body: formData
       }).then((res) => res.json())
         .then((data) => setItems(items.concat(data)));
       closeModal();
@@ -77,11 +75,11 @@ function SheetMusicTable() {
           <br/><input type="text" onChange={(e) => setComposer(e.target.value)}/><br/>
           Instrument: {instrument}
           <br/><input type="text" onChange={(e) => setInstrument(e.target.value)}/><br/>
-          File Upload: {file}
+          File Upload: 
           <br/>
           <label className="btn small">
             Choose File
-            <input type="file" onChange={(e) => setFile(e.target.value)}/>
+            <input type="file" onChange={() => setFile(inputRef.current.files[0])} ref={inputRef}/>
           </label>
           <br/>
           <div className="btn medium" id="submitForm" onClick={postMusic}>

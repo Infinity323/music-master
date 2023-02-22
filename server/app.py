@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +16,11 @@ import models.performance as _
 import models.goal as _
 with app.app_context():
     db.create_all()
+
+# Initialize data subdirectories
+os.makedirs("data/xml", exist_ok=True)
+os.makedirs("data/wav", exist_ok=True)
+os.makedirs("data/dat", exist_ok=True)
 
 # Import endpoints from api subdirectory
 import api.sheetmusic as _
