@@ -4,6 +4,8 @@ from random import randint
 from app import app, db
 from models.performance import Performance
 
+from .record import record
+
 # PERFORMANCE
 
 # Get all performance in database
@@ -23,14 +25,24 @@ def getSpecificPerformance(id: int):
 def addPerformance():
     data = request.get_json()
     new_id = randint(1, 1000000)
+
+    # get from request
     new_sheet_music_id = data.get("sheet_music_id")
     new_run_number = data.get("run_number")
     new_date_time = data.get("date_time")
-    new_tempo_percent_accuracy = data.get("tempo_percent_accuracy")
-    new_average_tempo = data.get("average_tempo")
-    new_tuning_percent_accuracy = data.get("tuning_percent_accuracy")
-    new_dynamics_percent_accuracy = data.get("dynamics_percent_accuracy")
-    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
+
+    # start and store recording
+
+    # analyze recording
+
+    # send info to database
+    new_tempo_percent_accuracy = 50
+    new_average_tempo = 120
+    new_tuning_percent_accuracy = 50
+    new_dynamics_percent_accuracy = 50
+    new_wav_file_path = "test"
+    new_data_file_path = "test"
+    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, new_data_file_path)
     db.session.add(new_performance)
     db.session.commit()
     return new_performance.serialize
