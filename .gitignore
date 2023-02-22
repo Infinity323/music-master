@@ -97,3 +97,4 @@ dist/
 *.sketch
 
 .vscode/
+data/
