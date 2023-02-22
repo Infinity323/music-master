@@ -7,6 +7,8 @@ import Tuner from './pages/Tuner';
 
 export const baseUrl = "http://localhost:5000";
 
+export const { style } = document.documentElement;
+
 function App() {
   return (
     <div className="App">

@@ -22,7 +22,17 @@ function SheetMusicTable() {
           setError(error);
         }
       )
-  }, [])
+  }, []);
+  
+  function deleteMusic() {
+    fetch(baseUrl + "/sheetmusic/" + selected, {
+      method: "DELETE"
+    }).then((res) => res.json());
+    const index = items.findIndex(item => item.id === selected);
+    items.splice(index, 1);
+    setItems(items);
+    setSelected(-1);
+  }
 
   function UploadButton() {    
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -38,7 +48,23 @@ function SheetMusicTable() {
       setModalIsOpen(false);
     }
 
-    // TODO: CRUD
+    function postMusic() {
+      fetch(baseUrl + "/sheetmusic", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "title": title,
+          "composer": composer,
+          "instrument": instrument,
+          "pdf_file_path": file
+        })
+      }).then((res) => res.json())
+        .then((data) => setItems(items.concat(data)));
+      closeModal();
+    }
+
     return (
       <>
         <div className="btn medium" id="uploadMusic" onClick={openModal}>
@@ -58,7 +84,7 @@ function SheetMusicTable() {
             <input type="file" onChange={(e) => setFile(e.target.value)}/>
           </label>
           <br/>
-          <div className="btn medium" id="submitForm" onClick={closeModal}>
+          <div className="btn medium" id="submitForm" onClick={postMusic}>
             Submit
           </div>
           <div className="btn medium" id="closeForm" onClick={closeModal}>
@@ -70,10 +96,9 @@ function SheetMusicTable() {
   }
 
   function DeleteButton() {
-    // TODO: CRUD
     return (
       <>
-        <div className={selected === -1 ? "btn medium disabled" : "btn medium"}
+        <div className={selected === -1 ? "btn medium disabled" : "btn medium"} onClick={deleteMusic}
           id="deleteMusic">Delete</div>
       </>
     )
@@ -100,14 +125,14 @@ function SheetMusicTable() {
               <tr className="header">
                 <th width="400px">Title</th>
                 <th width="150px">Composer</th>
-                <th width="120px">Instrument</th>
+                <th width="150px">Instrument</th>
               </tr>
               {items.map(item => (
                 <tr className={selected === item.id ? "data selected" : "data"}
                   key={item.id} onClick={() => {setSelected(item.id)}}>
                   <td>{item.title}</td>
-                  <td>---</td>
-                  <td>---</td>
+                  <td>{item.composer}</td>
+                  <td>{item.instrument}</td>
                 </tr>
               ))}
             </tbody>
