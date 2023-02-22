@@ -18,7 +18,7 @@ export function RecordButton() {
 export function BackButton() {
   const navigate = useNavigate();
   return (
-    <div className="btn back" onClick={() => navigate("/")}>
+    <div className="btn back" onClick={() => navigate(-1)}>
       <img src={backArrow} alt="Back" width="60px"/>
     </div>
   );
@@ -26,6 +26,16 @@ export function BackButton() {
 
 export function SettingsButton() {
   const [clicked, setClicked] = useState(false);  
+
+  function setProperties() {
+    // Set default color values on first application load
+    if (style.getPropertyValue('--bg-color') === "" ||
+        style.getPropertyValue('--text-color') === "" ||
+        style.getPropertyValue('--btn-color') === "" ||
+        style.getPropertyValue('--hover-color') === "" ||
+        style.getPropertyValue('--select-color') === "")
+      setLightMode();
+  }
 
   function setLightMode() {
     style.setProperty('--bg-color', 'ghostwhite');
@@ -44,7 +54,7 @@ export function SettingsButton() {
   }
   
   useEffect(() => {
-    setLightMode();
+    setProperties();
   }, [])
   
   return (
