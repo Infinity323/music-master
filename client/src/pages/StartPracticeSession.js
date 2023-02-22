@@ -1,5 +1,6 @@
 import { BackButton } from "../components/Buttons";
 import { RecordButton } from "../components/Buttons";
+import SheetMusicDropdown from "../components/SheetMusicDropdown";
 
 function StartPracticeSession() {
   return (
