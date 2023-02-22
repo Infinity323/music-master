@@ -1,11 +1,12 @@
 import '../App.css';
-import axios from "axios";
+import Recorder from 'matt-diamond-recorderjs';
+import { baseUrl } from '../App';
 
 let gumStream = null;
 let recorder = null;
 let audioContext = null;
 
-function RecorderJSDemo() {
+function Record() {
 
     const startRecording = () => {
         let constraints = {
@@ -25,14 +26,15 @@ function RecorderJSDemo() {
 
                 let input = audioContext.createMediaStreamSource(stream);
 
-                recorder = new window.Recorder(input, {
+                recorder = new Recorder(input, {
                     numChannels: 1
                 })
 
                 recorder.record();
                 console.log("Recording started");
             }).catch(function (err) {
-                //enable the record button if getUserMedia() fails
+                console.log(err)
+                // enable the record button if getUserMedia() fails
         });
 
     }
@@ -49,15 +51,20 @@ function RecorderJSDemo() {
     const onStop = (blob) => {
         console.log("uploading...");
 
-        let data = new FormData();
-
-        data.append('text', "this is the transcription of the audio file");
-        data.append('wavfile', blob, "recording.wav");
-
-        const config = {
-            headers: {'content-type': 'multipart/form-data'}
-        }
-        axios.post('http://localhost:5000/record/', data, config);
+        const formData = new FormData();
+        formData.append("sheet_music_id", 1);
+        formData.append("run_number", 1);
+        formData.append("file", blob);
+        
+        fetch(baseUrl + "/performance", {
+            method: "POST",
+            body: formData
+        }).then(res => {
+            console.log("Success: " + res.data);
+        })
+        .catch(err => {
+            console.log(err);
+        })
     }
 
     return (
@@ -68,4 +75,4 @@ function RecorderJSDemo() {
     );
 }
 
-export default RecorderJSDemo;
+export default Record;
