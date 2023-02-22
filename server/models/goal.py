@@ -29,6 +29,7 @@ class Goal(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "sheet_music_id": self.sheet_music_id,
             "run_number": self.name,
             "start_date": self.start_date,
             "end_date": self.end_date,

@@ -96,7 +96,6 @@ function SheetMusicTable() {
   }
 
   function DeleteButton() {
-    // TODO: CRUD
     return (
       <>
         <div className={selected === -1 ? "btn medium disabled" : "btn medium"} onClick={deleteMusic}
@@ -126,7 +125,7 @@ function SheetMusicTable() {
               <tr className="header">
                 <th width="400px">Title</th>
                 <th width="150px">Composer</th>
-                <th width="120px">Instrument</th>
+                <th width="150px">Instrument</th>
               </tr>
               {items.map(item => (
                 <tr className={selected === item.id ? "data selected" : "data"}
