@@ -1,4 +1,3 @@
-import { BackButton } from "../components/Buttons";
 import Record from "../components/Record";
 
 function Recording() {
