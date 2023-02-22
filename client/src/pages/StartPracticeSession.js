@@ -8,7 +8,6 @@ function StartPracticeSession() {
       <BackButton/>
       <div className="content">
         <p>start practice session</p>
-        <SheetMusicDropdown/>
         <RecordButton/>
       </div>
     </>
