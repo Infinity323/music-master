@@ -6,6 +6,8 @@ from models.performance import Performance
 
 from .record import record
 
+from datetime import datetime
+
 # PERFORMANCE
 
 # Get all performance in database
@@ -29,19 +31,19 @@ def addPerformance():
     # get from request
     new_sheet_music_id = data.get("sheet_music_id")
     new_run_number = data.get("run_number")
-    new_date_time = data.get("date_time")
-
-    # start and store recording
+    new_wav_file_path = data.get("wave_file_path")
 
     # analyze recording
 
+    # store info
+    new_date_time = datetime.now()
+    new_tempo_percent_accuracy = 50 # todo change constant
+    new_average_tempo = 120 # todo change constant
+    new_tuning_percent_accuracy = 50 # todo change constant
+    new_dynamics_percent_accuracy = 50 # todo change constant
+    new_data_file_path = "filepath" # todo change constant
+
     # send info to database
-    new_tempo_percent_accuracy = 50
-    new_average_tempo = 120
-    new_tuning_percent_accuracy = 50
-    new_dynamics_percent_accuracy = 50
-    new_wav_file_path = "test"
-    new_data_file_path = "test"
     new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, new_data_file_path)
     db.session.add(new_performance)
     db.session.commit()
