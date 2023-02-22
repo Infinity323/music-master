@@ -1,5 +1,6 @@
 from flask import request
 from random import randint
+import json
 
 from app import app, db
 from models.sheetmusic import SheetMusic
@@ -21,15 +22,16 @@ def getSpecificSheetMusic(id: int):
 # Add sheet music to database
 @app.post("/sheetmusic")
 def addSheetMusic():
-    data = request.get_json()
     new_id = randint(1, 1000000)
-    new_title = data.get("title")
-    new_composer = data.get("composer")
-    new_instrument = data.get("instrument")
-    new_pdf_file_path = data.get("pdf_file_path")
-    new_data_file_path = data.get("data_file_path")
-    new_tempo = data.get("tempo")
-    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_pdf_file_path, new_data_file_path, new_tempo)
+    new_title = request.form.get("title")
+    new_composer = request.form.get("composer")
+    new_instrument = request.form.get("instrument")
+    # Construct new file path and handle file upload
+    new_pdf_file_path = "data/xml/" + new_title + ".xml"
+    new_pdf_file_data = request.files.get("file")
+    new_pdf_file_data.save(new_pdf_file_path)
+    # Add to database
+    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_pdf_file_path, None, None)
     db.session.add(newSheetMusic)
     db.session.commit()
     return newSheetMusic.serialize
