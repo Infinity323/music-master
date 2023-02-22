@@ -52,8 +52,7 @@ function Record() {
         console.log("uploading...");
 
         const formData = new FormData();
-        formData.append("sheet_music_id", 1);
-        formData.append("run_number", 1);
+        formData.append("sheet_music_id", 996820);
         formData.append("file", blob);
         
         fetch(baseUrl + "/performance", {

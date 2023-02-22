@@ -1,5 +1,6 @@
 import { BackButton } from "../components/Buttons";
 import { RecordButton } from "../components/Buttons";
+import SheetMusicDropdown from "../components/SheetMusicDropdown";
 
 function StartPracticeSession() {
   return (
@@ -7,6 +8,7 @@ function StartPracticeSession() {
       <BackButton/>
       <div className="content">
         <p>start practice session</p>
+        <SheetMusicDropdown/>
         <RecordButton/>
       </div>
     </>
