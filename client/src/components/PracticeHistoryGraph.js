@@ -31,7 +31,7 @@ function PracticeHistoryGraph({selectedMusic}) {
         font: {
           size: 20
         }
-      },
+      }
     },
     scales: {
       y: {
