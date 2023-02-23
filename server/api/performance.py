@@ -3,6 +3,7 @@ from random import randint
 
 from app import app, db
 from models.performance import Performance
+from models.sheetmusic import SheetMusic
 
 from datetime import datetime
 
@@ -17,21 +18,22 @@ def getAllPerformances():
 # Get performance with specific ID from database
 @app.get("/performance/<int:id>")
 def getSpecificPerformance(id: int):
-    performance = db.session.query(Performance).filter(Performance.id == id).first()
+    performance = db.session.query(Performance).filter(Performance.id == id)
     return performance.serialize
 
 # Add performance to database
 @app.post("/performance")
 def addPerformance():
 
-    # get attribtues
     new_id = randint(1, 1000000)
+
+    # to-do, get name from music id
     new_sheet_music_id = request.form.get("sheet_music_id")
-    new_run_number = request.form.get("run_number")
+    selected_sheet_music_name = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().title
+    new_run_number = len(db.session.query(Performance).all()) + 1
 
     # construct new file path and handle file upload
-    new_title = new_run_number
-    new_wav_file_path = "data/wav/" + new_title + ".wav"
+    new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
     new_wav_file_data = request.files.get("file")
     new_wav_file_data.save(new_wav_file_path)
 

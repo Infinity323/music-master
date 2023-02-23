@@ -4,13 +4,14 @@ import backArrow from '../assets/images/back_arrow.png'
 import settingsIcon from '../assets/images/settings_icon.png'
 import lightMode from '../assets/images/light_mode.png'
 import darkMode from '../assets/images/dark_mode.png'
+import recording from '../assets/images/recording.png'
 import { style } from '../App';
 
 export function RecordButton() {
   const navigate = useNavigate();
   return (
     <div className="btn record" onClick={() => navigate("/recording")}>
-      <img src={backArrow} alt="Back" width="60px"/>
+      <img src={recording} alt="Back" width="60px"/>
     </div>
   );
 }
