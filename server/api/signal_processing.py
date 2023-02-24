@@ -56,9 +56,6 @@ def freq_to_notes(f0, times):
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
 
-    # Loading a test file for now
-    rec_file = "../../C4_to_C5.wav"
-
     y, sr = librosa.load(rec_file)
 
     # f0 holds the fundamental frequencies we need to use
