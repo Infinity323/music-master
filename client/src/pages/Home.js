@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { SettingsButton } from "../components/Buttons";
+import { MetronomeButton } from "../components/Metronome";
 
 function Home() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ function Home() {
         <div className="btn menu" onClick={() => navigate("/history")}>View Practice History</div>
         <div className="btn menu" onClick={() => navigate("/sheetmusic")}>View Sheet Music</div>
       </div>
+	  <MetronomeButton/>
     </>
   );
 }

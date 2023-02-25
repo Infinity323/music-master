@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2'
-import { baseUrl } from '../App';
+import { baseUrl, SheetMusicIdContext } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { style } from '../App';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 Chart.defaults.font.family = "Segoe UI";
 
-function PracticeHistoryGraph({selectedMusic}) {
+function PracticeHistoryGraph() {
   const textColor = style.getPropertyValue('--text-color');
 
   const options = {
@@ -58,6 +58,7 @@ function PracticeHistoryGraph({selectedMusic}) {
   const [items, setItems] = useState([]);
   const [labels, setLabels] = useState([]);
   const [data, setData] = useState({});
+  const selectedMusic = useContext(SheetMusicIdContext)[0];
 
   // Sequential useEffect(). items -> selectedMusic -> labels -> data
   useEffect(() => {
@@ -78,7 +79,7 @@ function PracticeHistoryGraph({selectedMusic}) {
     setIsLoaded(false);
     const dateTimeOptions = { timeZone: "UTC", hour: "numeric", minute: "numeric" };
     setLabels(items.flatMap(item => item.sheet_music_id === selectedMusic ?
-      new Date(Date.parse(item.date_time), ).toLocaleDateString("en-US", dateTimeOptions) :
+      new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions) :
       []));
   }, [selectedMusic, items]);
   useEffect(() => {
@@ -112,7 +113,7 @@ function PracticeHistoryGraph({selectedMusic}) {
         }
       ],
     });
-  }, [labels]);
+  }, [selectedMusic, items, labels]);
   useEffect(() => {
     setIsLoaded(true);
   }, [data]);  
