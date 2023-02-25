@@ -56,10 +56,10 @@ export function SettingsButton() {
   
   useEffect(() => {
     setProperties();
-  }, [])
+  });
   
   return (
-    <div className={clicked ? "btn settings expanded" : "btn settings"}onClick={() => setClicked(!clicked)}>
+    <div className={clicked ? "btn settings expanded" : "btn settings"} onClick={() => setClicked(!clicked)}>
       <img src={settingsIcon} alt="Settings" width="60px"/>
       <div class="settings-menu">
         <img src={lightMode} alt="Settings" width="60px" onClick={() => setLightMode()}/>
