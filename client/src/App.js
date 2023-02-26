@@ -7,6 +7,7 @@ import SheetMusic from './pages/SheetMusic';
 import StartPracticeSession from './pages/StartPracticeSession';
 import Tuner from './pages/Tuner';
 import Recording from './pages/Recording';
+import Performance from './pages/Performance';
 
 export const baseUrl = "http://localhost:5000";
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/sheetmusic" element={<SheetMusic/>}/>
           <Route path="/startpracticesession" element={<StartPracticeSession/>}/>
           <Route path="/recording" element={<Recording/>}/>
+          <Route path="/performance/:performanceId" element={<Performance/>}/>
         </Routes>
       </SheetMusicIdContext.Provider>
     </div>
