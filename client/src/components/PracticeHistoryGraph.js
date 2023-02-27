@@ -15,7 +15,6 @@ function PracticeHistoryGraph() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
-  const [labels, setLabels] = useState([]);
   const [data, setData] = useState({});
   const selectedMusic = useContext(SheetMusicIdContext)[0];
   const navigate = useNavigate();
@@ -70,12 +69,12 @@ function PracticeHistoryGraph() {
       }
     },
     parsing: {
-      xAxisKey: 'id',
+      xAxisKey: 'time',
       yAxisKey: 'value'
     }
   };
 
-  // Sequential useEffect(). items -> selectedMusic -> labels -> data
+  // Sequential useEffect(). items -> selectedMusic -> data
   useEffect(() => {
     fetch(baseUrl + "/performance")
       .then(res => res.json())
@@ -92,20 +91,17 @@ function PracticeHistoryGraph() {
   }, []);
   useEffect(() => {
     setIsLoaded(false);
-    const dateTimeOptions = { timeZone: "UTC", hour: "numeric", minute: "numeric" };
-    setLabels(items.flatMap(item => item.sheet_music_id === selectedMusic ?
-      new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions) :
-      []));
-  }, [selectedMusic, items]);
-  useEffect(() => {
-    setIsLoaded(false);
+    const dateTimeOptions = { timeZone: "UTC", hour: "numeric", minute: "numeric", second: "numeric" };
     setData({
-      labels: labels,
       datasets: [
         {
           label: 'Tuning',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.id, value: item.tuning_percent_accuracy * 100} : [{}]
+            {
+              id: item.id,
+              time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+              value: item.tuning_percent_accuracy * 100
+            } : [{}]
           ),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
@@ -114,7 +110,11 @@ function PracticeHistoryGraph() {
         {
           label: 'Tempo',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.id, value: item.tempo_percent_accuracy * 100} : [{}]
+            {
+              id: item.id,
+              time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+              value: item.tempo_percent_accuracy * 100
+            } : [{}]
           ),
           borderColor: 'rgb(53, 162, 235)',
           backgroundColor: 'rgba(53, 162, 235, 0.5)',
@@ -123,7 +123,11 @@ function PracticeHistoryGraph() {
         {
           label: 'Dynamics',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.id, value: item.dynamics_percent_accuracy * 100} : [{}]
+            {
+              id: item.id,
+              time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+              value: item.dynamics_percent_accuracy * 100
+            } : [{}]
           ),
           borderColor: 'rgb(191, 85, 236)',
           backgroundColor: 'rgba(191, 85, 236, 0.5)',
@@ -131,7 +135,7 @@ function PracticeHistoryGraph() {
         }
       ],
     });
-  }, [selectedMusic, items, labels]);
+  }, [selectedMusic, items]);
   useEffect(() => {
     setIsLoaded(true);
   }, [data]);  
