@@ -1,12 +1,18 @@
 import '../App.css';
 import Recorder from 'matt-diamond-recorderjs';
 import { baseUrl } from '../App';
+import { useContext } from "react";
+import { SheetMusicIdContext } from "../App";
+import { useNavigate } from 'react-router-dom';
 
 let gumStream = null;
 let recorder = null;
 let audioContext = null;
 
 function Record() {
+
+    const sheetMusicId  = useContext(SheetMusicIdContext)[0];
+    const navigate = useNavigate();
 
     const startRecording = () => {
         let constraints = {
@@ -46,13 +52,15 @@ function Record() {
         gumStream.getAudioTracks()[0].stop();
 
         recorder.exportWAV(onStop);
+
+        navigate(-1);
     }
 
     const onStop = (blob) => {
         console.log("uploading...");
 
         const formData = new FormData();
-        formData.append("sheet_music_id", 996820);
+        formData.append("sheet_music_id", sheetMusicId);
         formData.append("file", blob);
         
         fetch(baseUrl + "/performance", {
@@ -67,9 +75,11 @@ function Record() {
     }
 
     return (
-        <div>
+        <div>  
+            <p>start/stop recorind for music sheet: {sheetMusicId}</p>
             <button onClick={startRecording} type="button">Start</button>
             <button onClick={stopRecording} type="button">Stop</button>
+            <button onClick={() => {navigate(-1)}} type="button">Cancel</button>
         </div>
     );
 }
