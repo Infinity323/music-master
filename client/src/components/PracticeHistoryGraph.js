@@ -105,7 +105,7 @@ function PracticeHistoryGraph() {
         {
           label: 'Tuning',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.sheet_music_id, value: item.tuning_percent_accuracy * 100} : [{}]
+            {id: item.id, value: item.tuning_percent_accuracy * 100} : [{}]
           ),
           borderColor: 'rgb(255, 99, 132)',
           backgroundColor: 'rgba(255, 99, 132, 0.5)',
@@ -114,7 +114,7 @@ function PracticeHistoryGraph() {
         {
           label: 'Tempo',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.sheet_music_id, value: item.tempo_percent_accuracy * 100} : [{}]
+            {id: item.id, value: item.tempo_percent_accuracy * 100} : [{}]
           ),
           borderColor: 'rgb(53, 162, 235)',
           backgroundColor: 'rgba(53, 162, 235, 0.5)',
@@ -123,7 +123,7 @@ function PracticeHistoryGraph() {
         {
           label: 'Dynamics',
           data: items.flatMap(item => item.sheet_music_id === selectedMusic ?
-            {id: item.sheet_music_id, value: item.dynamics_percent_accuracy * 100} : [{}]
+            {id: item.id, value: item.dynamics_percent_accuracy * 100} : [{}]
           ),
           borderColor: 'rgb(191, 85, 236)',
           backgroundColor: 'rgba(191, 85, 236, 0.5)',
