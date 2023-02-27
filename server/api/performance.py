@@ -18,7 +18,7 @@ def getAllPerformances():
 # Get performance with specific ID from database
 @app.get("/performance/<int:id>")
 def getSpecificPerformance(id: int):
-    performance = db.session.query(Performance).filter(Performance.id == id)
+    performance = db.session.query(Performance).filter(Performance.id == id).first()
     return performance.serialize
 
 # Add performance to database
