@@ -3,8 +3,12 @@ import { useParams } from 'react-router-dom';
 import { BackButton } from '../components/Buttons';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
+import { useNavigate } from 'react-router-dom';
+
 
 function Performance() {
+  const navigate = useNavigate();
+
   let { performanceId } = useParams();
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -26,6 +30,22 @@ function Performance() {
       )
   }, []);
 
+  function deletePerformance() {
+    fetch(baseUrl + "/performance/" + performance.id, {
+      method: "DELETE"
+    }).then((res) => res.json());
+    navigate(-1);
+  }
+
+  function DeleteButton() {
+    return (
+      <>
+        <div className="btn medium" onClick={deletePerformance}
+          id="deletePerformance">Delete</div>
+      </>
+    )
+  }
+
   if (error) {
     return (
       <div className="content">
@@ -45,6 +65,7 @@ function Performance() {
         <div className="content">
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
         </div>
+        <DeleteButton/>
       </>
     );
   }
