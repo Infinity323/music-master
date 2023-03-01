@@ -172,6 +172,25 @@ input[type=file] {
 }
 
 /********************/
+/*      Tuner       */
+/********************/
+div.tuner-center {
+  display: flex;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: var(--btn-color);
+  vertical-align: middle;
+  margin: auto;
+}
+text.tuner-center {
+  margin: auto;
+}
+text.tuner-center .note-name {
+  font-size: 50px;
+}
+
+/********************/
 /*    Scrollbar     */
 /********************/
 ::-webkit-scrollbar {

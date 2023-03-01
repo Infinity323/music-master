@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { TunerContext } from '../App';
-import AudioAnalyzer from './AudioAnalyzer';
+import AudioAnalyzer from '../utils/AudioAnalyzer';
 
 function Tuner() {
   const [audio, setAudio] = useState(null);
@@ -25,8 +25,14 @@ function Tuner() {
 
   return (
     <>
-      {currentNote}
-      {audio ? <AudioAnalyzer audio={audio}/> : ''}
+      <div className="tuner-center">
+        <text className="tuner-center">
+          <text className="note-name">{currentNote ? currentNote.noteName : ""}</text>
+          <text>{currentNote ? currentNote.octave : ""}</text>
+        </text>
+      </div>
+      <br/>
+      {audio ? <AudioAnalyzer audio={audio}/> : ""}
     </>
   );
 }
