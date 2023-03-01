@@ -5,6 +5,8 @@ from app import app, db
 from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
+from signal_processing import signal_processing
+
 from datetime import datetime
 
 import os
@@ -41,6 +43,7 @@ def addPerformance():
     new_wav_file_data.save(new_wav_file_path)
 
     # analyze recording
+    notes_from_rec = signal_processing(new_wav_file_path)
 
     # TO-DO: ADD ANALYSIS ALGORITHM HERE
 

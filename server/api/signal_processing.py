@@ -2,6 +2,7 @@ import librosa
 import librosa.display # for plotting, debugging
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 # Receiving the recorded file from the client
 # It will be passed in by performance.py
@@ -26,7 +27,7 @@ def freq_to_notes(f0, times):
     # Takes in two lists one for time and one for frequencies, and return a list of Note objects
     # Store the notes into the data folder (in the .dat file), store it as a JSON
     notes = []
-    
+
     for i in f0:
         if np.isnan(i):
             notes.append('NaN')
@@ -42,16 +43,36 @@ def freq_to_notes(f0, times):
         if notes[i] == notes[i-1]:
             # If the note is the same as the previous note, update the duration
             start_time = times[i-1]
-            note_obj = Note(notes[i], 0, 0, 0, start_time)
+            note_obj = Note(notes[i], 0, 0, 0)
             while i < len(notes) and notes[i] == notes[i-1]:
                 end_time = times[i]
                 if i == len(notes):
                     break
                 i += 1
-            note_obj.set_duration(start_time, end_time)
+            note_obj.set_start(start_time)
+            note_obj.set_end(end_time)
             note_struct.append(note_obj)
         
         i += 1
+    
+    return note_struct
+
+# Turns the notes into a CSV file
+def notes_to_CSV(notes):
+    csv_header = ['Note', 'Amplitude', 'Duration', 'Cents', 'Beat']
+    csv_body = []
+
+    for i in range(len(notes)):
+        csv_body.append([notes[i].note, notes[i].amplitude, notes[i].duration, notes[i].cents, notes[i].beat])
+    
+    filename = 'test.csv'
+    
+    with open(filename, 'w', newline="") as file:
+        csvwriter = csv.writer(file)
+        csvwriter.writerow(csv_header)
+        csvwriter.writerows(csv_body)
+    
+    return True
 
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
@@ -68,4 +89,6 @@ def signal_processing(rec_file):
     # Convert the fundamental frequencies to the notes data structure
     notes = freq_to_notes(f0, times)
 
-    return notes
+    notes_to_CSV(notes)
+
+    return True
