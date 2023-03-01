@@ -50,34 +50,32 @@ def addPerformance():
 
     # TO-DO: ADD ANALYSIS ALGORITHM HERE
 
-    # set attributes
-    
+    # get the json file path for recording
     new_data_file_path = "filepath" # to-do change constant
-    new_tempo_percent_accuracy = 0.5 # to-do change constant
-    new_average_tempo = 120 # to-do change constant
-    new_tuning_percent_accuracy = 0.5 # to-do change constant
-    new_dynamics_percent_accuracy = 0.5 # to-do change constant
 
     # get the json file path for music sheet
     music_sheet_data_file_path = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path
 
-    # run comparison
+    # open and compare json
     mxl_file = open(new_data_file_path)
     wav_file = open(music_sheet_data_file_path)
-
     mxl_json = json.load(mxl_file)
     wav_json = json.load(wav_file)
-
     result = DeepDiff(mxl_json, wav_json)
-
     mxl_file.close()
     wav_file.close()
 
+    # store feedback
     result_object = json.dumps(result, indent=4)
-    
-    # Writing to sample.json
     with open("../data/dat/feedback.json", "w") as outfile:
         outfile.write(result_object)
+
+    # calculate percent accuracy
+    loss = (len(result['dictionary_item_added'])/100) + (len(result['dictionary_item_removed'])/100) + (len(result['values_changed'])/1000)
+    new_tempo_percent_accuracy = 1 - loss # to-do change constant
+    new_average_tempo = 120 # to-do change constant
+    new_tuning_percent_accuracy = 1 - loss # to-do change constant
+    new_dynamics_percent_accuracy = 1 - loss # to-do change constant
     
     # send info to database
     new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, new_data_file_path)
