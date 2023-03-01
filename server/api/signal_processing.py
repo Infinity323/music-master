@@ -2,7 +2,7 @@ import librosa
 import librosa.display # for plotting, debugging
 import numpy as np
 import matplotlib.pyplot as plt
-import csv
+import json
 
 # Receiving the recorded file from the client
 # It will be passed in by performance.py
@@ -57,22 +57,21 @@ def freq_to_notes(f0, times):
     
     return note_struct
 
-# Turns the notes into a CSV file
-def notes_to_CSV(notes):
-    csv_header = ['Note', 'Amplitude', 'Duration', 'Cents', 'Beat']
-    csv_body = []
+# Turns the notes into a JSON file
+def notes_to_JSON(note_struct):
+    test = []
+    for i in range(len(note_struct)):
+        test.append(note_struct[i].__dict__)
 
-    for i in range(len(notes)):
-        csv_body.append([notes[i].note, notes[i].amplitude, notes[i].duration, notes[i].cents, notes[i].beat])
-    
-    filename = 'test.csv'
-    
-    with open(filename, 'w', newline="") as file:
-        csvwriter = csv.writer(file)
-        csvwriter.writerow(csv_header)
-        csvwriter.writerows(csv_body)
-    
-    return True
+    result_dict = {"notes": test}
+
+    result_object = json.dumps(result_dict, indent=4)
+
+    # Need to change this path to a different name
+    with open("test.json", "w") as outfile:
+        outfile.write(result_object)
+
+    return
 
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
@@ -89,6 +88,6 @@ def signal_processing(rec_file):
     # Convert the fundamental frequencies to the notes data structure
     notes = freq_to_notes(f0, times)
 
-    notes_to_CSV(notes)
+    notes_to_JSON(notes)
 
     return True
