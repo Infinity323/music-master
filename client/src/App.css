@@ -178,10 +178,16 @@ div.tuner-center {
   display: flex;
   width: 200px;
   height: 200px;
+  border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 50%;
   background-color: var(--btn-color);
   vertical-align: middle;
   margin: auto;
+}
+div.tuner-gauge {
+  text-align: left;
+  width: 400px;
+  margin: auto auto;
 }
 text.tuner-center {
   margin: auto;

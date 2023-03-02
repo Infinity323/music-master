@@ -1,5 +1,5 @@
 // https://github.com/mrRodrigo/React-Guitar-Tuner/blob/master/src/utils/note-analyzer/index.js
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import Pitchfinder from 'pitchfinder';
 import { TunerContext } from '../App';
 
@@ -36,7 +36,11 @@ const getCents = (frequency, note) => {
 };
 
 function AudioAnalyzer({audio}) {
-  var audioContext, analyzer, dataArray, dataArray32, source, rafId;
+  const analyzer = useRef();
+  const audioContext = useRef();
+  const rafId = useRef();
+  const source = useRef();
+
   const detectPitch = new Pitchfinder.AMDF({
     maxFrequency: 800,
     minFrequency: 50
@@ -45,8 +49,8 @@ function AudioAnalyzer({audio}) {
   const setCurrentNote = useContext(TunerContext)[1];
 
   function tick() {
-    dataArray32 = new Float32Array(analyzer.fftSize);
-    analyzer.getFloatTimeDomainData(dataArray32);
+    const dataArray32 = new Float32Array(analyzer.current.fftSize);
+    analyzer.current.getFloatTimeDomainData(dataArray32);
     const pitch = detectPitch(dataArray32);
     if (pitch) {
       const freq = pitch * 1.09;
@@ -56,23 +60,27 @@ function AudioAnalyzer({audio}) {
       const octave = parseInt(note / 12) - 1;
       setCurrentNote({freq, cents, noteName, octave});
     }
-    rafId = requestAnimationFrame(tick);
+    rafId.current = requestAnimationFrame(tick);
   }
 
   useEffect(() => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyzer = audioContext.createAnalyser();
-    dataArray = new Uint8Array(analyzer.frequencyBinCount);
-    source = audioContext.createMediaStreamSource(audio);
-    source.connect(analyzer);
-    rafId = requestAnimationFrame(tick);
+    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+    analyzer.current = audioContext.current.createAnalyser();
+    source.current = audioContext.current.createMediaStreamSource(audio);
+    source.current.connect(analyzer.current);
+    rafId.current = requestAnimationFrame(tick);
 
     return () => {
-      cancelAnimationFrame(rafId);
-      analyzer.disconnect();
-      source.disconnect();
+      cancelAnimationFrame(rafId.current);
+      analyzer.current.disconnect();
+      source.current.disconnect();
     }
   }, []);
+
+  useEffect(() => {
+    source.current = audioContext.current.createMediaStreamSource(audio);
+    source.current.connect(analyzer.current);
+  }, [audio]);
 
   return;
 }
