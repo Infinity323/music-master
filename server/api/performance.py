@@ -7,8 +7,8 @@ from app import app, db
 from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
-from signal_processing import signal_processing
-from mxl_wav_compare import compare_tuning, compare_dynamics, compare_tempo
+from .signal_processing import signal_processing
+from .mxl_wav_compare import compare_tuning, compare_dynamics, compare_tempo
 
 from datetime import datetime
 
@@ -46,19 +46,19 @@ def addPerformance():
     new_wav_file_data.save(new_wav_file_path)
 
     # set new average tempo 
-    new_average_tempo = 120 # TO-DO change constant!
+    new_average_tempo = 120 # (TO-DO) change constant!
 
     # analyze recording
-    notes_from_rec = signal_processing(new_wav_file_path)
+    # notes_from_rec = signal_processing(new_wav_file_path)
 
-    # get json file paths
-    wav_json_file_path = "filepath" # to-do change constant
-    mxl_json_file_path = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path
+    # get json file paths # (TO-DO) change testing constants
+    wav_json_file_path = "api/wav.json"
+    mxl_json_file_path = "api/mxl.json" # <- db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path
 
     # open json file and load into obj
-    with open(mxl_json_file_path, "r", encoding="utf8") as mxl_json_file:
+    with open(mxl_json_file_path) as mxl_json_file:
         mxl_json = json.load(mxl_json_file)
-    with open(wav_json_file_path, "r", encoding="utf8") as wav_json_file:
+    with open(wav_json_file_path) as wav_json_file:
         wav_json = json.load(wav_json_file)
 
     # run comparison algorithms
