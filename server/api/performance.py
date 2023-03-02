@@ -1,9 +1,14 @@
 from flask import request
 from random import randint
 
+import json
+
 from app import app, db
 from models.performance import Performance
 from models.sheetmusic import SheetMusic
+
+from api.signal_processing import signal_processing
+from scripts.mxl_wav_compare import compare_tuning, compare_dynamics, compare_tempo
 
 from datetime import datetime
 
@@ -40,20 +45,29 @@ def addPerformance():
     new_wav_file_data = request.files.get("file")
     new_wav_file_data.save(new_wav_file_path)
 
+    # set new average tempo 
+    new_average_tempo = 120 # (TO-DO) change constant!
+
     # analyze recording
+    # notes_from_rec = signal_processing(new_wav_file_path)
 
-    # TO-DO: ADD ANALYSIS ALGORITHM HERE
+    # get json file paths # (TO-DO) change testing constants
+    wav_json_file_path = "scripts/test_dat/wav.json"
+    mxl_json_file_path = "scripts/test_dat/mxl.json" # <- db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path
 
-    # set attributes
-    
-    new_data_file_path = "filepath" # to-do change constant
-    new_tempo_percent_accuracy = 0.5 # to-do change constant
-    new_average_tempo = 120 # to-do change constant
-    new_tuning_percent_accuracy = 0.5 # to-do change constant
-    new_dynamics_percent_accuracy = 0.5 # to-do change constant
+    # open json file and load into obj
+    with open(mxl_json_file_path) as mxl_json_file:
+        mxl_json = json.load(mxl_json_file)
+    with open(wav_json_file_path) as wav_json_file:
+        wav_json = json.load(wav_json_file)
+
+    # run comparison algorithms
+    new_tempo_percent_accuracy = compare_tempo(mxl_json, wav_json)
+    new_tuning_percent_accuracy = compare_tuning(mxl_json, wav_json)
+    new_dynamics_percent_accuracy = compare_dynamics(mxl_json, wav_json)
     
     # send info to database
-    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, new_data_file_path)
+    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path)
     db.session.add(new_performance)
     db.session.commit()
     return new_performance.serialize

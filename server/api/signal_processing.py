@@ -2,6 +2,7 @@ import librosa
 import librosa.display # for plotting, debugging
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 # Receiving the recorded file from the client
 # It will be passed in by performance.py
@@ -26,7 +27,7 @@ def freq_to_notes(f0, times):
     # Takes in two lists one for time and one for frequencies, and return a list of Note objects
     # Store the notes into the data folder (in the .dat file), store it as a JSON
     notes = []
-    
+
     for i in f0:
         if np.isnan(i):
             notes.append('NaN')
@@ -42,16 +43,35 @@ def freq_to_notes(f0, times):
         if notes[i] == notes[i-1]:
             # If the note is the same as the previous note, update the duration
             start_time = times[i-1]
-            note_obj = Note(notes[i], 0, 0, 0, start_time)
+            note_obj = Note(notes[i], 0, 0, 0)
             while i < len(notes) and notes[i] == notes[i-1]:
                 end_time = times[i]
                 if i == len(notes):
                     break
                 i += 1
-            note_obj.set_duration(start_time, end_time)
+            note_obj.set_start(start_time)
+            note_obj.set_end(end_time)
             note_struct.append(note_obj)
         
         i += 1
+    
+    return note_struct
+
+# Turns the notes into a JSON file
+def notes_to_JSON(note_struct):
+    test = []
+    for i in range(len(note_struct)):
+        test.append(note_struct[i].__dict__)
+
+    result_dict = {"notes": test}
+
+    result_object = json.dumps(result_dict, indent=4)
+
+    # Need to change this path to a different name
+    with open("test.json", "w") as outfile:
+        outfile.write(result_object)
+
+    return
 
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
@@ -68,4 +88,6 @@ def signal_processing(rec_file):
     # Convert the fundamental frequencies to the notes data structure
     notes = freq_to_notes(f0, times)
 
-    return notes
+    notes_to_JSON(notes)
+
+    return True
