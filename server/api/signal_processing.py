@@ -10,18 +10,21 @@ import json
 # The data structure should look like the following:
 
 class Note():
-    def __init__(self, note, amplitude, duration, cents = 0, beat = 0):
-        self.note = note
-        self.amplitude = 0 # not sure how to get this yet
-        self.duration = duration
-        self.cents = cents
-        self.beat = beat
+    def __init__(self, pitch, velocity, start, end):
+        # Pitch, Velocity, Start, End
+        self.pitch = pitch
+        self.velocity = 0 # not sure how to get this yet, prob just amplitude
+        self.start = start
+        self.end = end
     
-    def set_duration(self, start, end):
-        self.duration = end - start
+    def set_start(self, start):
+        self.start = start
+    
+    def set_end(self, end):
+        self.end = end
         
     def __repr__(self):
-        return "Note: " + str(self.note) + " " + "Duration: " + str(self.duration) + " seconds"
+        return "Pitch: {pitch}, Start: {start:.2f} sec, End: {end:.2f} sec".format(pitch=self.pitch, start=self.start, end=self.end)
 
 def freq_to_notes(f0, times):
     # Takes in two lists one for time and one for frequencies, and return a list of Note objects
@@ -68,7 +71,7 @@ def notes_to_JSON(note_struct):
     result_object = json.dumps(result_dict, indent=4)
 
     # Need to change this path to a different name
-    with open("test.json", "w") as outfile:
+    with open("../data/dat/test.json", "w") as outfile:
         outfile.write(result_object)
 
     return
