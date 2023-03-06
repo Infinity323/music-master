@@ -59,7 +59,7 @@ export class MetronomeButton extends Component {
             <div className="btn metro"
               onClick={this.startMetro}
               >
-              <img src={image_metronome} height={50} width={50}/>
+              <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
             </div>
           </Box>
           <Flex flexDir="column" alignItems="center">

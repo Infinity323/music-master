@@ -1,5 +1,5 @@
 // https://github.com/mrRodrigo/React-Guitar-Tuner/blob/master/src/utils/note-analyzer/index.js
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import Pitchfinder from 'pitchfinder';
 import { TunerContext } from '../App';
 
