@@ -40,6 +40,10 @@ div .content {
   padding-bottom: 40px;
   text-align: center;
 }
+h2 {
+  margin: 0px;
+  margin-bottom: 20px;
+}
 .modal {
   position: absolute;
   top: 40px;
@@ -102,12 +106,17 @@ div .content {
 }
 .btn#uploadMusic, .btn#submitForm {
   float: left;
+  left: 10px;
+  margin-top: 0px;
 }
 .btn#deleteMusic, .btn#closeForm {
   float: right;
+  right: 10px;
+  margin-top: 0px;
 }
 .btn#submitForm, .btn#closeForm {
-  margin-top: 70px;
+  position: absolute;
+  bottom: 10px;
 }
 
 /********************/
@@ -127,8 +136,8 @@ div .content {
 table {
   margin-left: auto;
   margin-right: auto;
-  min-height: 440px;
-  max-height: 440px;
+  min-height: 400px;
+  max-height: 400px;
 }
 table tr.header {
   background-color: var(--btn-color);
@@ -144,7 +153,7 @@ table tr.data.selected {
   background-color: var(--select-color);
 }
 .tbody {
-  height: 340px;
+  height: 300px;
   width: 600px;
   overflow: auto;
   border: 1px solid rgba(1, 1, 1, 0.2);
@@ -154,7 +163,7 @@ table tr.data.selected {
 /*   Chart Styles   */
 /********************/
 div .chart {
-  height: 360px;
+  height: 300px;
   position: relative;
 }
 

@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, Annot, elements } from 'chart.js';
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import { format } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { Line } from 'react-chartjs-2'
 import { useNavigate } from 'react-router-dom';
+import Modal from 'react-modal'
 import { baseUrl, SheetMusicIdContext, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
+import { Box, Flex } from '@chakra-ui/react';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "Segoe UI";
@@ -20,6 +22,7 @@ function PracticeHistoryGraph() {
   const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
   const [showGoals, setShowGoals] = useState(true);
+  const [selectedGoal, setSelectedGoal] = useState(-1);
   const selectedMusic = useContext(SheetMusicIdContext)[0];
   const navigate = useNavigate();
 
@@ -39,20 +42,9 @@ function PracticeHistoryGraph() {
           color: textColor,
           font: {
             size: 14
-          },
-          filter: (item, chart) => {
-            return !item.text.includes(' Goal');
           }
         },
         position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Practice History',
-        color: textColor,
-        font: {
-          size: 20
-        }
       },
       annotation: {
         annotations: [
@@ -63,7 +55,7 @@ function PracticeHistoryGraph() {
             yMin: 0,
             yMax: 100,
             borderColor: 'red',
-            borderWidth: 1.5,
+            borderWidth: 2,
             label: {
               content: "TODAY",
               position: 'end',
@@ -79,11 +71,13 @@ function PracticeHistoryGraph() {
               xMax: new Date(item.end_date),
               yMin: 0,
               yMax: 100,
+              value: item.id,
               borderColor: 'rgb(98, 232, 31)',
-              borderWidth: 1.5,
+              borderWidth: 2,
               label: {
                 content: [
-                  "Goal " + format(new Date(item.end_date), 'M/dd/yy'),
+                  "Goal: " + item.name,
+                  format(new Date(item.end_date), 'M/dd/yy'),
                   "Tuning: " + item.tuning_percent_accuracy * 100,
                   "Tempo: " + item.tempo_percent_accuracy * 100,
                   "Dynamics: " + item.dynamics_percent_accuracy * 100
@@ -92,12 +86,22 @@ function PracticeHistoryGraph() {
                 display: false
               },
               display: showGoals,
+              click({element}) {
+                setSelectedGoal(element.options.value);
+                element.label.options.display = true;
+                element.options.borderWidth = 5;
+                return true;
+              },
               enter({element}) {
                 element.label.options.display = true;
+                element.options.borderWidth = 5;
                 return true;
               },
               leave({element}) {
-                element.label.options.display = false;
+                if (element.options.value !== selectedGoal) {
+                  element.label.options.display = false;
+                  element.options.borderWidth = 2;
+                }
                 return true;
               }
             }
@@ -174,6 +178,7 @@ function PracticeHistoryGraph() {
   }, []);
   useEffect(() => {
     setIsLoaded(false);
+    setSelectedGoal(-1);
     setData({
       datasets: [
         // Actual performance metrics
@@ -227,8 +232,102 @@ function PracticeHistoryGraph() {
   }, [selectedMusic, performances, goals, showGoals]);
   useEffect(() => {
     setIsLoaded(true);
-  }, [data]);  
+  }, [data]);
   
+  function AddGoalButton() {
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [name, setName] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [tempoAccuracy, setTempoAccuracy] = useState("");
+    const [averageTempo, setAverageTempo] = useState("");
+    const [tuningAccuracy, setTuningAccuracy] = useState("");
+    const [dynamicsAccuracy, setDynamicsAccuracy] = useState("");
+
+    function openModal() {
+      setModalIsOpen(true);
+    }
+    function closeModal() {
+      setModalIsOpen(false);
+    }
+
+    function postGoal() {
+      fetch(baseUrl + "/goal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "sheet_music_id": selectedMusic,
+          "name": name,
+          "start_date": "now()",
+          "end_date": endDate,
+          "tempo_percent_accuracy": tempoAccuracy ? tempoAccuracy : 0,
+          "average_tempo": averageTempo ? averageTempo : 0,
+          "tuning_percent_accuracy": tuningAccuracy ? tuningAccuracy : 0,
+          "dynamics_percent_accuracy": dynamicsAccuracy ? dynamicsAccuracy : 0
+        })
+      }).then((res) => res.json())
+        .then((data) => setGoals(goals.concat(data)));
+      closeModal();
+    }
+
+    return (
+      <>
+        <div className={selectedMusic !== -1 ? "btn small" : "btn small disabled"} onClick={openModal}>
+          Add Goal
+        </div>
+        <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className="modal" overlayClassName="modal-overlay">
+          <Flex flexDir={"row"}>
+            <Box width={360}>
+              Name
+              <br/><input type="text" onChange={(e) => setName(e.target.value)}/><br/>
+              {/* TODO: add better date selection */}
+              Deadline (YYYY-MM-DD)
+              <br/><input type="text" onChange={(e) => setEndDate(e.target.value)}/><br/>
+            </Box>
+            <Box width={360}>
+              Average Tempo (e.g. "120")
+              <br/><input type="text" onChange={(e) => setAverageTempo(e.target.value)}/><br/>
+              Tempo % Accuracy (e.g. "100")
+              <br/><input type="text" onChange={(e) => setTempoAccuracy(e.target.value / 100)}/><br/>
+              Tuning % Accuracy (e.g. "100")
+              <br/><input type="text" onChange={(e) => setTuningAccuracy(e.target.value / 100)}/><br/>
+              Dynamics % Accuracy (e.g. "100")
+              <br/><input type="text" onChange={(e) => setDynamicsAccuracy(e.target.value / 100)}/><br/>
+              <br/>
+            </Box>
+          <div className="btn medium" id="submitForm" onClick={postGoal}>
+            Submit
+          </div>
+          <div className="btn medium" id="closeForm" onClick={closeModal}>
+            Cancel
+          </div>
+          </Flex>
+        </Modal>
+      </>
+    );
+  }
+
+  function DeleteButton() {
+    function deleteGoal() {
+      fetch(baseUrl + "/goal/" + selectedGoal, {
+        method: "DELETE"
+      }).then((res) => res.json());
+      const index = goals.findIndex(item => item.id === selectedGoal);
+      goals.splice(index, 1);
+      setGoals(goals);
+      setSelectedGoal(-1);
+    }
+
+    return (
+      <>
+        <div className={selectedGoal === -1 ? "btn small disabled" : "btn small"} onClick={deleteGoal}>
+          Delete Goal
+        </div>
+      </>
+    );
+  }
+
   if (error) {
     return (
       <div className="content">
@@ -250,6 +349,8 @@ function PracticeHistoryGraph() {
         <div className="btn small" onClick={() => {setShowGoals(!showGoals)}}>
           Toggle Goals
         </div>
+        <AddGoalButton/>
+        <DeleteButton/>
       </>
     );
   }
