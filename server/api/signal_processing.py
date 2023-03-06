@@ -79,7 +79,7 @@ def notes_to_JSON(note_struct):
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
 
-    y, sr = librosa.load(rec_file)
+    y, sr = librosa.load(rec_file, sr = 22050)
 
     # f0 holds the fundamental frequencies we need to use
     f0, voiced_flag, voiced_probs = librosa.pyin(y,
