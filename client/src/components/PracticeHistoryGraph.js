@@ -1,12 +1,14 @@
 import { useContext, useEffect, useState } from 'react';
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, Annot, elements } from 'chart.js';
+import 'chartjs-adapter-date-fns';
+import { format } from 'date-fns';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import { Line } from 'react-chartjs-2'
-import { baseUrl, SheetMusicIdContext } from '../App';
-import loading_gif from '../assets/images/loading_gif.gif'
-import { style } from '../App';
 import { useNavigate } from 'react-router-dom';
+import { baseUrl, SheetMusicIdContext, style } from '../App';
+import loading_gif from '../assets/images/loading_gif.gif'
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "Segoe UI";
 
 function PracticeHistoryGraph() {
@@ -14,8 +16,10 @@ function PracticeHistoryGraph() {
 
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [items, setItems] = useState([]);
+  const [performances, setPerformances] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
+  const [showGoals, setShowGoals] = useState(true);
   const selectedMusic = useContext(SheetMusicIdContext)[0];
   const navigate = useNavigate();
 
@@ -35,6 +39,9 @@ function PracticeHistoryGraph() {
           color: textColor,
           font: {
             size: 14
+          },
+          filter: (item, chart) => {
+            return !item.text.includes(' Goal');
           }
         },
         position: 'top',
@@ -46,12 +53,63 @@ function PracticeHistoryGraph() {
         font: {
           size: 20
         }
+      },
+      annotation: {
+        annotations: [
+          {
+            type: 'line',
+            xMin: new Date(),
+            xMax: new Date(),
+            yMin: 0,
+            yMax: 100,
+            borderColor: 'red',
+            borderWidth: 1.5,
+            label: {
+              content: "TODAY",
+              position: 'end',
+              display: true
+            },
+            display: showGoals
+          }
+        ].concat(goals.flatMap(item => item.sheet_music_id === selectedMusic
+          ?
+            {
+              type: 'line',
+              xMin: new Date(item.end_date),
+              xMax: new Date(item.end_date),
+              yMin: 0,
+              yMax: 100,
+              borderColor: 'rgb(98, 232, 31)',
+              borderWidth: 1.5,
+              label: {
+                content: [
+                  "Goal " + format(new Date(item.end_date), 'M/dd/yy'),
+                  "Tuning: " + item.tuning_percent_accuracy * 100,
+                  "Tempo: " + item.tempo_percent_accuracy * 100,
+                  "Dynamics: " + item.dynamics_percent_accuracy * 100
+                ],
+                position: 'end',
+                display: false
+              },
+              display: showGoals,
+              enter({element}) {
+                element.label.options.display = true;
+                return true;
+              },
+              leave({element}) {
+                element.label.options.display = false;
+                return true;
+              }
+            }
+          : [{}]
+          )
+        ).filter(value => Object.keys(value).length !== 0)
       }
     },
     scales: {
       y: {
-        max: 100,
         min: 0,
+        max: 100,
         ticks: {
           color: textColor,
           font: {
@@ -60,7 +118,19 @@ function PracticeHistoryGraph() {
         }
       },
       x: {
+        type: 'time',
+        time: {
+          displayFormats: {
+            second: "M/dd/yy HH:mm:ss",
+            minute: "M/dd/yy HH:mm:ss",
+            hour: "M/dd/yy HH:mm",
+            day: "M/dd/yy",
+            week: "M/dd/yy",
+            month: "M/dd/yy",
+          }
+        },
         ticks: {
+          source: 'data',
           color: textColor,
           font: {
             size: 13
@@ -74,48 +144,61 @@ function PracticeHistoryGraph() {
     }
   };
 
-  // Sequential useEffect(). items -> selectedMusic -> data
   useEffect(() => {
+    // Grabs ALL performances and ALL goals from database on first render
+    // Could change to only select performances and goals that match sheet_music_id
     fetch(baseUrl + "/performance")
       .then(res => res.json())
       .then(
         (result) => {
           setIsLoaded(false);
-          setItems(result);
+          setPerformances(result);
         },
         (error) => {
           setIsLoaded(true);
           setError(error);
         }
-      )
+      );
+    fetch(baseUrl + "/goal")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(false);
+          setGoals(result);
+        },
+        (error) => {
+          setIsLoaded(true);
+          setError(error);
+        }
+      );
   }, []);
   useEffect(() => {
     setIsLoaded(false);
-    const dateTimeOptions = { timeZone: "UTC", hour: "numeric", minute: "numeric", second: "numeric" };
     setData({
       datasets: [
+        // Actual performance metrics
         {
           label: 'Tuning',
-          data: items.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
             ?
               {
                 id: item.id,
-                time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+                time: new Date(item.date_time),
                 value: item.tuning_percent_accuracy * 100
               }
             : [{}]
           ),
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          spanGaps: true,
+          borderColor: 'rgb(243, 156, 18)',
+          backgroundColor: 'rgba(243, 156, 18, 0.5)',
+          spanGaps: true
         },
         {
           label: 'Tempo',
-          data: items.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
             ?
               {
                 id: item.id,
-                time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+                time: new Date(item.date_time),
                 value: item.tempo_percent_accuracy * 100
               }
             : [{}]
@@ -126,11 +209,11 @@ function PracticeHistoryGraph() {
         },
         {
           label: 'Dynamics',
-          data: items.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
             ?
               {
                 id: item.id,
-                time: new Date(Date.parse(item.date_time)).toLocaleDateString("en-US", dateTimeOptions),
+                time: new Date(item.date_time),
                 value: item.dynamics_percent_accuracy * 100
               }
             : [{}]
@@ -141,7 +224,7 @@ function PracticeHistoryGraph() {
         }
       ],
     });
-  }, [selectedMusic, items]);
+  }, [selectedMusic, performances, goals, showGoals]);
   useEffect(() => {
     setIsLoaded(true);
   }, [data]);  
@@ -160,9 +243,14 @@ function PracticeHistoryGraph() {
     );
   } else {
     return (
-      <div className="chart">
-        <Line options={options} data={data}/>
-      </div>
+      <>
+        <div className="chart">
+          <Line options={options} data={data}/>
+        </div>
+        <div className="btn small" onClick={() => {setShowGoals(!showGoals)}}>
+          Toggle Goals
+        </div>
+      </>
     );
   }
 }
