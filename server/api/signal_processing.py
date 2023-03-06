@@ -33,7 +33,7 @@ def freq_to_notes(f0, times):
 
     for i in f0:
         if np.isnan(i):
-            notes.append('NaN')
+            continue # skips the NaN values
         else:
             notes.append(librosa.hz_to_note(i))
 
