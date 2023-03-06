@@ -23,16 +23,6 @@ function SheetMusicTable() {
         }
       )
   }, []);
-  
-  function deleteMusic() {
-    fetch(baseUrl + "/sheetmusic/" + selected, {
-      method: "DELETE"
-    }).then((res) => res.json());
-    const index = items.findIndex(item => item.id === selected);
-    items.splice(index, 1);
-    setItems(items);
-    setSelected(-1);
-  }
 
   function UploadButton() {    
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -82,7 +72,13 @@ function SheetMusicTable() {
             <input type="file" onChange={() => setFile(inputRef.current.files[0])} ref={inputRef}/>
           </label>
           <br/>
-          <div className="btn medium" id="submitForm" onClick={postMusic}>
+          <div
+            className={title === "" || composer === "" || instrument === "" || file === null
+              ? "btn medium disabled"
+              : "btn medium"}
+            id="submitForm"
+            onClick={postMusic}
+          >
             Submit
           </div>
           <div className="btn medium" id="closeForm" onClick={closeModal}>
@@ -94,6 +90,16 @@ function SheetMusicTable() {
   }
 
   function DeleteButton() {
+    function deleteMusic() {
+      fetch(baseUrl + "/sheetmusic/" + selected, {
+        method: "DELETE"
+      }).then((res) => res.json());
+      const index = items.findIndex(item => item.id === selected);
+      items.splice(index, 1);
+      setItems(items);
+      setSelected(-1);
+    }
+
     return (
       <>
         <div className={selected === -1 ? "btn medium disabled" : "btn medium"} onClick={deleteMusic}

@@ -81,6 +81,7 @@ function SheetMusicDropdown() {
             label: selected === -1 ? "Select..." : items.find(item => item.id === selected).title,
             value: selected
           }}
+          isSearchable={false}
         />
       </>
     );

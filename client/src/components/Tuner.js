@@ -40,7 +40,7 @@ function Tuner() {
           labelsPreTerminal={0}
           labelsPostInitial={0}
           font="11px Segoe UI"
-          value={currentNote.cents}
+          value={currentNote.cents ? currentNote.cents : 0}
           isNeedleDraggingEnabled={true}
           needleBrush={selectColor}
           needleOutline={textColor}
