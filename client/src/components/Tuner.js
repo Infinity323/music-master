@@ -10,7 +10,7 @@ IgrLinearGaugeModule.register();
 function Tuner() {
   const textColor = style.getPropertyValue('--text-color');
   const btnColor = style.getPropertyValue('--btn-color');
-  const hoverColor = style.getPropertyValue('--hover-color');
+  const selectColor = style.getPropertyValue('--select-color');
 
   const microphone = useMicrophone();
   const currentNote = useContext(TunerContext)[0];
@@ -39,7 +39,7 @@ function Tuner() {
           font="11px Segoe UI"
           value={currentNote.cents}
           isNeedleDraggingEnabled={true}
-          needleBrush={hoverColor}
+          needleBrush={selectColor}
           needleOutline={textColor}
           needleStrokeThickness={1}
           backingBrush={btnColor}

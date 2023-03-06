@@ -94,7 +94,8 @@ div .content {
 .btn.small {
   padding: 0px;
   height: 30px;
-  width: 120px;
+  width: 30px;
+  max-width: 120px;
 }
 .btn.medium {
   width: 100px;
@@ -173,6 +174,44 @@ input[type=file] {
 }
 
 /********************/
+/*    Metronome     */
+/********************/
+div.metro {
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+div.metro.bpm {
+  background-color: var(--hover-color);
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 2.5px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  padding: 2.5px;
+  width: 60px;
+}
+div.btn.metro {
+  border: 1px solid black;  
+  padding: 10px;
+  height: 50px;
+  width: 50px;
+}
+div.btn.bpm {
+  margin: 2.5px;
+  padding: 0px;
+  height: 30px;
+  width: 30px;
+  max-width: 120px;
+  display: inline-block;
+}
+
+/********************/
 /*      Tuner       */
 /********************/
 div.tuner-center {
@@ -184,6 +223,7 @@ div.tuner-center {
   background-color: var(--btn-color);
   vertical-align: middle;
   margin: auto;
+  margin-top: 20px;
 }
 div.tuner-gauge {
   text-align: left;
