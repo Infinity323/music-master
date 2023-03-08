@@ -60,7 +60,7 @@ def freq_to_notes(f0, times):
     
     return note_struct
 
-# Turns the notes into a JSON file
+# Turns the notes into a JSON file structure
 def notes_to_JSON(note_struct):
     test = []
     for i in range(len(note_struct)):
@@ -70,11 +70,7 @@ def notes_to_JSON(note_struct):
 
     result_object = json.dumps(result_dict, indent=4)
 
-    # Need to change this path to a different name
-    with open("../data/dat/test.json", "w") as outfile:
-        outfile.write(result_object)
-
-    return
+    return result_object
 
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
@@ -83,14 +79,15 @@ def signal_processing(rec_file):
 
     # f0 holds the fundamental frequencies we need to use
     f0, voiced_flag, voiced_probs = librosa.pyin(y,
-                                                fmin=librosa.note_to_hz('C2'),
+                                                fmin=librosa.note_to_hz('C0'),
                                                 fmax=librosa.note_to_hz('C7'))
 
     times = librosa.times_like(f0)
 
-    # Convert the fundamental frequencies to the notes data structure
+    # Converts the fundamental frequencies to the notes data structure
     notes = freq_to_notes(f0, times)
 
-    notes_to_JSON(notes)
+    # Converts the notes data structure to a JSON file structure
+    result = notes_to_JSON(notes)
 
-    return True
+    return result

@@ -49,7 +49,12 @@ def addPerformance():
     new_average_tempo = 120 # (TO-DO) change constant!
 
     # analyze recording
-    # notes_from_rec = signal_processing(new_wav_file_path)
+    notes_from_rec = signal_processing(new_wav_file_path)
+    rec_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".json"
+    
+    # save notes info into a json file
+    with open(rec_json_path, 'w') as rec_json_file:
+        rec_json_file.write(notes_from_rec)
 
     # get json file paths # (TO-DO) change testing constants
     wav_json_file_path = "scripts/test_dat/wav.json"
