@@ -6,9 +6,10 @@ import annotationPlugin from 'chartjs-plugin-annotation';
 import { Line } from 'react-chartjs-2'
 import { useNavigate } from 'react-router-dom';
 import Modal from 'react-modal'
-import { baseUrl, SheetMusicIdContext, style } from '../App';
-import loading_gif from '../assets/images/loading_gif.gif'
 import { Box, Flex } from '@chakra-ui/react';
+import { baseUrl, style } from '../App';
+import loading_gif from '../assets/images/loading_gif.gif'
+import { SheetMusicIdContext } from '../utils/Contexts';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "Segoe UI";
@@ -125,6 +126,7 @@ function PracticeHistoryGraph() {
         type: 'time',
         time: {
           displayFormats: {
+            millisecond: "M/dd/yy HH:mm:ss",
             second: "M/dd/yy HH:mm:ss",
             minute: "M/dd/yy HH:mm:ss",
             hour: "M/dd/yy HH:mm",

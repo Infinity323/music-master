@@ -1,24 +1,11 @@
 // https://github.com/mrRodrigo/React-Guitar-Tuner/blob/master/src/utils/note-analyzer/index.js
 import { useContext, useEffect, useRef } from 'react';
 import Pitchfinder from 'pitchfinder';
-import { TunerContext } from '../App';
+import { TunerContext } from './Contexts';
 
 const A = 440;
 const SEMITONE = 69;
-const noteStrings = [
-  "C",
-  "C♯",
-  "D",
-  "D♯",
-  "E",
-  "F",
-  "F♯",
-  "G",
-  "G♯",
-  "A",
-  "A♯",
-  "B"
-];
+const noteStrings = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 
 const getNote = freq => {
   const note = 12 * (Math.log(freq / A) / Math.log(2));
@@ -37,9 +24,9 @@ const getCents = (frequency, note) => {
 
 function AudioAnalyzer({audio}) {
   const analyzer = useRef();
-  const audioContext = useRef();
   const rafId = useRef();
   const source = useRef();
+  const audioContext = useRef();
 
   const detectPitch = new Pitchfinder.AMDF({
     maxFrequency: 800,
@@ -64,7 +51,7 @@ function AudioAnalyzer({audio}) {
   }
 
   useEffect(() => {
-    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+    audioContext.current = new AudioContext();
     analyzer.current = audioContext.current.createAnalyser();
     source.current = audioContext.current.createMediaStreamSource(audio);
     source.current.connect(analyzer.current);

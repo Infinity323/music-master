@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { IgrLinearGauge, IgrLinearGaugeModule, IgrLinearGraphRange } from 'igniteui-react-gauges';
-import { TunerContext } from '../App';
+import { TunerContext } from '../utils/Contexts';
 import AudioAnalyzer from '../utils/AudioAnalyzer';
 import useMicrophone from '../utils/UseMicrophone';
 import { style } from '../App';

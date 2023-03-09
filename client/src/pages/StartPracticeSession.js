@@ -1,8 +1,8 @@
-import { BackButton } from "../components/Buttons";
-import SheetMusicDropdown from "../components/SheetMusicDropdown";
+import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from "react";
-import { SheetMusicIdContext } from "../App";
+import { BackButton } from '../components/Buttons';
+import SheetMusicDropdown from '../components/SheetMusicDropdown';
+import { SheetMusicIdContext } from '../utils/Contexts';
 import recording from '../assets/images/recording.png'
 
 function StartPracticeSession() {

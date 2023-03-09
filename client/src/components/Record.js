@@ -1,9 +1,8 @@
-import '../App.css';
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Recorder from 'matt-diamond-recorderjs';
 import { baseUrl } from '../App';
-import { useContext } from "react";
-import { SheetMusicIdContext } from "../App";
-import { useNavigate } from 'react-router-dom';
+import { SheetMusicIdContext } from '../utils/Contexts';
 
 let gumStream = null;
 let recorder = null;

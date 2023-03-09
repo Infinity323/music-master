@@ -1,54 +1,88 @@
+// https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
 import React, { Component } from 'react'
-import sound_metronome from "../assets/sounds/metronome.wav"
-import image_metronome from "../assets/images/metronome.png"
+import image_metronome from '../assets/images/metronome.png'
 import { Flex, Box } from '@chakra-ui/react';
 
-export class MetronomeButton extends Component {
+class Metronome extends Component {
   constructor(props) {
     super(props);
 
+    this.audioContext = React.createRef();
+    this.audioContext.current = null;
+    
     this.state = {
-      BPM: 50,
+      // User-customizable state variables
+      currentBeatInBar: 0,
+      beatsPerBar: 4,
+      BPM: 100,
+      // Internal state variables
+      lookahead: 25,
+      scheduleAheadTime: 0.1,
+      nextNoteTime: 0.0,
+      timerID: null,
       isPlaying: false
     };
   }
 
-  play = () => {
-    new Audio(sound_metronome).play();
+  nextNote = () => {
+    var secondsPerBeat = 60.0 / this.state.BPM;
+    this.setState(state => ({
+      nextNoteTime: state.nextNoteTime + secondsPerBeat,
+      currentBeatInBar: (state.currentBeatInBar + 1) % state.BPM
+    }));
   }
 
-  startMetro = () => {
-    // TODO: sometimes setInterval is laggy. consider using webaudio api in addition
-    // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
+  scheduleNote = (beatNumber, time) => {
+    const osc = this.audioContext.current.createOscillator();
+    const envelope = this.audioContext.current.createGain();
+      
+    // Create beat noise
+    osc.frequency.value = (beatNumber % this.state.beatsPerBar === 0) ? 1000 : 800;
+    envelope.gain.value = 1;
+    
+    envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
+    envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
+
+    osc.connect(envelope);
+    envelope.connect(this.audioContext.current.destination);
+
+    osc.start(time);
+    osc.stop(time + 0.03);
+  }
+
+  scheduler = () => {
+    if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
+      this.scheduleNote(this.state.currentBeatInBar, this.state.nextNoteTime);
+      this.nextNote();
+    }
+  }
+
+  startStopMetro = () => {
+    if (!this.audioContext.current) {
+      this.audioContext.current = new AudioContext();
+    }
     if (this.state.isPlaying === false) {
-      this.setState({isPlaying: true});
-      //call play multiple times
-      this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000); //(function,milliseconds)
+      this.setState({
+        nextNoteTime: this.audioContext.current.currentTime + 0.05,
+        timerID: setInterval(this.scheduler, this.state.lookahead),
+      });
+    } else {
+      clearInterval(this.state.timerID);
     }
-    else {
-      clearInterval(this.timer);
-      this.setState({isPlaying: false});
-    }
+    
+    this.setState(state => ({isPlaying: !state.isPlaying}));
   }
 
   decBPM = () => {
     this.setState({BPM: this.state.BPM - 10});
-    if (this.state.isPlaying) {
-      clearInterval(this.timer);
-      this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000);
-    }
   }
 
   incBPM = () => {
     this.setState({BPM: this.state.BPM + 10});
-    if (this.state.isPlaying) {
-      clearInterval(this.timer);
-      this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000);
-    }
   }
 
   componentWillUnmount() {
-    clearInterval(this.timer);
+    clearInterval(this.state.timerID);
   }
 
   render() {
@@ -56,9 +90,7 @@ export class MetronomeButton extends Component {
       <div className="metro">
         <Flex flexDir="row" alignItems="center">
           <Box>
-            <div className="btn metro"
-              onClick={this.startMetro}
-              >
+            <div className="btn metro" onClick={this.startStopMetro}>
               <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
             </div>
           </Box>
@@ -69,14 +101,10 @@ export class MetronomeButton extends Component {
               </div>
             </Box>
             <Box>
-              <div className="btn bpm"
-                onClick={this.decBPM}
-                >
+              <div className="btn bpm" onClick={this.decBPM}>
                 -
               </div>
-              <div className="btn bpm"
-                onClick={this.incBPM}
-                >
+              <div className="btn bpm" onClick={this.incBPM}>
                 +
               </div>
             </Box>
@@ -86,3 +114,5 @@ export class MetronomeButton extends Component {
     );
   }
 }
+
+export default Metronome;

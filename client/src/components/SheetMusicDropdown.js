@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import Select from 'react-select'
-import { baseUrl, SheetMusicIdContext } from '../App';
+import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
-import { style } from '../App';
+import { SheetMusicIdContext } from '../utils/Contexts';
 
 function SheetMusicDropdown() {
   const styles = {
