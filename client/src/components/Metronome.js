@@ -1,8 +1,9 @@
-// https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
 import React, { Component } from 'react'
 import image_metronome from '../assets/images/metronome.png'
 import { Flex, Box } from '@chakra-ui/react';
 
+// Metronome built using this as guidance.
+// https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
 class Metronome extends Component {
   constructor(props) {
     super(props);
@@ -24,20 +25,30 @@ class Metronome extends Component {
     };
   }
 
-  nextNote = () => {
+  /**
+   * Increments the next note time and current beat in bar.
+   * Adjusts seconds per beat in case metronome was adjusted.
+   */
+  nextBeat = () => {
     var secondsPerBeat = 60.0 / this.state.BPM;
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
-      currentBeatInBar: (state.currentBeatInBar + 1) % state.BPM
+      currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
     }));
   }
 
-  scheduleNote = (beatNumber, time) => {
+  /**
+   * Schedules next metronome beat.
+   * Creates oscillator to produce the beat sound.
+   * @param {number} beatNumber The beat number in the bar.
+   * @param {number} time The time to schedule the beat sound.
+   */
+  scheduleBeat = (beatNumber, time) => {
     const osc = this.audioContext.current.createOscillator();
     const envelope = this.audioContext.current.createGain();
       
-    // Create beat noise
-    osc.frequency.value = (beatNumber % this.state.beatsPerBar === 0) ? 1000 : 800;
+    // Create beat noise. First beat in bar has higher frequency
+    osc.frequency.value = beatNumber === 0 ? 1000 : 800;
     envelope.gain.value = 1;
     
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
@@ -50,13 +61,20 @@ class Metronome extends Component {
     osc.stop(time + 0.03);
   }
 
+  /**
+   * Called by the timer.
+   * Schedules next beat when needed (as opposed to infinitely).
+   */
   scheduler = () => {
     if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
-      this.scheduleNote(this.state.currentBeatInBar, this.state.nextNoteTime);
-      this.nextNote();
+      this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
+      this.nextBeat();
     }
   }
 
+  /**
+   * Toggle metronome playing.
+   */
   startStopMetro = () => {
     if (!this.audioContext.current) {
       this.audioContext.current = new AudioContext();
@@ -73,10 +91,16 @@ class Metronome extends Component {
     this.setState(state => ({isPlaying: !state.isPlaying}));
   }
 
+  /**
+   * Decrease BPM.
+   */
   decBPM = () => {
     this.setState({BPM: this.state.BPM - 10});
   }
 
+  /**
+   * Increase BPM.
+   */
   incBPM = () => {
     this.setState({BPM: this.state.BPM + 10});
   }
@@ -87,7 +111,7 @@ class Metronome extends Component {
 
   render() {
     return ( 
-      <div className="metro">
+      <div className={this.state.isPlaying ? "metronome playing" : "metronome"}>
         <Flex flexDir="row" alignItems="center">
           <Box>
             <div className="btn metro" onClick={this.startStopMetro}>

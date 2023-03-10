@@ -188,7 +188,7 @@ input[type=file] {
 /********************/
 /*    Metronome     */
 /********************/
-div.metro {
+div.metronome {
   border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 10px;
   width: 160px;
@@ -196,6 +196,11 @@ div.metro {
   text-align: center;
   text-decoration: none;
   display: inline-block;
+  transition-duration: 200ms;
+}
+div.metronome.playing {
+  background-color: var(--select-color);
+  transition-duration: 200ms;
 }
 div.metro.bpm {
   background-color: var(--hover-color);
