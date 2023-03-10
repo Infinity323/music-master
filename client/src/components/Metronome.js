@@ -95,14 +95,24 @@ class Metronome extends Component {
    * Decrease BPM.
    */
   decBPM = () => {
-    this.setState({BPM: this.state.BPM - 10});
+    // Prevent 0 tempo
+    this.setState({
+      BPM: this.state.BPM - 10 === 0
+        ? this.state.BPM
+        : this.state.BPM - 10
+    });
   }
 
   /**
    * Increase BPM.
    */
   incBPM = () => {
-    this.setState({BPM: this.state.BPM + 10});
+    // Max tempo is 240
+    this.setState({
+      BPM: this.state.BPM + 10 > 240 
+        ? this.state.BPM
+        : this.state.BPM + 10
+    });
   }
 
   componentWillUnmount() {

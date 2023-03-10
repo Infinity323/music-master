@@ -39,11 +39,9 @@ function Performance() {
 
   function DeleteButton() {
     return (
-      <>
-        <div className="btn medium" onClick={deletePerformance}
-          id="deletePerformance">Delete</div>
-      </>
-    )
+      <div className="btn medium" onClick={deletePerformance}
+        id="deletePerformance">Delete</div>
+    );
   }
 
   if (error) {
@@ -64,8 +62,8 @@ function Performance() {
         <BackButton/>
         <div className="content">
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
+          <DeleteButton/>
         </div>
-        <DeleteButton/>
       </>
     );
   }

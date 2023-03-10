@@ -1,11 +1,12 @@
-import Record from "../components/Record";
+import { BackButton } from "../components/Buttons";
+import RecordControl from "../components/RecordControl";
 
 function Recording() {
   return (
     <>
+      <BackButton/>
       <div className="content">
-        <p>recording</p>
-        <Record/>
+        <RecordControl/>
       </div>
     </>
   );

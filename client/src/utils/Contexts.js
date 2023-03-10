@@ -4,3 +4,5 @@ import { createContext } from 'react';
 export const SheetMusicIdContext = createContext();
 // Context for detected note to be shared between tuner and audio analyzer
 export const TunerContext = createContext();
+// Context for BPM to be shared between pages
+export const BpmContext = createContext();
