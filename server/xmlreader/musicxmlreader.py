@@ -30,7 +30,8 @@ class MusicXMLReader(MidiFile, PrettyMIDI):
         for note in notes:
             notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).nameWithOctave, 
                                "velocity": note.velocity, 
-                               "start": note.start
+                               "start": note.start,
+                               "end": note.end
                                })
         return notes_list
     
