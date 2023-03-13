@@ -1,9 +1,13 @@
+import json
 import pretty_midi
 import pygame
 
 from mido import MidiFile
 from music21 import *
+from music21 import pitch
 from pretty_midi import PrettyMIDI
+
+
 
 
 class MusicXMLReader(MidiFile, PrettyMIDI):
@@ -21,10 +25,19 @@ class MusicXMLReader(MidiFile, PrettyMIDI):
         self.xml_score.show()
 
     def get_notes(self, instrument=0):
-        return self.instruments[instrument].notes
+        notes_list = []
+        notes = self.instruments[instrument].notes
+        for note in notes:
+            notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).nameWithOctave, 
+                               "velocity": note.velocity, 
+                               "start": note.start
+                               })
+        return notes_list
     
-    def get_notes_and_instruments(self, instrument=0):
-        return {(note.pitch, note.start, note.end): instrument for note in self.get_notes(instrument)}
+    def save_notes_json(self, instrument=0):
+        notes = self.get_notes(instrument)
+        data = {"notes": notes}
+        return json.dumps(data)
     
     def play(self):
         pygame.mixer.init()
@@ -37,11 +50,11 @@ class MusicXMLReader(MidiFile, PrettyMIDI):
     
 
 def main():
-    environment_path = '/Applications/MuseScore 4.app/Contents/MacOS/mscore'
+    environment_path = '/usr/share/applications/mscore.desktop'
     environment.set('musescoreDirectPNGPath', environment_path)
 
     reader = MusicXMLReader('example.musicxml')
-    reader.play()
+    print(reader.save_notes_json())
     
 
 
