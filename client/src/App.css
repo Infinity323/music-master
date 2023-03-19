@@ -227,6 +227,28 @@ div.btn.bpm {
   max-width: 120px;
   display: inline-block;
 }
+.metronome-playing{
+  background-color:#DE1A1A;
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition-duration: 200ms;
+}
+.metronome{
+  background-color:azure;
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition-duration: 200ms;
+}
 
 /********************/
 /*      Tuner       */

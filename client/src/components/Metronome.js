@@ -21,7 +21,8 @@ class Metronome extends Component {
       scheduleAheadTime: 0.1,
       nextNoteTime: 0.0,
       timerID: null,
-      isPlaying: false
+      isPlaying: false,
+      isBeat: false
     };
   }
 
@@ -69,6 +70,14 @@ class Metronome extends Component {
     if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
       this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
       this.nextBeat();
+      this.setState({
+        isBeat: true
+      });
+    }
+    else{
+      this.setState({
+      isBeat: false
+    });
     }
   }
 
@@ -121,7 +130,7 @@ class Metronome extends Component {
 
   render() {
     return ( 
-      <div className={this.state.isPlaying ? "metronome playing" : "metronome"}>
+      <div className={this.state.isBeat ? "metronome-playing" : "metronome"}>
         <Flex flexDir="row" alignItems="center">
           <Box>
             <div className="btn metro" onClick={this.startStopMetro}>
