@@ -13,7 +13,7 @@ class Note():
     def __init__(self, pitch, velocity, start, end):
         # Pitch, Velocity, Start, End
         self.pitch = pitch
-        self.velocity = 0 # not sure how to get this yet, prob just amplitude
+        self.velocity = velocity # Amplitude
         self.start = start
         self.end = end
     
@@ -26,16 +26,18 @@ class Note():
     def __repr__(self):
         return "Pitch: {pitch}, Start: {start:.2f} sec, End: {end:.2f} sec".format(pitch=self.pitch, start=self.start, end=self.end)
 
-def freq_to_notes(f0, times):
+def freq_to_notes(f0, times, amp_maxes):
     # Takes in two lists one for time and one for frequencies, and return a list of Note objects
     # Store the notes into the data folder (in the .dat file), store it as a JSON
     notes = []
+    amplitude = []
 
-    for i in f0:
-        if np.isnan(i):
-            continue # skips the NaN values
+    for i in range(len(f0)):
+        if np.isnan(f0[i]):
+            continue
         else:
-            notes.append(librosa.hz_to_note(i))
+            notes.append(librosa.hz_to_note(f0[i]))
+            amplitude.append(amp_maxes[i])
 
     note_struct = []
 
@@ -46,7 +48,7 @@ def freq_to_notes(f0, times):
         if notes[i] == notes[i-1]:
             # If the note is the same as the previous note, update the duration
             start_time = times[i-1]
-            note_obj = Note(notes[i], 0, 0, 0)
+            note_obj = Note(notes[i], amplitude[i], 0, 0)
             while i < len(notes) and notes[i] == notes[i-1]:
                 end_time = times[i]
                 if i == len(notes):
@@ -84,8 +86,12 @@ def signal_processing(rec_file):
 
     times = librosa.times_like(f0)
 
+    # Gets the amplitude of the fundamental frequencies
+    amplitude = np.abs(librosa.stft(y))
+    amp_maxes = np.max(amplitude, axis=0).tolist()
+
     # Converts the fundamental frequencies to the notes data structure
-    notes = freq_to_notes(f0, times)
+    notes = freq_to_notes(f0, times, amp_maxes)
 
     # Converts the notes data structure to a JSON file structure
     result = notes_to_JSON(notes)
