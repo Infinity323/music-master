@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Select from 'react-select'
-import { baseUrl } from '../App';
+import { baseUrl, SheetMusicIdContext } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { style } from '../App';
-import PracticeHistoryGraph from "../components/PracticeHistoryGraph";
 
 function SheetMusicDropdown() {
   const styles = {
@@ -41,7 +40,7 @@ function SheetMusicDropdown() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
-  const [selected, setSelected] = useState(-1);
+  const [selected, setSelected] = useContext(SheetMusicIdContext);
   
   useEffect(() => {
     fetch(baseUrl + "/sheetmusic")
@@ -55,7 +54,7 @@ function SheetMusicDropdown() {
           setIsLoaded(true);
           setError(error);
         }
-      )
+      );
   }, []);
 
   if (error) {
@@ -78,8 +77,11 @@ function SheetMusicDropdown() {
           styles={styles}
           maxMenuHeight={300}
           onChange={e => setSelected(e.value)}
+          defaultValue={{
+            label: selected === -1 ? "Select..." : items.find(item => item.id === selected).title,
+            value: selected
+          }}
         />
-        <PracticeHistoryGraph selectedMusic={selected}/>
       </>
     );
   }
