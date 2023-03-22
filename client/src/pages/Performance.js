@@ -4,7 +4,32 @@ import { BackButton } from '../components/Buttons';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { useNavigate } from 'react-router-dom';
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+import PerformanceGraph from "../components/PerformanceGraph";
 
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export const options = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+    title: {
+      display: true,
+      text: 'Performance Feedback',
+    },
+  },
+};
 
 function Performance() {
   const navigate = useNavigate();
@@ -62,6 +87,7 @@ function Performance() {
         <BackButton/>
         <div className="content">
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
+          <PerformanceGraph/>
           <DeleteButton/>
         </div>
       </>

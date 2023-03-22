@@ -76,8 +76,8 @@ class Metronome extends Component {
     }
     else{
       this.setState({
-      isBeat: false
-    });
+        isBeat: false
+      });
     }
   }
 
