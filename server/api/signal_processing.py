@@ -33,8 +33,10 @@ def freq_to_notes(f0, times, amp_maxes):
     amplitude = []
 
     for i in range(len(f0)):
+        # This deals with rests
         if np.isnan(f0[i]):
-            continue
+            notes.append('Rest')
+            amplitude.append(0)
         else:
             notes.append(librosa.hz_to_note(f0[i]))
             amplitude.append(amp_maxes[i])
