@@ -6,7 +6,6 @@ import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { useNavigate } from 'react-router-dom';
 import data from '../assets/dat/270794_Test_5.json';
-import { MDBDataTable } from 'mdbreact';
 
 
 class PerformanceGraph extends Component {

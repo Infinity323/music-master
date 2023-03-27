@@ -236,7 +236,6 @@ div.btn.bpm {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 200ms;
 }
 .metronome{
   background-color:azure;
@@ -247,7 +246,6 @@ div.btn.bpm {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 200ms;
 }
 
 /********************/
@@ -277,6 +275,15 @@ text.tuner-center .note-name {
 }
 text.tuner-center .freq {
   font-size: 18px;
+}
+
+/********************/
+/*    Recording     */
+/********************/
+div.countdown {
+  padding: 30px;
+  font-weight: bold;
+  font-size: 128px;
 }
 
 /********************/
