@@ -38,6 +38,10 @@ class MusicXMLReader(MidiFile, PrettyMIDI):
     def save_notes_json(self, instrument=0):
         notes = self.get_notes(instrument)
         data = {"notes": notes}
+
+        with open('notes.json', 'w') as outfile:
+            json.dump(data, outfile)
+
         return json.dumps(data)
     
     def play(self):
