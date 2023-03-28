@@ -31,13 +31,18 @@ div .content {
   width: 600px;
   height: 400px;
   margin: auto auto;
-  padding-top: 40px;
+  padding-top: 20px;
   text-align: center;
 }
 .title {
   margin: 0px;
+  padding-top: 20px;
   padding-bottom: 40px;
   text-align: center;
+}
+h2 {
+  margin: 0px;
+  margin-bottom: 20px;
 }
 .modal {
   position: absolute;
@@ -94,15 +99,24 @@ div .content {
   padding: 0px;
   height: 30px;
   width: 120px;
+  display: inline-block;
 }
 .btn.medium {
   width: 100px;
 }
 .btn#uploadMusic, .btn#submitForm {
   float: left;
+  left: 10px;
+  margin-top: 0px;
 }
 .btn#deleteMusic, .btn#closeForm {
   float: right;
+  right: 10px;
+  margin-top: 0px;
+}
+.btn#submitForm, .btn#closeForm {
+  position: absolute;
+  bottom: 10px;
 }
 
 /********************/
@@ -149,7 +163,7 @@ table tr.data.selected {
 /*   Chart Styles   */
 /********************/
 div .chart {
-  height: 360px;
+  height: 300px;
   position: relative;
 }
 
@@ -172,6 +186,69 @@ input[type=file] {
 }
 
 /********************/
+/*    Metronome     */
+/********************/
+div.metronome {
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition-duration: 200ms;
+}
+div.metronome.playing {
+  background-color: var(--select-color);
+  transition-duration: 200ms;
+}
+div.metro.bpm {
+  background-color: var(--hover-color);
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 2.5px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  padding: 2.5px;
+  width: 60px;
+}
+div.btn.metro {
+  border: 1px solid black;  
+  padding: 10px;
+  height: 50px;
+  width: 50px;
+}
+div.btn.bpm {
+  margin: 2.5px;
+  padding: 0px;
+  height: 30px;
+  width: 30px;
+  max-width: 120px;
+  display: inline-block;
+}
+.metronome-playing{
+  background-color:#DE1A1A;
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+.metronome{
+  background-color:azure;
+  border: 1px solid rgba(1, 1, 1, 0.5);
+  border-radius: 10px;
+  width: 160px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+/********************/
 /*      Tuner       */
 /********************/
 div.tuner-center {
@@ -183,6 +260,7 @@ div.tuner-center {
   background-color: var(--btn-color);
   vertical-align: middle;
   margin: auto;
+  margin-top: 20px;
 }
 div.tuner-gauge {
   text-align: left;
@@ -193,7 +271,19 @@ text.tuner-center {
   margin: auto;
 }
 text.tuner-center .note-name {
-  font-size: 50px;
+  font-size: 60px;
+}
+text.tuner-center .freq {
+  font-size: 18px;
+}
+
+/********************/
+/*    Recording     */
+/********************/
+div.countdown {
+  padding: 30px;
+  font-weight: bold;
+  font-size: 128px;
 }
 
 /********************/
@@ -216,4 +306,8 @@ text.tuner-center .note-name {
 }
 ::-webkit-scrollbar-corner {
   background: var(--bg-color);
+}
+
+table, th, td {
+  border: 1px solid;
 }

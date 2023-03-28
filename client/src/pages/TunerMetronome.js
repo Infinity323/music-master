@@ -1,5 +1,5 @@
 import { BackButton } from '../components/Buttons';
-import { MetronomeButton } from '../components/Metronome';
+import Metronome from '../components/Metronome';
 import Tuner from '../components/Tuner';
 
 function TunerMetronome() {
@@ -7,7 +7,7 @@ function TunerMetronome() {
     <>
       <BackButton/>
       <div className="content">
-        <MetronomeButton/>
+        <Metronome/>
         <Tuner/>
       </div>
     </>

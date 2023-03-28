@@ -30,7 +30,7 @@ class Goal(db.Model):
         return {
             "id": self.id,
             "sheet_music_id": self.sheet_music_id,
-            "run_number": self.name,
+            "name": self.name,
             "start_date": self.start_date,
             "end_date": self.end_date,
             "tempo_percent_accuracy": self.tempo_percent_accuracy,
