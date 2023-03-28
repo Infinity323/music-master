@@ -236,7 +236,6 @@ div.btn.bpm {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 200ms;
 }
 .metronome{
   background-color:azure;
@@ -247,7 +246,6 @@ div.btn.bpm {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 200ms;
 }
 
 /********************/

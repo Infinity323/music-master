@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import image_metronome from '../assets/images/metronome.png'
-import { Flex, Box } from '@chakra-ui/react';
+import { Flex, Box, CircularProgress, CircularProgressLabel } from '@chakra-ui/react';
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -31,11 +31,22 @@ class Metronome extends Component {
    * Adjusts seconds per beat in case metronome was adjusted.
    */
   nextBeat = () => {
+    if(this.state.currentBeatInBar === 4){
+      this.setState(state => ({
+        currentBeatInBar: (state.currentBeatInBar - 4)
+      }));
+    }
+    else{
+      this.setState(state => ({
+        currentBeatInBar: (state.currentBeatInBar + 1)
+      }));
+    }
     var secondsPerBeat = 60.0 / this.state.BPM;
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
-      currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
+      //currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
     }));
+
   }
 
   /**
@@ -142,6 +153,20 @@ class Metronome extends Component {
               <div className="metro bpm">
                 {this.state.BPM}
               </div>
+            </Box>
+            <Box>
+              <CircularProgress value={this.state.currentBeatInBar > 0 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{1}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 1 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{2}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 2 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{3}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 3 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{4}</CircularProgressLabel>
+              </CircularProgress>
             </Box>
             <Box>
               <div className="btn bpm" onClick={this.decBPM}>
