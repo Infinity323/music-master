@@ -2,22 +2,50 @@ import { useContext, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Recorder from 'matt-diamond-recorderjs';
 import { baseUrl } from '../App';
-import { SheetMusicIdContext } from '../utils/Contexts';
+import { BpmContext, SheetMusicIdContext } from '../utils/Contexts';
 import useMicrophone from '../utils/UseMicrophone';
 
 function RecordControl() {
   const [isRecording, setIsRecording] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [performanceId, setPerformanceId] = useState(-1);
+  const [countdownDisplay, setCountdownDisplay] = useState(10);
 
   const sheetMusicId = useContext(SheetMusicIdContext)[0];
+  const bpm = useContext(BpmContext)[0];
   const navigate = useNavigate();
   const stream = useMicrophone();
   
   const audioContext = useRef();
   const recorder = useRef();
 
+  const startCountdown = () => {
+    // Countdown speed matches set BPM
+    let msPerBeat = 1.0/bpm*60.0*1000.0;
+    // Longer countdown for faster BPM's
+    let countdownStart = bpm >= 120 ? 10 : 6;
+    setCountdownDisplay(countdownStart)
+
+    return new Promise((resolve, reject) => {
+      let localCountdownNumber = countdownStart;
+      const timerId = setInterval(() => {
+        setCountdownDisplay(--localCountdownNumber);
+        if (localCountdownNumber === 0) {
+          clearInterval(timerId);
+          resolve();
+        }
+      }, msPerBeat);
+    });
+  }
+
   const startRecording = async () => {
+    // Wait for countdown
+    setIsStarting(true);
+    await startCountdown();
+    setIsStarting(false);
+
+    // Then start recording
     console.log("Starting recording.");
     audioContext.current = new AudioContext();
 
@@ -74,9 +102,17 @@ function RecordControl() {
             <>
               <h2>Start Recording</h2>
               <p>Begin playing after the countdown.</p>
-              {/* TODO: implement countdown */}
               <div className="btn small" onClick={startRecording}>Start</div>
             </>
+          : ""
+      }
+      {
+        /* Countdown */
+        isStarting
+          ?
+            <div className="countdown">
+              {"" + countdownDisplay}
+            </div>
           : ""
       }
       {

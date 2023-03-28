@@ -278,6 +278,15 @@ text.tuner-center .freq {
 }
 
 /********************/
+/*    Recording     */
+/********************/
+div.countdown {
+  padding: 30px;
+  font-weight: bold;
+  font-size: 128px;
+}
+
+/********************/
 /*    Scrollbar     */
 /********************/
 ::-webkit-scrollbar {
