@@ -4,6 +4,7 @@ import json
 
 from app import app, db
 from models.sheetmusic import SheetMusic
+from xmlreader.musicxmlreader import MusicXMLReader
 
 # SHEET MUSIC
 
@@ -30,6 +31,9 @@ def addSheetMusic():
     new_pdf_file_path = "data/xml/" + new_title + ".xml"
     new_pdf_file_data = request.files.get("file")
     new_pdf_file_data.save(new_pdf_file_path)
+    # Read XML file and convert to MIDI
+    xmlReader = MusicXMLReader(new_pdf_file_path)
+    xmlReader.save_notes_json()
     # Add to database
     newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_pdf_file_path, None, None)
     db.session.add(newSheetMusic)
