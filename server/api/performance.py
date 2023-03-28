@@ -7,8 +7,8 @@ from app import app, db
 from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
-from api.signal_processing import signal_processing
-from scripts.needleman_wunsch import compare_arrays, Note, Difference, custom_serializer
+from scripts.signal_processing import signal_processing
+from scripts.compare import compare_arrays, Note, Difference, custom_serializer
 
 from datetime import datetime
 
@@ -68,8 +68,11 @@ def addPerformance():
     ideal_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in xml_data["notes"]]
     actual_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in wav_data["notes"]]
 
+    # strip out "Rest" notes in the actual array
+    filtered_actual_notes = [note for note in actual_notes if note.pitch != "Rest"]
+
     # run comparison algorithms
-    new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_tempo_percent_accuracy, differences = compare_arrays(ideal_notes, actual_notes)
+    new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_tempo_percent_accuracy, differences = compare_arrays(ideal_notes, filtered_actual_notes)
 
     # save the diff file locally
     diff_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_diff.json"

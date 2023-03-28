@@ -4,7 +4,7 @@ import json
 
 from app import app, db
 from models.sheetmusic import SheetMusic
-from xmlreader.musicxmlreader import MusicXMLReader
+from scripts.musicxml_reader import MusicXMLReader
 
 # SHEET MUSIC
 
