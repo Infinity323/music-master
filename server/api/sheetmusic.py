@@ -27,15 +27,21 @@ def addSheetMusic():
     new_title = request.form.get("title")
     new_composer = request.form.get("composer")
     new_instrument = request.form.get("instrument")
+
     # Construct new file path and handle file upload
-    new_pdf_file_path = "data/xml/" + new_title + ".xml"
-    new_pdf_file_data = request.files.get("file")
-    new_pdf_file_data.save(new_pdf_file_path)
+    new_xml_file_path = "data/xml/" + new_title + ".musicxml"
+    new_midi_file_path = "data/dat/" + new_title + ".mid"
+    new_dat_file_path = "data/dat/" + new_title + ".json"
+    new_xml_file_data = request.files.get("file")
+    new_xml_file_data.save(new_xml_file_path)
+
     # Read XML file and convert to MIDI
-    xmlReader = MusicXMLReader(new_pdf_file_path)
-    xmlReader.save_notes_json()
+    xmlReader = MusicXMLReader(new_xml_file_path, new_midi_file_path)
+    xmlReader.save_notes_json(new_dat_file_path)
+
     # Add to database
-    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_pdf_file_path, None, None)
+    # TO-DO goal entity should update this tempo, currently it is set to None
+    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_xml_file_path, new_dat_file_path, None)
     db.session.add(newSheetMusic)
     db.session.commit()
     return newSheetMusic.serialize

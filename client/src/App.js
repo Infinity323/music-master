@@ -9,7 +9,7 @@ import TunerMetronome from './pages/TunerMetronome';
 import Recording from './pages/Recording';
 import Performance from './pages/Performance';
 
-export const baseUrl = "http://localhost:5000";
+export const baseUrl = "http://127.0.0.1:5000";
 
 export const { style } = document.documentElement;
 

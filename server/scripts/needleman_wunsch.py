@@ -10,11 +10,11 @@ def custom_serializer(obj):
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
 class Note:
-    def __init__(self, pitch, velocity, start_time, end_time):
+    def __init__(self, pitch, velocity, start, end):
         self.pitch = pitch
         self.velocity = velocity
-        self.start_time = start_time
-        self.end_time = end_time
+        self.start = start
+        self.end = end
 
     # Define the equality method for comparing two Note objects.
     def __eq__(self, other):
@@ -22,20 +22,20 @@ class Note:
             return False
         return (self.pitch == other.pitch and
                 self.velocity == other.velocity and
-                self.start_time == other.start_time and
-                self.end_time == other.end_time)
+                self.start == other.start and
+                self.end == other.end)
 
     # Define the string representation of the Note object.
     def __str__(self):
-        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start_time}, End Time: {self.end_time}"
+        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
     
     # Convert the Note object to a dictionary for JSON serialization.
     def to_dict(self):
         return {
             "pitch": self.pitch,
             "velocity": self.velocity,
-            "start_time": self.start_time,
-            "end_time": self.end_time
+            "start": self.start,
+            "end": self.end
         }
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
@@ -147,16 +147,16 @@ def compare_arrays(ideal_array, actual_array):
                 matches_notes += 1
             if ideal_note.velocity == actual_note.velocity:
                 matches_dynamics += 1
-            if ideal_note.start_time == actual_note.start_time and ideal_note.end_time == actual_note.end_time:
+            if ideal_note.start == actual_note.start and ideal_note.end == actual_note.end:
                 matches_start_stop += 1
             if ideal_note.pitch != actual_note.pitch:
                 differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
             if ideal_note.velocity != actual_note.velocity:
                 differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
-            if ideal_note.start_time != actual_note.start_time:
-                differences.append(Difference(i, ideal_note, i, actual_note, 'start_time'))
-            if ideal_note.end_time != actual_note.end_time:
-                differences.append(Difference(i, ideal_note, i, actual_note, 'end_time'))
+            if ideal_note.start != actual_note.start:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'start'))
+            if ideal_note.end != actual_note.end:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'end'))
         elif ideal_note is None and actual_note is not None:
             differences.append(Difference(None, None, i, actual_note, 'extra'))
             extra_note_count = extra_note_count + 1
@@ -234,7 +234,7 @@ def compare_arrays(ideal_array, actual_array):
 # actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
 # expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
 # expected_differences = [
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'start_time')
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'start')
 # ]
 # run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start Time")
 
@@ -243,7 +243,7 @@ def compare_arrays(ideal_array, actual_array):
 # actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
 # expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
 # expected_differences = [
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end')
 # ]
 # run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different End Time")
 
@@ -252,8 +252,8 @@ def compare_arrays(ideal_array, actual_array):
 # actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
 # expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
 # expected_differences = [
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'start_time'),
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'start'),
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end')
 # ]
 # run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start and End Time")
 
@@ -263,7 +263,7 @@ def compare_arrays(ideal_array, actual_array):
 # actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
 # expected_accuracies = {'notes': 95.0, 'dynamics': 100.0, 'start_stop': 75.0}
 # expected_differences = [
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end'),
 #     Difference(None, None, 2, actual_array[2], 'extra')
 # ]
 # run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Extra Note")
@@ -283,7 +283,7 @@ def compare_arrays(ideal_array, actual_array):
 # actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3)]
 # expected_accuracies = {'notes': 70.0, 'dynamics': 75.0, 'start_stop': 50.0}
 # expected_differences = [
-#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end'),
 #     Difference(None, None, 2, actual_array[2], 'extra'),
 #     Difference(3, ideal_array[3], None, None, 'missing')
 # ]

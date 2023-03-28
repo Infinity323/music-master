@@ -57,15 +57,15 @@ def addPerformance():
 
     # get json file paths
     wav_json_file_path = rec_json_path # use "scripts/test_dat/wav.json" for testing
-    mxl_json_file_path =  db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path # use "scripts/test_dat/mxl.json" for testing
+    xml_json_file_path =  db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path # use "scripts/test_dat/xml.json" for testing
 
     # open json file and load into obj
-    with open(mxl_json_file_path) as mxl_json_file:
-        mxl_data = json.load(mxl_json_file)
+    with open(xml_json_file_path) as xml_json_file:
+        xml_data = json.load(xml_json_file)
     with open(wav_json_file_path) as wav_json_file:
         wav_data = json.load(wav_json_file)
 
-    ideal_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in mxl_data["notes"]]
+    ideal_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in xml_data["notes"]]
     actual_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in wav_data["notes"]]
 
     # run comparison algorithms
