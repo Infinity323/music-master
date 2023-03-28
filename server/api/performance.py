@@ -55,9 +55,9 @@ def addPerformance():
     with open(rec_json_path, 'w') as rec_json_file:
         rec_json_file.write(notes_from_rec)
 
-    # get json file paths # (TO-DO) change testing constants
-    wav_json_file_path = "scripts/test_dat/wav.json"
-    mxl_json_file_path = "scripts/test_dat/mxl.json" # <- db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path
+    # get json file paths
+    wav_json_file_path = rec_json_path # use "scripts/test_dat/wav.json" for testing
+    mxl_json_file_path =  db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path # use "scripts/test_dat/mxl.json" for testing
 
     # open json file and load into obj
     with open(mxl_json_file_path) as mxl_json_file:
