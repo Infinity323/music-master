@@ -50,11 +50,11 @@ class MusicXMLReader(MidiFile, pretty_midi.PrettyMIDI):
     
     def play(self):
         # Play the MIDI file using pygame
-        pygame.mixer.init()
-        pygame.mixer.music.load(self.midi_filename)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)
+        with pygame.mixer.init():
+            pygame.mixer.music.load(self.midi_filename)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
 
 
 def main():
