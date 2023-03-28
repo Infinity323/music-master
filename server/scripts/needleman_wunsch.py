@@ -3,9 +3,15 @@ import numpy as np
 # This script compares two arrays of Note objects, representing ideal and actual
 # musical performances, and calculates the accuracy and differences between them.
 
+# This function is used to ensure that the note object is properly serialized 
+def custom_serializer(obj):
+    if isinstance(obj, Note):
+        return obj.to_dict()
+    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
+
 class Note:
-    def __init__(self, note, velocity, start_time, end_time):
-        self.note = note
+    def __init__(self, pitch, velocity, start_time, end_time):
+        self.pitch = pitch
         self.velocity = velocity
         self.start_time = start_time
         self.end_time = end_time
@@ -14,14 +20,23 @@ class Note:
     def __eq__(self, other):
         if not isinstance(other, Note):
             return False
-        return (self.note == other.note and
+        return (self.pitch == other.pitch and
                 self.velocity == other.velocity and
                 self.start_time == other.start_time and
                 self.end_time == other.end_time)
 
     # Define the string representation of the Note object.
     def __str__(self):
-        return f"Note: {self.note}, Velocity: {self.velocity}, Start Time: {self.start_time}, End Time: {self.end_time}"
+        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start_time}, End Time: {self.end_time}"
+    
+    # Convert the Note object to a dictionary for JSON serialization.
+    def to_dict(self):
+        return {
+            "pitch": self.pitch,
+            "velocity": self.velocity,
+            "start_time": self.start_time,
+            "end_time": self.end_time
+        }
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
 class Difference:
@@ -44,6 +59,16 @@ class Difference:
                 self.ideal_val == other.ideal_val and
                 self.actual_idx == other.actual_idx and
                 self.actual_val == other.actual_val)
+    
+    # Convert the Difference object to a dictionary for JSON serialization.
+    def to_dict(self):
+        return {
+            "ideal_idx": self.ideal_idx,
+            "ideal_val": self.ideal_val,
+            "actual_idx": self.actual_idx,
+            "actual_val": self.actual_val,
+            "diff_type": self.diff_type
+        }
 
 # Implement the Needleman-Wunsch algorithm to find the optimal alignment of two arrays of musical notes.
 def needleman_wunsch(seq1, seq2, gap_penalty=-1, mismatch_penalty=-1, match_score=2, extra_note_penalty=-2):
@@ -118,21 +143,20 @@ def compare_arrays(ideal_array, actual_array):
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if ideal_note.note == actual_note.note:
+            if ideal_note.pitch == actual_note.pitch:
                 matches_notes += 1
             if ideal_note.velocity == actual_note.velocity:
                 matches_dynamics += 1
             if ideal_note.start_time == actual_note.start_time and ideal_note.end_time == actual_note.end_time:
                 matches_start_stop += 1
-            if ideal_note != actual_note:
-                if ideal_note.note != actual_note.note:
-                    differences.append(Difference(i, ideal_note, i, actual_note, 'note'))
-                if ideal_note.velocity != actual_note.velocity:
-                    differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
-                if ideal_note.start_time != actual_note.start_time:
-                    differences.append(Difference(i, ideal_note, i, actual_note, 'start_time'))
-                if ideal_note.end_time != actual_note.end_time:
-                    differences.append(Difference(i, ideal_note, i, actual_note, 'end_time'))
+            if ideal_note.pitch != actual_note.pitch:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
+            if ideal_note.velocity != actual_note.velocity:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
+            if ideal_note.start_time != actual_note.start_time:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'start_time'))
+            if ideal_note.end_time != actual_note.end_time:
+                differences.append(Difference(i, ideal_note, i, actual_note, 'end_time'))
         elif ideal_note is None and actual_note is not None:
             differences.append(Difference(None, None, i, actual_note, 'extra'))
             extra_note_count = extra_note_count + 1
@@ -149,121 +173,121 @@ def compare_arrays(ideal_array, actual_array):
 
     return accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences
 
-def run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, test_case_name):
-    print(f"Test case: {test_case_name}")
-    accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences = compare_arrays(ideal_array, actual_array)
+# def run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, test_case_name):
+#     print(f"Test case: {test_case_name}")
+#     accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences = compare_arrays(ideal_array, actual_array)
     
-    accuracies = {
-        'notes': accuracy_notes,
-        'dynamics': accuracy_dynamics,
-        'start_stop': accuracy_start_stop,
-    }
+#     accuracies = {
+#         'notes': accuracy_notes,
+#         'dynamics': accuracy_dynamics,
+#         'start_stop': accuracy_start_stop,
+#     }
     
-    failed = False
+#     failed = False
     
-    for key in accuracies:
-        if accuracies[key] != expected_accuracies[key]:
-            print(f"  - {key.capitalize()} accuracy: Expected {expected_accuracies[key]:.1f}%, got {accuracies[key]:.1f}%")
-            failed = True
+#     for key in accuracies:
+#         if accuracies[key] != expected_accuracies[key]:
+#             print(f"  - {key.capitalize()} accuracy: Expected {expected_accuracies[key]:.1f}%, got {accuracies[key]:.1f}%")
+#             failed = True
     
-    if len(differences) != len(expected_differences):
-        print(f"  - Differences: Expected {len(expected_differences)}, got {len(differences)}")
-        failed = True
-    else:
-        for i, (actual_diff, expected_diff) in enumerate(zip(differences, expected_differences)):
-            if actual_diff != expected_diff:
-                print(f"  - Difference {i}: Expected {expected_diff}, got {actual_diff}")
-                failed = True
+#     if len(differences) != len(expected_differences):
+#         print(f"  - Differences: Expected {len(expected_differences)}, got {len(differences)}")
+#         failed = True
+#     else:
+#         for i, (actual_diff, expected_diff) in enumerate(zip(differences, expected_differences)):
+#             if actual_diff != expected_diff:
+#                 print(f"  - Difference {i}: Expected {expected_diff}, got {actual_diff}")
+#                 failed = True
     
-    if not failed:
-        print("Passed")
-    else:
-        print("Failed")
+#     if not failed:
+#         print("Passed")
+#     else:
+#         print("Failed")
 
-# Test Case 1: Exact Match
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 100.0}
-expected_differences = []
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Exact Match")
+# # Test Case 1: Exact Match
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 100.0}
+# expected_differences = []
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Exact Match")
 
-# Test Case 2: Different Note
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('A', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 75.0, 'dynamics': 100.0, 'start_stop': 100.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'note')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Note")
+# # Test Case 2: Different Note
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('A', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 75.0, 'dynamics': 100.0, 'start_stop': 100.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'pitch')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Note")
 
-# Test Case 3: Different Dynamics
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 40, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 100.0, 'dynamics': 75.0, 'start_stop': 100.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'velocity')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Dynamics")
+# # Test Case 3: Different Dynamics
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 40, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 100.0, 'dynamics': 75.0, 'start_stop': 100.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'velocity')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Dynamics")
 
-# Test Case 4: Different Start Time
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'start_time')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start Time")
+# # Test Case 4: Different Start Time
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'start_time')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start Time")
 
-# Test Case 5: Different End Time
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different End Time")
+# # Test Case 5: Different End Time
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different End Time")
 
-# Test Case 6: Different Start and End Time
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'start_time'),
-    Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start and End Time")
+# # Test Case 6: Different Start and End Time
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1.5, 2.5), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 100.0, 'dynamics': 100.0, 'start_stop': 75.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'start_time'),
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Different Start and End Time")
 
-# Test Case 7: Extra Note
-# The actual array has an extra note 'A' that should be detected as an extra note.
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 95.0, 'dynamics': 100.0, 'start_stop': 75.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
-    Difference(None, None, 2, actual_array[2], 'extra')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Extra Note")
+# # Test Case 7: Extra Note
+# # The actual array has an extra note 'A' that should be detected as an extra note.
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 95.0, 'dynamics': 100.0, 'start_stop': 75.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
+#     Difference(None, None, 2, actual_array[2], 'extra')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Extra Note")
 
-# Test Case 8: Missing Note
-# The actual array is missing the note 'D', which should be detected as a missing note.
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-expected_accuracies = {'notes': 75.0, 'dynamics': 75.0, 'start_stop': 75.0}
-expected_differences = [
-    Difference(1, ideal_array[1], None, None, 'missing')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Missing Note")
+# # Test Case 8: Missing Note
+# # The actual array is missing the note 'D', which should be detected as a missing note.
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# expected_accuracies = {'notes': 75.0, 'dynamics': 75.0, 'start_stop': 75.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], None, None, 'missing')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Missing Note")
 
-# Test Case 9: Extra Note and Missing Note
-ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
-actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3)]
-expected_accuracies = {'notes': 70.0, 'dynamics': 75.0, 'start_stop': 50.0}
-expected_differences = [
-    Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
-    Difference(None, None, 2, actual_array[2], 'extra'),
-    Difference(3, ideal_array[3], None, None, 'missing')
-]
-run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Extra Note and Missing Note")
+# # Test Case 9: Extra Note and Missing Note
+# ideal_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 2), Note('E', 60, 2, 3), Note('F', 40, 3, 4)]
+# actual_array = [Note('C', 100, 0, 1), Note('D', 80, 1, 1.5), Note('A', 40, 1.5, 2), Note('E', 60, 2, 3)]
+# expected_accuracies = {'notes': 70.0, 'dynamics': 75.0, 'start_stop': 50.0}
+# expected_differences = [
+#     Difference(1, ideal_array[1], 1, actual_array[1], 'end_time'),
+#     Difference(None, None, 2, actual_array[2], 'extra'),
+#     Difference(3, ideal_array[3], None, None, 'missing')
+# ]
+# run_test_case(ideal_array, actual_array, expected_accuracies, expected_differences, "Extra Note and Missing Note")
 
     # Some extra test cases to take into consideration?
     # Test Case: missing note and then a extra note after

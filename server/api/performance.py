@@ -8,7 +8,7 @@ from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
 from api.signal_processing import signal_processing
-from scripts.mxl_wav_compare import compare_tuning, compare_dynamics, compare_tempo
+from scripts.needleman_wunsch import compare_arrays, Note, Difference, custom_serializer
 
 from datetime import datetime
 
@@ -34,7 +34,6 @@ def addPerformance():
 
     new_id = randint(1, 1000000)
 
-    # to-do, get name from music id
     new_sheet_music_id = request.form.get("sheet_music_id")
     selected_sheet_music_name = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().title
     new_run_number = len(db.session.query(Performance).all()) + 1
@@ -50,7 +49,7 @@ def addPerformance():
 
     # analyze recording
     notes_from_rec = signal_processing(new_wav_file_path)
-    rec_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".json"
+    rec_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_rec.json"
     
     # save notes info into a json file
     with open(rec_json_path, 'w') as rec_json_file:
@@ -62,14 +61,20 @@ def addPerformance():
 
     # open json file and load into obj
     with open(mxl_json_file_path) as mxl_json_file:
-        mxl_json = json.load(mxl_json_file)
+        mxl_data = json.load(mxl_json_file)
     with open(wav_json_file_path) as wav_json_file:
-        wav_json = json.load(wav_json_file)
+        wav_data = json.load(wav_json_file)
+
+    ideal_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in mxl_data["notes"]]
+    actual_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in wav_data["notes"]]
 
     # run comparison algorithms
-    new_tempo_percent_accuracy = compare_tempo(mxl_json, wav_json)
-    new_tuning_percent_accuracy = compare_tuning(mxl_json, wav_json)
-    new_dynamics_percent_accuracy = compare_dynamics(mxl_json, wav_json)
+    new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_tempo_percent_accuracy, differences = compare_arrays(ideal_notes, actual_notes)
+
+    # save the diff file locally
+    diff_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_diff.json"
+    with open(diff_json_path, 'w') as diff_json_file:
+        json.dump([d.to_dict() for d in differences], diff_json_file, indent=4, default=custom_serializer)
     
     # send info to database
     new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path)
