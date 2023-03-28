@@ -51,7 +51,11 @@ class MusicXMLReader(MidiFile, PrettyMIDI):
     
 
 def main():
-    environment_path = '/usr/share/applications/mscore.desktop'
+    # note: envronemnt must have MuseScore installed!
+    # use for Mac '/Applications/MuseScore 4.app/Contents/MacOS/mscore' 
+    # use for linux '/usr/share/applications/mscore.desktop'
+    # use for Windows?? i think not certain 'C:\Program Files\MuseScore 4/mscore.exe'
+    environment_path = '/Applications/MuseScore 4.app/Contents/MacOS/mscore' 
     environment.set('musescoreDirectPNGPath', environment_path)
 
     reader = MusicXMLReader('example.musicxml')
