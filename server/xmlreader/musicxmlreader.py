@@ -59,7 +59,7 @@ def main():
     # use for Mac '/Applications/MuseScore 4.app/Contents/MacOS/mscore' 
     # use for linux '/usr/share/applications/mscore.desktop'
     # use for Windows?? i think not certain 'C:\Program Files\MuseScore 4/mscore.exe'
-    environment_path = '/Applications/MuseScore 4.app/Contents/MacOS/mscore' 
+    environment_path = '/usr/share/applications/mscore.desktop'
     environment.set('musescoreDirectPNGPath', environment_path)
 
     reader = MusicXMLReader('example.musicxml')
