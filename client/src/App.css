@@ -307,7 +307,3 @@ div.countdown {
 ::-webkit-scrollbar-corner {
   background: var(--bg-color);
 }
-
-table, th, td {
-  border: 1px solid;
-}
