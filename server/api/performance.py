@@ -40,9 +40,10 @@ def addPerformance():
     new_date_time = datetime.now()
 
     # construct new file path and handle file upload
-    new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
-    new_wav_file_data = request.files.get("file")
-    new_wav_file_data.save(new_wav_file_path)
+    # new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
+    # new_wav_file_data = request.files.get("file")
+    # new_wav_file_data.save(new_wav_file_path)
+    new_wav_file_path = "data/wav/Happy_Birthday_Piano_Perfect.wav" # test perfect wav
 
     # set new average tempo 
     new_average_tempo = 120 # (TO-DO) change constant!
