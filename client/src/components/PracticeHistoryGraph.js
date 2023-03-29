@@ -13,7 +13,7 @@ import { SheetMusicIdContext } from '../utils/Contexts';
 import PracticeHistoryGraphOptions from './PracticeHistoryOptions';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
-Chart.defaults.font.family = "Segoe UI";
+Chart.defaults.font.family = "AppleRegular";
 
 function PracticeHistoryGraph() {
   const textColor = style.getPropertyValue('--text-color');

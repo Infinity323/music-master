@@ -11,6 +11,20 @@
 }
 
 /********************/
+/*       Font       */
+/********************/
+@font-face {
+  font-family: 'AppleRegular';
+  src: local('SF-Pro-Text-Regular'),
+    url('./assets/fonts/SF-Pro-Text-Regular.otf');
+}
+@font-face {
+  font-family: 'AppleSemibold';
+  src: local('SF-Pro-Text-Semibold'),
+    url('./assets/fonts/SF-Pro-Text-Semibold.otf');
+}
+
+/********************/
 /*  General Styles  */
 /********************/
 html {
@@ -28,6 +42,7 @@ body {
   max-height: 480px;
 }
 div .content {
+  font-family: 'AppleRegular';
   width: 600px;
   height: 400px;
   margin: auto auto;
@@ -35,16 +50,19 @@ div .content {
   text-align: center;
 }
 .title {
+  font-family: 'AppleSemibold';
   margin: 0px;
   padding-top: 20px;
   padding-bottom: 40px;
   text-align: center;
 }
 h2 {
+  font-family: 'AppleSemibold';
   margin: 0px;
   margin-bottom: 20px;
 }
 .modal {
+  font-family: 'AppleRegular';
   position: absolute;
   top: 40px;
   left: 40px;
@@ -98,11 +116,15 @@ h2 {
 .btn.small {
   padding: 0px;
   height: 30px;
+  line-height: 30px;
   width: 120px;
   display: inline-block;
 }
 .btn.medium {
   width: 100px;
+}
+.btn.selected {
+  background-color: var(--select-color);
 }
 .btn#uploadMusic, .btn#submitForm {
   float: left;
@@ -174,12 +196,10 @@ select {
   background-color: var(--btn-color);
   color: var(--text-color);
   font-size: 16px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: left;
 }
 input {
   font-size: 16px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 input[type=file] {
   display: none;
@@ -223,6 +243,7 @@ div.btn.bpm {
   margin: 2.5px;
   padding: 0px;
   height: 30px;
+  line-height: 30px;
   width: 30px;
   max-width: 120px;
   display: inline-block;

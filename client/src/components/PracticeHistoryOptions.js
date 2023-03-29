@@ -60,10 +60,13 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
         Options
       </div>
       <Modal isOpen={showModal} className="modal" overlayClassName="modal-overlay">
-        <input type="checkbox" id="goals" checked={showGoals} onChange={toggleGoals}/>
-        <label for="goals">
-          Show Goals
-        </label>
+        <div
+          className={showGoals ? "btn small selected" : "btn small"}
+          style={{width: 200}}
+          onClick={toggleGoals}
+        >
+          Toggle Goals
+        </div>
         <div className="btn medium" id="closeForm" onClick={hideOptions}>
           Close
         </div>
