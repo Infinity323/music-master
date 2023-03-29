@@ -10,23 +10,30 @@ import { Box, Flex } from '@chakra-ui/react';
 import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { SheetMusicIdContext } from '../utils/Contexts';
+import PracticeHistoryGraphOptions from './PracticeHistoryOptions';
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "Segoe UI";
 
 function PracticeHistoryGraph() {
   const textColor = style.getPropertyValue('--text-color');
-
+  
+  const navigate = useNavigate();
+  // Module rendering hooks
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  // Chart data rendering hooks
+  const selectedMusic = useContext(SheetMusicIdContext)[0];
   const [performances, setPerformances] = useState([]);
   const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
   const [showGoals, setShowGoals] = useState(true);
+  const [timeWindow, setTimeWindow] = useState("all");
+  const [timeWindowOffset, setTimeWindowOffset] = useState(Number.MAX_SAFE_INTEGER);
+  // Chart interactivity hooks
   const [selectedGoal, setSelectedGoal] = useState(-1);
-  const selectedMusic = useContext(SheetMusicIdContext)[0];
-  const navigate = useNavigate();
 
+  // Line chart options
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -48,7 +55,9 @@ function PracticeHistoryGraph() {
         position: 'top',
       },
       annotation: {
+        // Goals render as chart annotations
         annotations: [
+          // TODAY line
           {
             type: 'line',
             xMin: new Date(),
@@ -64,7 +73,8 @@ function PracticeHistoryGraph() {
             },
             display: showGoals
           }
-        ].concat(goals.flatMap(item => item.sheet_music_id === selectedMusic
+        ].concat(goals.flatMap(item => item.sheet_music_id === selectedMusic &&
+          Date.now().valueOf() - new Date(item.end_date).valueOf() <= timeWindowOffset
           ?
             {
               type: 'line',
@@ -126,20 +136,13 @@ function PracticeHistoryGraph() {
         type: 'time',
         time: {
           displayFormats: {
-            millisecond: "M/dd/yy HH:mm:ss",
-            second: "M/dd/yy HH:mm:ss",
-            minute: "M/dd/yy HH:mm:ss",
-            hour: "M/dd/yy HH:mm",
+            millisecond: "M/dd/yy H:mm:ss",
+            second: "M/dd/yy H:mm:ss",
+            minute: "M/dd/yy H:mm",
+            hour: "M/dd/yy H:mm",
             day: "M/dd/yy",
             week: "M/dd/yy",
             month: "M/dd/yy",
-          }
-        },
-        ticks: {
-          source: 'data',
-          color: textColor,
-          font: {
-            size: 13
           }
         }
       }
@@ -149,6 +152,15 @@ function PracticeHistoryGraph() {
       yAxisKey: 'value'
     }
   };
+
+  // Time window offsets (ms)
+  const timeWindowOffsets = [
+    { type: "day", value: 86400000 },
+    { type: "three-days", value: 259200000 },
+    { type: "week", value: 604800000 },
+    { type: "month", value: 2678400000 },
+    { type: "all", value: Number.MAX_SAFE_INTEGER }
+  ]
 
   useEffect(() => {
     // Grabs ALL performances and ALL goals from database on first render
@@ -186,7 +198,8 @@ function PracticeHistoryGraph() {
         // Actual performance metrics
         {
           label: 'Tuning',
-          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic &&
+            Date.now().valueOf() - new Date(item.date_time).valueOf() <= timeWindowOffset
             ?
               {
                 id: item.id,
@@ -201,7 +214,8 @@ function PracticeHistoryGraph() {
         },
         {
           label: 'Tempo',
-          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic &&
+            Date.now().valueOf() - new Date(item.date_time).valueOf() <= timeWindowOffset
             ?
               {
                 id: item.id,
@@ -216,7 +230,8 @@ function PracticeHistoryGraph() {
         },
         {
           label: 'Dynamics',
-          data: performances.flatMap(item => item.sheet_music_id === selectedMusic
+          data: performances.flatMap(item => item.sheet_music_id === selectedMusic &&
+            Date.now().valueOf() - new Date(item.date_time).valueOf() <= timeWindowOffset
             ?
               {
                 id: item.id,
@@ -231,7 +246,7 @@ function PracticeHistoryGraph() {
         }
       ],
     });
-  }, [selectedMusic, performances, goals, showGoals]);
+  }, [selectedMusic, performances, goals, timeWindow]);
   useEffect(() => {
     setIsLoaded(true);
   }, [data]);
@@ -330,6 +345,15 @@ function PracticeHistoryGraph() {
     );
   }
 
+  function toggleGoals() {
+    setShowGoals(!showGoals);
+  }
+
+  function changeTimeWindow(timeWindow) {
+    setTimeWindow(timeWindow);
+    setTimeWindowOffset(timeWindowOffsets.find(e => { return e.type === timeWindow; }).value)
+  }
+
   if (error) {
     return (
       <div className="content">
@@ -348,9 +372,12 @@ function PracticeHistoryGraph() {
         <div className="chart">
           <Line options={options} data={data}/>
         </div>
-        <div className="btn small" onClick={() => {setShowGoals(!showGoals)}}>
-          Toggle Goals
-        </div>
+        <PracticeHistoryGraphOptions
+          showGoals={showGoals}
+          toggleGoals={toggleGoals}
+          timeWindow={timeWindow}
+          changeTimeWindow={changeTimeWindow}
+        />
         <AddGoalButton/>
         <DeleteButton/>
       </>
