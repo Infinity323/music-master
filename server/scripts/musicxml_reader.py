@@ -1,7 +1,7 @@
 import json
 import pygame
 import pretty_midi
-from music21 import converter, environment, pitch, tempo
+from music21 import converter, environment, pitch, tempo, note as m21note
 from mido import MidiFile
 
 class MusicXMLReader:
@@ -36,10 +36,10 @@ class MusicXMLReader:
         # Display the parsed MusicXML score
         self.xml_score.show()
 
-    def get_notes(self, instrument=0):
+    def get_notes(self, part_index=0):
         # Get a list of notes for the specified instrument
         notes_list = []
-        notes = self.pretty_midi.instruments[instrument].notes
+        notes = self.pretty_midi.instruments[part_index].notes
         for note in notes:
             notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).nameWithOctave,
                                "velocity": note.velocity,
@@ -47,10 +47,32 @@ class MusicXMLReader:
                                "end": note.end
                                })
         return notes_list
+    
+    def get_notes_and_measure_num(self, part_index=0):
+        # Get a list of notes and rests for the specified instrument
+        elements_list = []
+        elements = self.xml_score.parts[part_index].flat.getElementsByClass([m21note.Note, m21note.Rest])
+        
+        for element in elements:
+            if isinstance(element, m21note.Note):
+                elements_list.append({
+                                    "element": "note",
+                                    "name": element.nameWithOctave,
+                                    "type": element.duration.type,
+                                    "measure": element.measureNumber
+                                })
+            elif isinstance(element, m21note.Rest):
+                elements_list.append({
+                                    "element": "rest",
+                                    "type": element.duration.type,
+                                    "measure": element.measureNumber
+                                })
+        
+        return elements_list
 
-    def save_notes_json(self, json_file_out, instrument=0):
+    def save_notes_json(self, json_file_out, part_index=0):
         # Save note data as a JSON file and return the JSON data as a string
-        notes = self.get_notes(instrument)
+        notes = self.get_notes(part_index)
         data = {"notes": notes}
 
         with open(json_file_out, 'w') as outfile:
@@ -60,12 +82,12 @@ class MusicXMLReader:
 
     def play(self):
         # Play the MIDI file using pygame
-        pygame.mixer.init()
-        pygame.mixer.music.load(self.midi_filename)
-        pygame.mixer.music.play()
-        while pygame.mixer.music.get_busy():
-            pygame.time.Clock().tick(10)
-        pygame.mixer.quit()
+        with pygame.mixer.init():
+            pygame.mixer.music.load(self.midi_filename)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(10)
+            pygame.mixer.quit()
 
 def main():
     # Set the environment variable for the MuseScore path based on the operating system
