@@ -7,6 +7,7 @@ function PracticeHistory() {
     <>
       <BackButton/>
       <div className="content">
+        <h2>Practice History</h2>
         <SheetMusicDropdown/>
         <PracticeHistoryGraph/>
       </div>

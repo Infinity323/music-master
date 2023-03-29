@@ -1,79 +1,186 @@
 import React, { Component } from 'react'
-import sound_metronome from "../assets/sounds/metronome.wav"
-import image_metronome from "../assets/images/metronome.png"
-import { Flex, Box} from '@chakra-ui/react';
+import image_metronome from '../assets/images/metronome.png'
+import { Flex, Box, CircularProgress, CircularProgressLabel } from '@chakra-ui/react';
 
-export class MetronomeButton extends Component {
-  
-    constructor(props) {
-      super(props);
-  
-      this.state = {
-        BPM: 50,
-        isPlaying: false
-      };
+// Metronome built using this as guidance.
+// https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
+class Metronome extends Component {
+  constructor(props) {
+    super(props);
+
+    this.audioContext = React.createRef();
+    this.audioContext.current = null;
+    
+    this.state = {
+      // User-customizable state variables
+      currentBeatInBar: 0,
+      beatsPerBar: 4,
+      BPM: 100,
+      // Internal state variables
+      lookahead: 25,
+      scheduleAheadTime: 0.1,
+      nextNoteTime: 0.0,
+      timerID: null,
+      isPlaying: false,
+      isBeat: false
+    };
+  }
+
+  /**
+   * Increments the next note time and current beat in bar.
+   * Adjusts seconds per beat in case metronome was adjusted.
+   */
+  nextBeat = () => {
+    if(this.state.currentBeatInBar === 4){
+      this.setState(state => ({
+        currentBeatInBar: (state.currentBeatInBar - 4)
+      }));
     }
-
-    play = () => {
-      new Audio(sound_metronome).play();
+    else{
+      this.setState(state => ({
+        currentBeatInBar: (state.currentBeatInBar + 1)
+      }));
     }
+    var secondsPerBeat = 60.0 / this.state.BPM;
+    this.setState(state => ({
+      nextNoteTime: state.nextNoteTime + secondsPerBeat,
+      //currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
+    }));
 
-    startMetro =() =>{
-      if(this.state.isPlaying === false){
-        this.setState({isPlaying: true});
-        //call play multiple times
-        this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000); //(function,milliseconds)
-      }
-      else{
-        clearInterval(this.timer);
-        this.setState({isPlaying: false});
-      }
+  }
 
-    };
+  /**
+   * Schedules next metronome beat.
+   * Creates oscillator to produce the beat sound.
+   * @param {number} beatNumber The beat number in the bar.
+   * @param {number} time The time to schedule the beat sound.
+   */
+  scheduleBeat = (beatNumber, time) => {
+    const osc = this.audioContext.current.createOscillator();
+    const envelope = this.audioContext.current.createGain();
+      
+    // Create beat noise. First beat in bar has higher frequency
+    osc.frequency.value = beatNumber === 0 ? 1000 : 800;
+    envelope.gain.value = 1;
+    
+    envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
+    envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
 
-    decBPM =() =>{
-      this.setState({BPM: this.state.BPM - 10});
-      if(this.state.isPlaying){
-        clearInterval(this.timer);
-        this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000);
-      }
-    };
+    osc.connect(envelope);
+    envelope.connect(this.audioContext.current.destination);
 
-    incBPM =() =>{
-      this.setState({BPM: this.state.BPM + 10});
-      if(this.state.isPlaying){
-        clearInterval(this.timer);
-        this.timer = setInterval(this.play, (60 / this.state.BPM) * 1000);
-      }
-    };
+    osc.start(time);
+    osc.stop(time + 0.03);
+  }
 
-  render(){
-    return( 
-      <div className="metro">
-        <Flex flexDirection="column" alignItems="center" marginTop="-20px">
+  /**
+   * Called by the timer.
+   * Schedules next beat when needed (as opposed to infinitely).
+   */
+  scheduler = () => {
+    if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
+      this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
+      this.nextBeat();
+      this.setState({
+        isBeat: true
+      });
+    }
+    else{
+      this.setState({
+        isBeat: false
+      });
+    }
+  }
+
+  /**
+   * Toggle metronome playing.
+   */
+  startStopMetro = () => {
+    if (!this.audioContext.current) {
+      this.audioContext.current = new AudioContext();
+    }
+    if (this.state.isPlaying === false) {
+      this.setState({
+        nextNoteTime: this.audioContext.current.currentTime + 0.05,
+        timerID: setInterval(this.scheduler, this.state.lookahead),
+      });
+    } else {
+      clearInterval(this.state.timerID);
+    }
+    
+    this.setState(state => ({isPlaying: !state.isPlaying}));
+  }
+
+  /**
+   * Decrease BPM.
+   */
+  decBPM = () => {
+    // Prevent 0 tempo
+    this.setState({
+      BPM: this.state.BPM - 10 === 0
+        ? this.state.BPM
+        : this.state.BPM - 10
+    });
+  }
+
+  /**
+   * Increase BPM.
+   */
+  incBPM = () => {
+    // Max tempo is 240
+    this.setState({
+      BPM: this.state.BPM + 10 > 240 
+        ? this.state.BPM
+        : this.state.BPM + 10
+    });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.timerID);
+  }
+
+  render() {
+    return ( 
+      <div className={this.state.isBeat ? "metronome-playing" : "metronome"}>
+        <Flex flexDir="row" alignItems="center">
           <Box>
-            <p>{this.state.BPM}</p>
+            <div className="btn metro" onClick={this.startStopMetro}>
+              <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
+            </div>
           </Box>
-          <Box marginTop="-30px">
-            <button
-              onClick={this.decBPM}
-              >
-              -
-            </button>
-            <button
-              onClick={this.startMetro}
-              >
-              <img src = {image_metronome} height={10} width={20}/>
-            </button>
-            <button
-              onClick={this.incBPM}
-              >
-              +
-            </button>
-          </Box>
+          <Flex flexDir="column" alignItems="center">
+            <Box>
+              <div className="metro bpm">
+                {this.state.BPM}
+              </div>
+            </Box>
+            <Box>
+              <CircularProgress value={this.state.currentBeatInBar > 0 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{1}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 1 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{2}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 2 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{3}</CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={this.state.currentBeatInBar > 3 ? 100 : 0} size='15px' color='green' thickness='18px'>
+                <CircularProgressLabel>{4}</CircularProgressLabel>
+              </CircularProgress>
+            </Box>
+            <Box>
+              <div className="btn bpm" onClick={this.decBPM}>
+                -
+              </div>
+              <div className="btn bpm" onClick={this.incBPM}>
+                +
+              </div>
+            </Box>
+          </Flex>
         </Flex>
-        
       </div>
     );
   }
 }
+
+export default Metronome;

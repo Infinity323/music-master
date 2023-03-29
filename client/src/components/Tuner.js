@@ -1,6 +1,6 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import { IgrLinearGauge, IgrLinearGaugeModule } from 'igniteui-react-gauges';
-import { TunerContext } from '../App';
+import { useContext } from 'react';
+import { IgrLinearGauge, IgrLinearGaugeModule, IgrLinearGraphRange } from 'igniteui-react-gauges';
+import { TunerContext } from '../utils/Contexts';
 import AudioAnalyzer from '../utils/AudioAnalyzer';
 import useMicrophone from '../utils/UseMicrophone';
 import { style } from '../App';
@@ -10,7 +10,7 @@ IgrLinearGaugeModule.register();
 function Tuner() {
   const textColor = style.getPropertyValue('--text-color');
   const btnColor = style.getPropertyValue('--btn-color');
-  const hoverColor = style.getPropertyValue('--hover-color');
+  const selectColor = style.getPropertyValue('--select-color');
 
   const microphone = useMicrophone();
   const currentNote = useContext(TunerContext)[0];
@@ -21,6 +21,8 @@ function Tuner() {
         <text className="tuner-center">
           <text className="note-name">{currentNote ? currentNote.noteName : ""}</text>
           <text>{currentNote ? currentNote.octave : ""}</text>
+          <br/>
+          <text className="freq">{currentNote.freq ? Math.round(currentNote.freq*100)/100 + " Hz" : ""}</text>
         </text>
       </div>
       <br/>
@@ -30,22 +32,62 @@ function Tuner() {
           minimumValue={-50}
           maximumValue={50}
           interval={10}
-          tickBrush={textColor}
+          tickBrush={"rgba(1, 1, 1, 0.5)"}
           tickStrokeThickness={1}
+          tickEndExtent={0.5}
           labelInterval={10}
           labelExtent={0.025}
           labelsPreTerminal={0}
           labelsPostInitial={0}
           font="11px Segoe UI"
-          value={currentNote.cents}
+          value={currentNote.cents ? currentNote.cents : 0}
           isNeedleDraggingEnabled={true}
-          needleBrush={hoverColor}
+          needleBrush={selectColor}
           needleOutline={textColor}
           needleStrokeThickness={1}
           backingBrush={btnColor}
           backingOutline={"rgba(1, 1, 1, 0.5)"}
           backingStrokeThickness={1}
-        />
+          transitionDuration={200}
+          rangeBrushes={"#E81F1F, #E89F1F, #E8D91F, #93E81F, #62E81F, #93E81F, #E8D91F, #E89F1F, #E81F1F"}
+        >
+          <IgrLinearGraphRange
+            name="bad-left"
+            startValue={-50} endValue={-45}
+          />
+          <IgrLinearGraphRange
+            name="worse-left"
+            startValue={-45} endValue={-30}
+          />
+          <IgrLinearGraphRange
+            name="ok-left"
+            startValue={-30} endValue={-15}
+          />
+          <IgrLinearGraphRange
+            name="alright-left"
+            startValue={-15} endValue={-10}
+          />
+          <IgrLinearGraphRange
+            name="good"
+            startValue={-10} endValue={10}
+          />
+          <IgrLinearGraphRange
+            name="alright-right"
+            startValue={10} endValue={15}
+          />
+          <IgrLinearGraphRange
+            name="ok-right"
+            startValue={15} endValue={30}
+          />
+          <IgrLinearGraphRange
+            name="worse-right"
+            startValue={30} endValue={45}
+          />
+          <IgrLinearGraphRange
+            name="bad-right"
+            startValue={45} endValue={50}
+          />
+        </IgrLinearGauge>
       </div>
       {microphone ? <AudioAnalyzer audio={microphone} /> : ""}
     </>

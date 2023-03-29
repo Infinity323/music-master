@@ -1,18 +1,23 @@
-import { BackButton } from "../components/Buttons";
-import SheetMusicDropdown from "../components/SheetMusicDropdown";
+import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useContext } from "react";
-import { SheetMusicIdContext } from "../App";
-import recording from '../assets/images/recording.png'
+import { BackButton } from '../components/Buttons';
+import SheetMusicDropdown from '../components/SheetMusicDropdown';
+import { SheetMusicIdContext } from '../utils/Contexts';
+import BpmSelector from "../components/BpmSelector";
 
 function StartPracticeSession() {
 
   function RecordButton() {
     const navigate = useNavigate();
     const sheetMusicId  = useContext(SheetMusicIdContext)[0];
+
     return (
-      <div className={sheetMusicId === -1 ? "btn medium disabled" : "btn medium"} onClick={() => navigate("/recording")}>
-        <img src={recording} alt="Back" width="60px"/>
+      <div
+        className={sheetMusicId === -1 ? "btn medium disabled" : "btn medium"}
+        onClick={() => navigate("/recording")}
+        style={{margin: "auto auto"}}
+      >
+        Continue
       </div>
     );
   }
@@ -21,9 +26,13 @@ function StartPracticeSession() {
     <>
       <BackButton/>
       <div className="content">
-        <h1>Practice Session</h1>
-        <p>Select the sheet music you want to record a performance of.</p>
-        <SheetMusicDropdown/>
+        <h2>Start Practice Session</h2>
+        <p>Select the piece to practice.</p>
+        <div style={{display: "flex", justifyContent: "center", margin: "20px"}}>
+          <SheetMusicDropdown/>
+        </div>
+        <p>Select the tempo to practice at.</p>
+        <BpmSelector/>
         <RecordButton/>
       </div>
     </>
