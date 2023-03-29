@@ -9,6 +9,10 @@ def custom_serializer(obj):
         return obj.to_dict()
     raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
+# function to get the difference between two frequncies in unit of cents
+def frequency_difference_in_cents(freq1, freq2):
+    return 1200 * np.log2(freq1 / freq2)
+
 class Note:
     def __init__(self, pitch, velocity, start, end):
         self.pitch = pitch
@@ -20,11 +24,15 @@ class Note:
     def __eq__(self, other):
         if not isinstance(other, Note):
             return False
-        return (self.pitch == other.pitch and
-                self.velocity == other.velocity and
-                self.start == other.start and
-                self.end == other.end)
 
+        pitch_difference_in_cents = abs(frequency_difference_in_cents(self.pitch, other.pitch))
+        pitch_match = pitch_difference_in_cents <= 20 # bound 20 cents
+
+        return (pitch_match and
+                (abs(self.velocity - other.velocity)) <= 100 and # bound 100 amplitude TO-DO change this too lax!
+                (abs(self.start - other.start) <= 0.25) and # bound 0.25 sec
+                (abs(self.end - other.end) <= 0.25)) # bound 0.25 sec
+    
     # Define the string representation of the Note object.
     def __str__(self):
         return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
@@ -69,6 +77,17 @@ class Difference:
             "actual_val": self.actual_val,
             "diff_type": self.diff_type
         }
+    
+# this will ensure that the start time for the actual array happens at 0.0
+def shift_start_time_to_zero(notes_array):
+    if not notes_array:
+        return
+
+    first_note_start_time = notes_array[0].start
+
+    for note in notes_array:
+        note.start -= first_note_start_time
+        note.end -= first_note_start_time
 
 # Implement the Needleman-Wunsch algorithm to find the optimal alignment of two arrays of musical notes.
 def needleman_wunsch(seq1, seq2, gap_penalty=-1, mismatch_penalty=-1, match_score=2, extra_note_penalty=-2):
@@ -102,7 +121,7 @@ def needleman_wunsch(seq1, seq2, gap_penalty=-1, mismatch_penalty=-1, match_scor
 def compare_arrays(ideal_array, actual_array):
     # If either array is empty, return None for all metrics.
     if not ideal_array or not actual_array:
-        return None, None, None, None
+        return None, None, None, [Difference(None, None, None, None, "error")]
 
     # Use the Needleman-Wunsch algorithm to find the optimal alignment of the two arrays
     score_matrix = needleman_wunsch(ideal_array, actual_array, gap_penalty=-1, mismatch_penalty=-1, match_score=2, extra_note_penalty=-0.5)
@@ -143,19 +162,19 @@ def compare_arrays(ideal_array, actual_array):
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if ideal_note.pitch == actual_note.pitch:
+            if abs(frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 20: # bound 20 cents
                 matches_notes += 1
-            if ideal_note.velocity == actual_note.velocity:
+            if abs(ideal_note.velocity - actual_note.velocity) <= 100: # bound 100 amplitude CHANGE THIS too lax!
                 matches_dynamics += 1
-            if ideal_note.start == actual_note.start and ideal_note.end == actual_note.end:
+            if (abs(ideal_note.start - actual_note.start) <= 0.25 and abs(ideal_note.end - actual_note.end) <= 0.25): # bound 0.25 sec
                 matches_start_stop += 1
-            if ideal_note.pitch != actual_note.pitch:
+            if abs(frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 20: # bound 20 cents
                 differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
-            if ideal_note.velocity != actual_note.velocity:
+            if abs(ideal_note.velocity - actual_note.velocity) > 100: # bound 100 amplitude CHANGE THIS too lax!
                 differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
-            if ideal_note.start != actual_note.start:
+            if (abs(ideal_note.start - actual_note.start) > 0.25): # bound 0.25 sec
                 differences.append(Difference(i, ideal_note, i, actual_note, 'start'))
-            if ideal_note.end != actual_note.end:
+            if (abs(ideal_note.end - actual_note.end) > 0.25): # bound 0.25 sec
                 differences.append(Difference(i, ideal_note, i, actual_note, 'end'))
         elif ideal_note is None and actual_note is not None:
             differences.append(Difference(None, None, i, actual_note, 'extra'))

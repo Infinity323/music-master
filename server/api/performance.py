@@ -8,7 +8,7 @@ from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
 from scripts.signal_processing import signal_processing
-from scripts.compare import compare_arrays, Note, Difference, custom_serializer
+from scripts.compare import compare_arrays, Note, Difference, custom_serializer, shift_start_time_to_zero
 
 from datetime import datetime
 
@@ -66,10 +66,13 @@ def addPerformance():
         wav_data = json.load(wav_json_file)
 
     ideal_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in xml_data["notes"]]
-    actual_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in wav_data["notes"]]
+    raw_actual_notes = [Note(note["pitch"], note["velocity"], note["start"], note["end"]) for note in wav_data["notes"]]
 
     # strip out "Rest" notes in the actual array
-    filtered_actual_notes = [note for note in actual_notes if note.pitch != "Rest"]
+    filtered_actual_notes = [note for note in raw_actual_notes if note.pitch != "Rest"]
+
+    # shift back the start time of the actual array
+    shift_start_time_to_zero(filtered_actual_notes)
 
     # run comparison algorithms
     new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_tempo_percent_accuracy, differences = compare_arrays(ideal_notes, filtered_actual_notes)

@@ -41,7 +41,7 @@ class MusicXMLReader:
         notes_list = []
         notes = self.pretty_midi.instruments[part_index].notes
         for note in notes:
-            notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).nameWithOctave,
+            notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).frequency, # use nameWithOctave for A4
                                "velocity": note.velocity,
                                "start": note.start,
                                "end": note.end
