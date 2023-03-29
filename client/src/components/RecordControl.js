@@ -11,6 +11,7 @@ function RecordControl() {
   const [isStarting, setIsStarting] = useState(false);
   const [performanceId, setPerformanceId] = useState(-1);
   const [countdownDisplay, setCountdownDisplay] = useState(10);
+  const inputRef = useRef();
 
   const sheetMusicId = useContext(SheetMusicIdContext)[0];
   const bpm = useContext(BpmContext)[0];
@@ -76,6 +77,13 @@ function RecordControl() {
     navigate(-1);
   }
 
+  const uploadPrerecorded = (file) => {
+    onStop(file).then(() => {
+      setIsRecording(false);
+      setIsComplete(true);
+    });
+  }
+
   const onStop = async (blob) => {
     const formData = new FormData();
     formData.append("sheet_music_id", sheetMusicId);
@@ -103,6 +111,19 @@ function RecordControl() {
               <h2>Start Recording</h2>
               <p>Begin playing after the countdown.</p>
               <div className="btn small" onClick={startRecording}>Start</div>
+            </>
+          : ""
+      }
+      {
+        /* Upload button */
+        !isStarting && !isRecording && !isComplete
+          ?
+            <>
+              <p>or</p>
+              <label className="btn small" style={{width: 200}}>
+                Upload a Recording
+                <input type="file" onChange={() => {uploadPrerecorded(inputRef.current.files[0])}} ref={inputRef}/>
+              </label>
             </>
           : ""
       }
