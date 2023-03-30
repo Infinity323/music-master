@@ -73,7 +73,10 @@ class MusicXMLReader:
     def save_notes_json(self, json_file_out, part_index=0):
         # Save note data as a JSON file and return the JSON data as a string
         notes = self.get_notes(part_index)
-        data = {"notes": notes}
+        data = {
+            "size": len(notes),
+            "notes": notes
+        }
 
         with open(json_file_out, 'w') as outfile:
             json.dump(data, outfile, indent=4)  # Indent the JSON output for better readability

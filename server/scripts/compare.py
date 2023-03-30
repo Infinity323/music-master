@@ -1,17 +1,9 @@
 import numpy as np
 import json
+from .note import Note
 
 # This script compares two arrays of Note objects, representing ideal and actual
 # musical performances, and calculates the accuracy and differences between them.
-
-def is_velocity_equal(self, other, tolerance=30):
-
-    # Calculate the minimum and maximum acceptable range for self
-    min_range = other - tolerance
-    max_range = other + tolerance
-
-    # Check if self is within the acceptable range
-    return min_range <= self <= max_range
 
 # DEBUGGING FUNCTION
 def save_aligned_arrays_to_json(aligned_ideal, aligned_actual, output_file):
@@ -24,50 +16,8 @@ def save_aligned_arrays_to_json(aligned_ideal, aligned_actual, output_file):
         })
 
     with open(output_file, 'w') as f:
-        json.dump(aligned_data, f, default=custom_serializer, indent=4)
+        json.dump(aligned_data, f, default=Note.custom_serializer, indent=4)
 
-# This function is used to ensure that the note object is properly serialized 
-def custom_serializer(obj):
-    if isinstance(obj, Note):
-        return obj.to_dict()
-    raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-# function to get the difference between two frequncies in unit of cents
-def frequency_difference_in_cents(freq1, freq2):
-    return 1200 * np.log2(freq1 / freq2)
-
-class Note:
-    def __init__(self, pitch, velocity, start, end):
-        self.pitch = pitch
-        self.velocity = velocity
-        self.start = start
-        self.end = end
-
-    # Define the equality method for comparing two Note objects.
-    def __eq__(self, other):
-        if not isinstance(other, Note):
-            return False
-
-        pitch_difference_in_cents = abs(frequency_difference_in_cents(self.pitch, other.pitch))
-        pitch_match = pitch_difference_in_cents <= 20 # bound 20 cents
-
-        return (pitch_match and
-                is_velocity_equal(self.velocity, other.velocity) and # within 30% accuracy
-                (abs(self.start - other.start) <= 0.25) and # bound 0.25 sec
-                (abs(self.end - other.end) <= 0.25)) # bound 0.25 sec
-    
-    # Define the string representation of the Note object.
-    def __str__(self):
-        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
-    
-    # Convert the Note object to a dictionary for JSON serialization.
-    def to_dict(self):
-        return {
-            "pitch": self.pitch,
-            "velocity": self.velocity,
-            "start": self.start,
-            "end": self.end
-        }
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
 class Difference:
@@ -188,15 +138,15 @@ def compare_arrays(ideal_array, actual_array):
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if abs(frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 20: # bound 20 cents
+            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 20: # bound 20 cents
                 matches_notes += 1
-            if is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
+            if Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
                 matches_dynamics += 1
             if (abs(ideal_note.start - actual_note.start) <= 0.25 and abs(ideal_note.end - actual_note.end) <= 0.25): # bound 0.25 sec
                 matches_start_stop += 1
-            if abs(frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 20: # bound 20 cents
+            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 20: # bound 20 cents
                 differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
-            if not is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
+            if not Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
                 differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
             if (abs(ideal_note.start - actual_note.start) > 0.25): # bound 0.25 sec
                 differences.append(Difference(i, ideal_note, i, actual_note, 'start'))

@@ -40,7 +40,7 @@ def addSheetMusic():
     xmlReader.save_notes_json(new_dat_file_path)
 
     # Add to database
-    # TO-DO goal entity should update this tempo, currently it is set to None
+    # TODO: goal entity should update this tempo, currently it is set to None
     newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_xml_file_path, new_dat_file_path, None)
     db.session.add(newSheetMusic)
     db.session.commit()

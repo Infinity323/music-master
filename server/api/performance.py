@@ -8,7 +8,8 @@ from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
 from scripts.signal_processing import signal_processing
-from scripts.compare import compare_arrays, Note, Difference, custom_serializer, shift_start_time_to_zero
+from scripts.compare import compare_arrays, Difference, shift_start_time_to_zero
+from scripts.note import Note
 
 from datetime import datetime
 
@@ -40,10 +41,10 @@ def addPerformance():
     new_date_time = datetime.now()
 
     # construct new file path and handle file upload
-    # new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
-    # new_wav_file_data = request.files.get("file")
-    # new_wav_file_data.save(new_wav_file_path)
-    new_wav_file_path = "data/wav/Happy_Birthday_Piano_Perfect.wav" # test perfect wav
+    new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
+    new_wav_file_data = request.files.get("file")
+    new_wav_file_data.save(new_wav_file_path)
+    # new_wav_file_path = "data/wav/Happy_Birthday_Piano_Perfect.wav" # test perfect wav
 
     # set new average tempo 
     new_average_tempo = 120 # (TO-DO) change constant!
@@ -58,7 +59,7 @@ def addPerformance():
 
     # get json file paths
     wav_json_file_path = rec_json_path # use "scripts/test_dat/wav.json" for testing
-    xml_json_file_path =  db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path # use "scripts/test_dat/xml.json" for testing
+    xml_json_file_path = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().data_file_path # use "scripts/test_dat/xml.json" for testing
 
     # open json file and load into obj
     with open(xml_json_file_path) as xml_json_file:
@@ -81,7 +82,7 @@ def addPerformance():
     # save the diff file locally
     diff_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_diff.json"
     with open(diff_json_path, 'w') as diff_json_file:
-        json.dump([d.to_dict() for d in differences], diff_json_file, indent=4, default=custom_serializer)
+        json.dump([d.to_dict() for d in differences], diff_json_file, indent=4, default=Note.custom_serializer)
     
     # send info to database
     new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path)
