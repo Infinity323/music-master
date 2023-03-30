@@ -59,7 +59,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
       <div className="btn small" onClick={showOptions}>
         Options
       </div>
-      <Modal isOpen={showModal} className="modal" overlayClassName="modal-overlay">
+      <Modal isOpen={showModal} onRequestClose={hideOptions} className="modal" overlayClassName="modal-overlay">
         <div
           className={showGoals ? "btn small selected" : "btn small"}
           style={{width: 200}}

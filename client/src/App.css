@@ -308,6 +308,36 @@ div.countdown {
 }
 
 /********************/
+/*     Slider       */
+/********************/
+.slider {
+  width: 300px;
+  height: 40px;
+  border-radius: 50%;
+}
+.slider-track {
+  background-color: rgba(1, 1, 1, 0.2);
+}
+.slider-track.slider-track-0 {
+  background-color: var(--hover-color);
+}
+.slider .slider-track {
+  top: 15px;
+  height: 10px;
+}
+.slider-thumb {
+  cursor: pointer;
+  background-color: var(--btn-color);
+  width: 40px;
+  height: 40px;
+  border-radius: 100%;
+  outline: none;
+}
+.slider-thumb:active {
+  background-color: var(--select-color);
+}
+
+/********************/
 /*    Scrollbar     */
 /********************/
 ::-webkit-scrollbar {
