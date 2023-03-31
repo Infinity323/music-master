@@ -138,13 +138,13 @@ def compare_arrays(ideal_array, actual_array):
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 50: # bound 20 cents
+            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 50: # bound 50 cents
                 matches_notes += 1
             if Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
                 matches_dynamics += 1
             if (abs(ideal_note.start - actual_note.start) <= 0.25 and abs(ideal_note.end - actual_note.end) <= 0.25): # bound 0.25 sec
                 matches_start_stop += 1
-            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 50: # bound 20 cents
+            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 50: # bound 50 cents
                 differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
             if not Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
                 differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
