@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 from threading import Thread
+from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
 from .note import Note
 
 # Receiving the recorded file from the client
@@ -16,7 +17,7 @@ FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
 WINDOW_LENGTH = FRAME_LENGTH//2 # Window length. Default FRAME_LENGTH//2
 HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH//4
 # Signal processing function parameters
-NUM_THREADS = 4
+NUM_SUBPROCESSES = 8
 MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before considering them as different notes.
 MIN_NOTE_LENGTH = 0.1 # Min note length in seconds.
 
@@ -35,42 +36,51 @@ def freq_to_notes(f0, times, amp_maxes):
             frequencies.append(f0[i])
             amplitudes.append(amp_maxes[i])
 
-    note_struct = []
+    note_objects = []
 
     # Turns the frequencies into a list of Note objects
     i = 1
     while i < len(frequencies):
-        previous_freq = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
-        current_freq = 1 if frequencies[i] == "Rest" else frequencies[i]
+        previous = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
+        current = 1 if frequencies[i] == "Rest" else frequencies[i]
         
         # Similar enough frequencies
-        if Note.frequency_difference_in_cents(current_freq, previous_freq) <= MAX_CENTS_ERROR:
+        if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
             # If the note is the same as the previous note, update the duration
             start_time = times[i-1]
-            note_obj = Note(current_freq, amplitudes[i], start_time, 0)
+            note_obj = Note(current, amplitudes[i], start_time, 0)
             while (i < len(frequencies) and
-                   Note.frequency_difference_in_cents(current_freq, previous_freq) <= MAX_CENTS_ERROR):
+                   Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
                 end_time = times[i]
                 i += 1
                 if i == len(frequencies):
                     break
-                previous_freq = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
-                current_freq = 1 if frequencies[i] == "Rest" else frequencies[i]
+                previous = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
+                current = 1 if frequencies[i] == "Rest" else frequencies[i]
             note_obj.end = end_time
-            note_struct.append(note_obj)
+            note_objects.append(note_obj)
 
-        # (Notes that aren't duplicated are skipped)    
+        # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
-    
+
+    # Remove notes that are too short
+    note_objects = [note for note in note_objects if
+                   note.end - note.start >= MIN_NOTE_LENGTH]
+    # Merge consecutive notes that are similar enough in pitch and are too close together in time
+    for i in range(len(note_objects)-1, 0, -1):
+        current = note_objects[i]
+        previous = note_objects[i-1]
+        if (Note.frequency_difference_in_cents(current.pitch, previous.pitch) <= MAX_CENTS_ERROR and
+            current.start - previous.end <= FRAME_PERIOD/2):
+            note_objects[i-1].end = current.end
+            note_objects.pop(i)
+
     # Replace notes with frequencies of 1 with "Rest"
-    for note in note_struct:
+    for note in note_objects:
         if note.pitch == 1:
             note.pitch = "Rest"
-    # Remove notes that are too short
-    note_struct = [note for note in note_struct if
-                   note.end - note.start >= MIN_NOTE_LENGTH]
     
-    return note_struct
+    return note_objects
 
 # Turns the notes into a JSON file structure
 def notes_to_JSON(note_struct):
@@ -87,43 +97,37 @@ def notes_to_JSON(note_struct):
 
     return result_object
 
-class PYINThread(Thread):
-    def __init__(self, y):
-        Thread.__init__(self)
-        self.y = y
-    def run(self):
-        self.f0, self._, self._ = librosa.pyin(self.y,
-                                               fmin=librosa.note_to_hz('C0'),
-                                               fmax=librosa.note_to_hz('C7'),
-                                               frame_length=FRAME_LENGTH)
+# Wrapper function for librosa.pyin to use with futures
+def pyin_wrapper(y):
+    f0, _, _ = librosa.pyin(y,
+                            fmin=librosa.note_to_hz('C0'),
+                            fmax=librosa.note_to_hz('C7'),
+                            frame_length=FRAME_LENGTH)
+    return f0
 
 # Analyzes wave file, puts it into a data structure
 def signal_processing(rec_file):
 
-    y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
+    y, _ = librosa.load(rec_file, sr=SAMPLE_RATE)
     y, _ = librosa.effects.trim(y)
-
-    threads = []
-    for i in range(NUM_THREADS):
-        start = int(i/NUM_THREADS*len(y))
-        end = int((i+1)/NUM_THREADS*len(y))-1
-        threads.append(PYINThread(y[start:end]))
     
-    for thread in threads:
-        thread.start()
-        
-    for thread in threads:
-        thread.join()
+    # Split up time domain data into chunks
+    time_domain = [y[int(i/NUM_SUBPROCESSES*len(y)):int((i+1)/NUM_SUBPROCESSES*len(y))-1]
+                   for i in range(NUM_SUBPROCESSES)]
+    # Start subprocesses
+    futures = []
+    with ProcessPoolExecutor(max_workers=NUM_SUBPROCESSES) as executor:
+        futures = [executor.submit(pyin_wrapper, subarray) for subarray in time_domain]
+        wait(futures, return_when=ALL_COMPLETED)
     
-    f0 = np.array([i.f0 for i in threads])
+    # Merge results and delete any extraneous frequencies
+    f0 = np.array([i.result() for i in futures])
     f0 = f0.flatten()
+    original_f0_len = len(f0)
+    for i in range(NUM_SUBPROCESSES-2, 0, -1):
+        f0 = np.delete(f0, int(i/NUM_SUBPROCESSES*original_f0_len))
 
-    # f0 holds the fundamental frequencies we need to use
-    # f0, voiced_flag, voiced_probs = librosa.pyin(y,
-    #                                              fmin=librosa.note_to_hz('C0'),
-    #                                              fmax=librosa.note_to_hz('C7'),
-    #                                              frame_length=FRAME_LENGTH)
-
+    # Get times for frequencies
     times = librosa.times_like(f0, hop_length=HOP_LENGTH)
 
     # Gets the amplitude of the fundamental frequencies
