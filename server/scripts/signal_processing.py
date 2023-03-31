@@ -1,14 +1,16 @@
+"""Signal Processing
+
+This module contains functions needed for the performance API endpoint to
+process the data from a WAV sound file, convert the frequency data into a list
+of usable notes, store the list of extrapolated notes into a JSON, and then
+return that JSON to be stored locally in the file system.
+"""
 import librosa
-import librosa.display # for plotting, debugging
 import numpy as np
-import matplotlib.pyplot as plt
 import json
-from threading import Thread
+from typing import List, Dict
 from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
 from .note import Note
-
-# Receiving the recorded file from the client
-# It will be passed in by performance.py
 
 # Librosa parameters
 FRAME_LENGTH = 256 # Length of frame in samples. Default 2048
@@ -22,14 +24,83 @@ MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before co
 MIN_NOTE_LENGTH = 0.1 # Min note length in seconds.
 REST_FREQUENCY = 1 # Arbitrary frequency value assigned to rests.
 
-def freq_to_notes(f0, times, amp_maxes):
-    # Takes in two lists one for time and one for frequencies, and return a list of Note objects
-    # Store the frequencies in the data/dat/ folder as a JSON
+def signal_processing(rec_file: str) -> Dict:
+    """Analyzes WAV sound file and returns a JSON containing the list
+    of extrapolated notes.
+
+    Args:
+        rec_file (str): The file path of the WAV file
+
+    Returns:
+        Dict: The JSON with the list of notes
+    """
+
+    y, _ = librosa.load(rec_file, sr=SAMPLE_RATE)
+    y, _ = librosa.effects.trim(y)
+    
+    # Split up time domain data into chunks
+    time_domain = [y[int(i/NUM_SUBPROCESSES*len(y)):int((i+1)/NUM_SUBPROCESSES*len(y))-1]
+                   for i in range(NUM_SUBPROCESSES)]
+    # Start subprocesses
+    futures = []
+    with ProcessPoolExecutor(max_workers=NUM_SUBPROCESSES) as executor:
+        futures = [executor.submit(pyin_wrapper, subarray) for subarray in time_domain]
+        wait(futures, return_when=ALL_COMPLETED)
+    
+    # Merge results and delete any extraneous frequencies
+    f0 = np.array([i.result() for i in futures])
+    f0 = f0.flatten()
+    original_f0_len = len(f0)
+    for i in range(NUM_SUBPROCESSES-2, 0, -1):
+        f0 = np.delete(f0, int(i/NUM_SUBPROCESSES*original_f0_len))
+
+    # Get times for frequencies
+    times = librosa.times_like(f0, hop_length=HOP_LENGTH)
+
+    # Gets the amplitude of the fundamental frequencies
+    amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
+    amp_maxes = np.max(amplitude, axis=0).tolist()
+
+    # Converts the fundamental frequencies to the notes data structure
+    notes = freq_to_notes(f0, times, amp_maxes)
+
+    # Converts the notes data structure to a JSON file structure
+    result = notes_to_JSON(notes)
+
+    return result
+
+def pyin_wrapper(y: np.array) -> np.array:
+    """Wrapper function for librosa.pyin to use with futures library.
+
+    Args:
+        y (np.array): An audio time series array
+
+    Returns:
+        np.array: An array of fundamental frequencies
+    """
+    f0, _, _ = librosa.pyin(y,
+                            fmin=librosa.note_to_hz('C0'),
+                            fmax=librosa.note_to_hz('C7'),
+                            frame_length=FRAME_LENGTH)
+    return f0
+
+def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
+    """Converts an array of frequencies, timestamps, and amplitudes into
+    a list of notes.
+
+    Args:
+        f0 (np.array): The array of fundamental frequencies
+        times (np.array): The array of timestamps
+        amp_maxes (np.array): The array of max amplitudes
+
+    Returns:
+        List[Note]: A list of notes
+    """
+    
     frequencies = []
     amplitudes = []
-
     for i in range(len(f0)):
-        # This deals with rests
+        # Replace nan frequencies (rests) with arbitrary value and 0 amplitude
         if np.isnan(f0[i]):
             frequencies.append(REST_FREQUENCY)
             amplitudes.append(0)
@@ -37,9 +108,8 @@ def freq_to_notes(f0, times, amp_maxes):
             frequencies.append(f0[i])
             amplitudes.append(amp_maxes[i])
 
-    note_objects = []
-
     # Turns the frequencies into a list of Note objects
+    note_objects = []
     i = 1
     while i < len(frequencies):
         previous = frequencies[i-1]
@@ -80,62 +150,25 @@ def freq_to_notes(f0, times, amp_maxes):
     
     return note_objects
 
-# Turns the notes into a JSON file structure
-def notes_to_JSON(note_struct):
-    test = []
-    for i in range(len(note_struct)):
-        test.append(note_struct[i].__dict__)
+def notes_to_JSON(notes: List[Note]) -> Dict:
+    """Converts a list of notes into a JSON.
+
+    Args:
+        notes (List[Note]): The list of notes
+
+    Returns:
+        Dict: A dict containing the number of notes and the list of notes
+    """
+    
+    notes_JSON_array = []
+    for i in range(len(notes)):
+        notes_JSON_array.append(notes[i].__dict__)
 
     result_dict = {
-        "size": len(note_struct),
-        "notes": test
+        "size": len(notes),
+        "notes": notes_JSON_array
     }
 
     result_object = json.dumps(result_dict, indent=4)
 
     return result_object
-
-# Wrapper function for librosa.pyin to use with futures
-def pyin_wrapper(y):
-    f0, _, _ = librosa.pyin(y,
-                            fmin=librosa.note_to_hz('C0'),
-                            fmax=librosa.note_to_hz('C7'),
-                            frame_length=FRAME_LENGTH)
-    return f0
-
-# Analyzes wave file, puts it into a data structure
-def signal_processing(rec_file):
-
-    y, _ = librosa.load(rec_file, sr=SAMPLE_RATE)
-    y, _ = librosa.effects.trim(y)
-    
-    # Split up time domain data into chunks
-    time_domain = [y[int(i/NUM_SUBPROCESSES*len(y)):int((i+1)/NUM_SUBPROCESSES*len(y))-1]
-                   for i in range(NUM_SUBPROCESSES)]
-    # Start subprocesses
-    futures = []
-    with ProcessPoolExecutor(max_workers=NUM_SUBPROCESSES) as executor:
-        futures = [executor.submit(pyin_wrapper, subarray) for subarray in time_domain]
-        wait(futures, return_when=ALL_COMPLETED)
-    
-    # Merge results and delete any extraneous frequencies
-    f0 = np.array([i.result() for i in futures])
-    f0 = f0.flatten()
-    original_f0_len = len(f0)
-    for i in range(NUM_SUBPROCESSES-2, 0, -1):
-        f0 = np.delete(f0, int(i/NUM_SUBPROCESSES*original_f0_len))
-
-    # Get times for frequencies
-    times = librosa.times_like(f0, hop_length=HOP_LENGTH)
-
-    # Gets the amplitude of the fundamental frequencies
-    amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
-    amp_maxes = np.max(amplitude, axis=0).tolist()
-
-    # Converts the fundamental frequencies to the notes data structure
-    notes = freq_to_notes(f0, times, amp_maxes)
-
-    # Converts the notes data structure to a JSON file structure
-    result = notes_to_JSON(notes)
-
-    return result
