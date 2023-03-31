@@ -7,6 +7,7 @@
   --btn-color: #E8EBF7;
   --hover-color: #ACBED8;
   --select-color: #D78521;
+  --border-color: rgba(1, 1, 1, 0.2);
   --unused-color: #DE1A1A;
 }
 
@@ -85,7 +86,7 @@ h2 {
 /********************/
 .btn {
   background-color: var(--btn-color);
-  border: 1px solid black;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   margin: 5px 5px;
   padding: 20px 20px;
@@ -163,7 +164,6 @@ table {
 }
 table tr.header {
   background-color: var(--btn-color);
-  border: 1px solid black;
 }
 table tr.data {
   text-align: left;
@@ -178,7 +178,7 @@ table tr.data.selected {
   height: 300px;
   width: 600px;
   overflow: auto;
-  border: 1px solid rgba(1, 1, 1, 0.2);
+  border: 1px solid var(--border-color);
 }
 
 /********************/
@@ -209,7 +209,7 @@ input[type=file] {
 /*    Metronome     */
 /********************/
 div.metronome {
-  border: 1px solid rgba(1, 1, 1, 0.5);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -224,7 +224,7 @@ div.metronome.playing {
 }
 div.metro.bpm {
   background-color: var(--hover-color);
-  border: 1px solid black;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   margin: 2.5px;
   text-align: center;
@@ -234,7 +234,7 @@ div.metro.bpm {
   width: 60px;
 }
 div.btn.metro {
-  border: 1px solid black;  
+  border: 1px solid var(--border-color);  
   padding: 10px;
   height: 50px;
   width: 50px;
@@ -250,7 +250,7 @@ div.btn.bpm {
 }
 .metronome-playing{
   background-color:#DE1A1A;
-  border: 1px solid rgba(1, 1, 1, 0.5);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -260,7 +260,7 @@ div.btn.bpm {
 }
 .metronome{
   background-color:azure;
-  border: 1px solid rgba(1, 1, 1, 0.5);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -276,7 +276,7 @@ div.tuner-center {
   display: flex;
   width: 200px;
   height: 200px;
-  border: 1px solid rgba(1, 1, 1, 0.5);
+  border: 1px solid var(--border-color);
   border-radius: 50%;
   background-color: var(--btn-color);
   vertical-align: middle;

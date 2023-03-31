@@ -135,13 +135,15 @@ function PracticeHistoryGraph() {
         type: 'time',
         time: {
           displayFormats: {
-            millisecond: "M/dd/yy H:mm:ss",
-            second: "M/dd/yy H:mm:ss",
-            minute: "M/dd/yy H:mm",
-            hour: "M/dd/yy H:mm",
-            day: "M/dd/yy",
-            week: "M/dd/yy",
-            month: "M/dd/yy",
+            millisecond: "H:mm:ss",
+            second: "H:mm:ss",
+            minute: "H:mm",
+            hour: "M/d H:mm",
+            day: "M/d",
+            week: "M/d",
+            month: "M/yyyy",
+            quarter: "M/yyyy",
+            year: "yyyy"
           }
         }
       }
