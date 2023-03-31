@@ -85,7 +85,7 @@ def addPerformance():
         json.dump([d.to_dict() for d in differences], diff_json_file, indent=4, default=Note.custom_serializer)
     
     # send info to database
-    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path)
+    new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path, diff_json_path)
     db.session.add(new_performance)
     db.session.commit()
     return new_performance.serialize
