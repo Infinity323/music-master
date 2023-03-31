@@ -20,6 +20,7 @@ HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH/
 NUM_SUBPROCESSES = 8
 MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before considering them as different notes.
 MIN_NOTE_LENGTH = 0.1 # Min note length in seconds.
+REST_FREQUENCY = 1 # Arbitrary frequency value assigned to rests.
 
 def freq_to_notes(f0, times, amp_maxes):
     # Takes in two lists one for time and one for frequencies, and return a list of Note objects
@@ -30,7 +31,7 @@ def freq_to_notes(f0, times, amp_maxes):
     for i in range(len(f0)):
         # This deals with rests
         if np.isnan(f0[i]):
-            frequencies.append('Rest')
+            frequencies.append(REST_FREQUENCY)
             amplitudes.append(0)
         else:
             frequencies.append(f0[i])
@@ -41,8 +42,8 @@ def freq_to_notes(f0, times, amp_maxes):
     # Turns the frequencies into a list of Note objects
     i = 1
     while i < len(frequencies):
-        previous = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
-        current = 1 if frequencies[i] == "Rest" else frequencies[i]
+        previous = frequencies[i-1]
+        current = frequencies[i]
         
         # Similar enough frequencies
         if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
@@ -53,31 +54,28 @@ def freq_to_notes(f0, times, amp_maxes):
                    Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
                 end_time = times[i]
                 i += 1
-                if i == len(frequencies):
+                if i >= len(frequencies):
                     break
-                previous = 1 if frequencies[i-1] == "Rest" else frequencies[i-1]
-                current = 1 if frequencies[i] == "Rest" else frequencies[i]
+                previous = frequencies[i-1]
+                # If i is at a point where the subprocesses combined their output, just skip
+                while i % int(len(frequencies)/NUM_SUBPROCESSES) <= 2:
+                    i += 1
+                if i >= len(frequencies):
+                    break
+                current = frequencies[i]
             note_obj.end = end_time
             note_objects.append(note_obj)
 
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
 
-    # Remove notes that are too short
+    # Keep notes that meet the minimum length requirement
     note_objects = [note for note in note_objects if
-                   note.end - note.start >= MIN_NOTE_LENGTH]
-    # Merge consecutive notes that are similar enough in pitch and are too close together in time
-    for i in range(len(note_objects)-1, 0, -1):
-        current = note_objects[i]
-        previous = note_objects[i-1]
-        if (Note.frequency_difference_in_cents(current.pitch, previous.pitch) <= MAX_CENTS_ERROR and
-            current.start - previous.end <= FRAME_PERIOD/2):
-            note_objects[i-1].end = current.end
-            note_objects.pop(i)
+                    note.end - note.start >= MIN_NOTE_LENGTH]
 
-    # Replace notes with frequencies of 1 with "Rest"
+    # Replace note pitches that match rest frequency with "Rest"
     for note in note_objects:
-        if note.pitch == 1:
+        if note.pitch == REST_FREQUENCY:
             note.pitch = "Rest"
     
     return note_objects
