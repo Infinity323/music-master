@@ -13,7 +13,7 @@ class Note:
             return False
 
         pitch_difference_in_cents = abs(Note.frequency_difference_in_cents(self.pitch, other.pitch))
-        pitch_match = pitch_difference_in_cents <= 20 # bound 20 cents
+        pitch_match = pitch_difference_in_cents <= 50 # bound 20 cents
 
         return (pitch_match and
                 Note.is_velocity_equal(self.velocity, other.velocity) and # within 30% accuracy
