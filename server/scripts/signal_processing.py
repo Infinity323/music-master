@@ -8,7 +8,7 @@ return that JSON to be stored locally in the file system.
 import librosa
 import numpy as np
 import json
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from .note import Note
 
 # Librosa parameters
@@ -36,6 +36,27 @@ def signal_processing(rec_file: str) -> Dict:
         Dict: The JSON with the list of notes
     """
 
+    f0, times, amp_maxes = get_f0_time_amp(rec_file)
+
+    # Converts the fundamental frequencies to the notes data structure
+    notes = freq_to_notes(f0, times, amp_maxes)
+
+    # Converts the notes data structure to a JSON file structure
+    result = notes_to_JSON(notes)
+
+    return result
+
+def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
+    """Gets fundamental frequencies, timestamps, and amplitudes from a WAV
+    sound file.
+
+    Args:
+        rec_file (str): The file path of the WAV file
+
+    Returns:
+        Tuple[np.array, np.array, np.array]: The arrays for fundamental
+            frequency, their times, and amplitudes
+    """
     y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
     y, _ = librosa.effects.trim(y)
     
@@ -47,14 +68,8 @@ def signal_processing(rec_file: str) -> Dict:
     # Gets the amplitude of the fundamental frequencies
     amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
     amp_maxes = np.max(amplitude, axis=0).tolist()
-
-    # Converts the fundamental frequencies to the notes data structure
-    notes = freq_to_notes(f0, times, amp_maxes)
-
-    # Converts the notes data structure to a JSON file structure
-    result = notes_to_JSON(notes)
-
-    return result
+    
+    return f0, times, amp_maxes
 
 def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
