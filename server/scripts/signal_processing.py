@@ -9,7 +9,6 @@ import librosa
 import numpy as np
 import json
 from typing import List, Dict
-from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
 from .note import Note
 
 # Librosa parameters
@@ -18,11 +17,13 @@ SAMPLE_RATE = 22050 # Default 22050
 FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
 WINDOW_LENGTH = FRAME_LENGTH//2 # Window length. Default FRAME_LENGTH//2
 HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH//4
+FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
+FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-NUM_SUBPROCESSES = 8
 MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before considering them as different notes.
-MIN_NOTE_LENGTH = 0.1 # Min note length in seconds.
-REST_FREQUENCY = 1 # Arbitrary frequency value assigned to rests.
+MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
+MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
+REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
 
 def signal_processing(rec_file: str) -> Dict:
     """Analyzes WAV sound file and returns a JSON containing the list
@@ -35,24 +36,10 @@ def signal_processing(rec_file: str) -> Dict:
         Dict: The JSON with the list of notes
     """
 
-    y, _ = librosa.load(rec_file, sr=SAMPLE_RATE)
+    y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
     y, _ = librosa.effects.trim(y)
     
-    # Split up time domain data into chunks
-    time_domain = [y[int(i/NUM_SUBPROCESSES*len(y)):int((i+1)/NUM_SUBPROCESSES*len(y))-1]
-                   for i in range(NUM_SUBPROCESSES)]
-    # Start subprocesses
-    futures = []
-    with ProcessPoolExecutor(max_workers=NUM_SUBPROCESSES) as executor:
-        futures = [executor.submit(pyin_wrapper, subarray) for subarray in time_domain]
-        wait(futures, return_when=ALL_COMPLETED)
-    
-    # Merge results and delete any extraneous frequencies
-    f0 = np.array([i.result() for i in futures])
-    f0 = f0.flatten()
-    original_f0_len = len(f0)
-    for i in range(NUM_SUBPROCESSES-2, 0, -1):
-        f0 = np.delete(f0, int(i/NUM_SUBPROCESSES*original_f0_len))
+    f0 = librosa.yin(y, fmin=FMIN, fmax=FMAX, sr=sr, frame_length=FRAME_LENGTH)
 
     # Get times for frequencies
     times = librosa.times_like(f0, hop_length=HOP_LENGTH)
@@ -69,21 +56,6 @@ def signal_processing(rec_file: str) -> Dict:
 
     return result
 
-def pyin_wrapper(y: np.array) -> np.array:
-    """Wrapper function for librosa.pyin to use with futures library.
-
-    Args:
-        y (np.array): An audio time series array
-
-    Returns:
-        np.array: An array of fundamental frequencies
-    """
-    f0, _, _ = librosa.pyin(y,
-                            fmin=librosa.note_to_hz('C0'),
-                            fmax=librosa.note_to_hz('C7'),
-                            frame_length=FRAME_LENGTH)
-    return f0
-
 def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
     a list of notes.
@@ -97,16 +69,8 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
         List[Note]: A list of notes
     """
     
-    frequencies = []
-    amplitudes = []
-    for i in range(len(f0)):
-        # Replace nan frequencies (rests) with arbitrary value and 0 amplitude
-        if np.isnan(f0[i]):
-            frequencies.append(REST_FREQUENCY)
-            amplitudes.append(0)
-        else:
-            frequencies.append(f0[i])
-            amplitudes.append(amp_maxes[i])
+    frequencies = f0
+    amplitudes = amp_maxes
 
     # Turns the frequencies into a list of Note objects
     note_objects = []
@@ -118,8 +82,8 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
         # Similar enough frequencies
         if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
             # If the note is the same as the previous note, update the duration
-            start_time = times[i-1]
-            note_obj = Note(current, amplitudes[i], start_time, 0)
+            offset = times[i-1]
+            new_note = Note(current, amplitudes[i], offset, 0)
             while (i < len(frequencies) and
                    Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
                 end_time = times[i]
@@ -127,26 +91,37 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
                 if i >= len(frequencies):
                     break
                 previous = frequencies[i-1]
-                # If i is at a point where the subprocesses combined their output, just skip
-                while i % int(len(frequencies)/NUM_SUBPROCESSES) <= 2:
-                    i += 1
-                if i >= len(frequencies):
-                    break
                 current = frequencies[i]
-            note_obj.end = end_time
-            note_objects.append(note_obj)
+            new_note.end = end_time
+            note_objects.append(new_note)
 
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
 
-    # Keep notes that meet the minimum length requirement
-    note_objects = [note for note in note_objects if
-                    note.end - note.start >= MIN_NOTE_LENGTH]
+    # YIN is kind of noisy. If a note isn't long enough, merge it with the
+    # previous note
+    last_good_index = 0
+    last_good_end = 0
+    for i in range(len(note_objects)):
+        if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
+            note_objects[last_good_index].end = note_objects[i].end
+            note_objects[i].pitch = REST_FREQUENCY
+        else:
+            last_good_index = i
+            last_good_end = note_objects[i].end
 
-    # Replace note pitches that match rest frequency with "Rest"
+    # Keep notes that don't match the rest frequency
+    note_objects = [note for note in note_objects if
+                    note.pitch != REST_FREQUENCY]
+
+    # Cut last note's ending short because there might be garbage attached
+    note_objects[-1].end = last_good_end
+    
+    # Time shift notes to start at 0
+    offset = note_objects[0].start
     for note in note_objects:
-        if note.pitch == REST_FREQUENCY:
-            note.pitch = "Rest"
+        note.start -= offset
+        note.end -= offset
     
     return note_objects
 
