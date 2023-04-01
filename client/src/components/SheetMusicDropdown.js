@@ -5,19 +5,25 @@ import loading_gif from '../assets/images/loading_gif.gif'
 import { SheetMusicIdContext } from '../utils/Contexts';
 
 function SheetMusicDropdown() {
+  const backgroundColor = style.getPropertyValue('--bg-color');
+  const borderColor = "rgba(1, 1, 1, 0.2)";
+  const buttonColor = style.getPropertyValue('--btn-color');
+  const textColor = style.getPropertyValue('--text-color');
+
   const styles = {
     control: (styles) => ({
       ...styles,
-      backgroundColor: style.getPropertyValue('--btn-color'),
-      color: style.getPropertyValue('--text-color'),
+      backgroundColor: buttonColor,
+      borderColor: borderColor,
+      color: textColor,
       fontSize: 16,
       width: 300
     }),
     option: (styles) => {
       return {
         ...styles,
-        backgroundColor: style.getPropertyValue('--bg-color'),
-        color: style.getPropertyValue('--text-color'),
+        backgroundColor: backgroundColor,
+        color: textColor,
         fontSize: 16,
         width: 300
       };
@@ -25,13 +31,14 @@ function SheetMusicDropdown() {
     singleValue: (styles) => {
       return {
         ...styles,
-        color: style.getPropertyValue('--text-color')
+        color: textColor
       };
     },
     menu: (styles) => {
       return {
         ...styles,
-        backgroundColor: style.getPropertyValue('--bg-color'),
+        backgroundColor: backgroundColor,
+        borderColor: "red",
         width: 300
       };
     }
