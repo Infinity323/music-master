@@ -36,12 +36,13 @@ def signal_processing(rec_file: str) -> Dict:
         Dict: The JSON with the list of notes
     """
 
+    # Converts sound file to frequency data, etc.
     f0, times, amp_maxes = get_f0_time_amp(rec_file)
 
-    # Converts the fundamental frequencies to the notes data structure
+    # Converts the fundamental frequencies, etc. to notes
     notes = freq_to_notes(f0, times, amp_maxes)
 
-    # Converts the notes data structure to a JSON file structure
+    # Converts the notes to a JSON file structure
     result = notes_to_JSON(notes)
 
     return result
@@ -57,6 +58,7 @@ def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
         Tuple[np.array, np.array, np.array]: The arrays for fundamental
             frequency, their times, and amplitudes
     """
+    
     y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
     y, _ = librosa.effects.trim(y)
     
@@ -83,30 +85,31 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
     Returns:
         List[Note]: A list of notes
     """
-    
-    frequencies = f0
-    amplitudes = amp_maxes
 
     # Turns the frequencies into a list of Note objects
     note_objects = []
     i = 1
-    while i < len(frequencies):
-        previous = frequencies[i-1]
-        current = frequencies[i]
+    while i < len(f0):
+        previous = f0[i-1]
+        current = f0[i]
         
         # Similar enough frequencies
         if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
             # If the note is the same as the previous note, update the duration
             offset = times[i-1]
-            new_note = Note(current, amplitudes[i], offset, 0)
-            while (i < len(frequencies) and
+            new_note = Note(current, amp_maxes[i], offset, 0)
+            note_frequencies = [previous]
+            while (i < len(f0) and
                    Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
                 end_time = times[i]
+                note_frequencies.append(current)
                 i += 1
-                if i >= len(frequencies):
+                if i >= len(f0):
                     break
-                previous = frequencies[i-1]
-                current = frequencies[i]
+                previous = f0[i-1]
+                current = f0[i]
+            # Average note's frequencies and reset end time
+            new_note.pitch = np.average(note_frequencies)
             new_note.end = end_time
             note_objects.append(new_note)
 
