@@ -61,3 +61,36 @@ def test_happy_birthday_actual():
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
         assert(Note.frequency_difference_in_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_ERROR)
+
+def test_happy_birthday_staccato():
+    # File exported from MuseScore (staccato)
+    file = WAV_DATA_PATH + "happybirthday_staccato.wav"
+    f0, times, amp_maxes = get_f0_time_amp(file)
+    notes = freq_to_notes(f0, times, amp_maxes)
+    xml_notes = initialize_notes("Happy Birthday.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.frequency_difference_in_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_ERROR)
+
+def test_wet_hands_expected():
+    # File exported from MuseScore
+    file = WAV_DATA_PATH + "wethands_expected.wav"
+    f0, times, amp_maxes = get_f0_time_amp(file)
+    notes = freq_to_notes(f0, times, amp_maxes)
+    xml_notes = initialize_notes("Wet Hands.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.frequency_difference_in_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_ERROR)
+
+def test_wet_hands_actual():
+    # File is an actual piano recording
+    file = WAV_DATA_PATH + "wethands_actual.wav"
+    f0, times, amp_maxes = get_f0_time_amp(file)
+    notes = freq_to_notes(f0, times, amp_maxes)
+    xml_notes = initialize_notes("Wet Hands.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.frequency_difference_in_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_ERROR)

@@ -20,7 +20,7 @@ HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH/
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before considering them as different notes.
+MAX_CENTS_ERROR = 31.9 # Max difference between two frequencies in cents before considering them as different notes.
 MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
 MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
