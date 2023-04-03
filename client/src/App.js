@@ -30,7 +30,8 @@ function App() {
                 nodeRef={nodeRef}
                 timeout={300}
                 classNames="page"
-                unmountOnExit
+                mountOnEnter={false}
+                unmountOnExit={true}
               >
                 {(state) => (
                   <div ref={nodeRef} className="page">

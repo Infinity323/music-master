@@ -51,7 +51,7 @@ function AddGoalButton({goals, setGoals}) {
       </div>
       <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className="modal" overlayClassName="modal-overlay">
         <Flex flexDir={"row"}>
-          <Box width={360}>
+          <Box width={"50%"}>
             Name
             <br/>
             <input type="text" onChange={(e) => setName(e.target.value)} />
@@ -62,7 +62,7 @@ function AddGoalButton({goals, setGoals}) {
             <input type="date" id="goal" defaultValue={endDate} onChange={(e) => setEndDate(e.target.value)} />
             <br/>
           </Box>
-          <Box width={360}>
+          <Box width={"50%"}>
             Average Tempo: {averageTempo}
             <ReactSlider
               className="slider"

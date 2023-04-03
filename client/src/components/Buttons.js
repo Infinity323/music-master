@@ -10,7 +10,7 @@ export function BackButton() {
   const navigate = useNavigate();
   return (
     <div className="btn back" onClick={() => navigate(-1)}>
-      <img src={backArrow} alt="Back" width="60px"/>
+      <img src={backArrow} className="corner" alt="Back"/>
     </div>
   );
 }
@@ -50,10 +50,10 @@ export function SettingsButton() {
   
   return (
     <div className={clicked ? "btn settings expanded" : "btn settings"} onClick={() => setClicked(!clicked)}>
-      <img src={settingsIcon} alt="Settings" width="60px"/>
+      <img src={settingsIcon} className="corner" alt="Settings"/>
       <div class="settings-menu">
-        <img src={lightMode} alt="Settings" width="60px" onClick={() => setLightMode()}/>
-        <img src={darkMode} alt="Settings" width="60px" onClick={() => setDarkMode()}/>
+        <img src={lightMode} className="corner" alt="Settings" onClick={() => setLightMode()}/>
+        <img src={darkMode} className="corner" alt="Settings" onClick={() => setDarkMode()}/>
       </div>
     </div>
   );

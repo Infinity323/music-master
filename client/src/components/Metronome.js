@@ -145,7 +145,7 @@ class Metronome extends Component {
         <Flex flexDir="row" alignItems="center">
           <Box>
             <div className="btn metro" onClick={this.startStopMetro}>
-              <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
+              <img src={image_metronome} id="metronome" alt="Start/Stop Metronome"/>
             </div>
           </Box>
           <Flex flexDir="column" alignItems="center">
