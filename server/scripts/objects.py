@@ -60,13 +60,62 @@ class Note:
             return False
         confidence = self.compare_notes(other)
         return confidence >= 0.7
-        
-    # Define the string representation of the Note object.
-    def __str__(self):
-        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
     
-    def __repr__(self):
-        return "Pitch: {pitch}, Start: {start:.2f} sec, End: {end:.2f} sec".format(pitch=self.pitch, start=self.start, end=self.end)
+    def compare_notes(self, other):
+        if not isinstance(other, Note):
+            return False
+
+        # Calculate the confidence for each factor
+        pitch_confidence = Note.get_pitch_eq_confidence(self.pitch, other.pitch)
+        start_confidence = Note.get_end_eq_confidence(self.start, other.start)
+        end_confidence = Note.get_end_eq_confidence(self.end, other.end)
+        velocity_confidence = Note.get_velocity_eq_confidence(self.velocity, other.velocity)
+
+        # Calculate the total confidence using the weights
+        total_confidence = (
+            0.7 * pitch_confidence +
+            0.2 * start_confidence +
+            0.05 * end_confidence +
+            0.05 * velocity_confidence
+        )
+
+        return total_confidence
+
+    # function to get the difference between two frequencies in unit of cents
+    @staticmethod
+    def get_pitch_eq_confidence(freq1: float, freq2: float, tolerance=50) -> float:
+        return max(0, 1 - (abs(1200 * np.log2(freq1 / freq2)) / tolerance))
+    
+    @staticmethod
+    def get_velocity_eq_confidence(vel1: float, vel2: float, tolerance=30):
+        return max(0, 1 - abs(vel1 - vel2) / tolerance)
+    
+    @staticmethod
+    def get_start_eq_confidence(start1: float, start2: float, tolerance=0.25):
+        return max(0, 1 - abs(start1 - start2) / tolerance)
+    
+    @staticmethod
+    def get_end_eq_confidence(end1, end2, tolerance=0.5):
+        return max(0, 1 - abs(end1 - end2) / tolerance)
+    
+    @staticmethod
+    def get_extra_note_penalty(self, max_duration = 0.125, max_penalty = 0.025):
+        note_duration = self.end - self.start
+        if note_duration >= max_duration:
+            return max_penalty
+        else:
+            return (note_duration / max_duration) * max_penalty
+    
+    # --- outout formatting --- #
+
+    # This function is used to ensure that the note object is properly serialized 
+    @staticmethod
+    def custom_serializer(obj):
+        if isinstance(obj, Note):
+            return obj.to_dict()
+        if isinstance(obj, Difference):
+            return obj.to_dict()
+        raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
     
     # Convert the Note object to a dictionary for JSON serialization.
     def to_dict(self):
@@ -77,45 +126,9 @@ class Note:
             "end": self.end
         }
     
-    def compare_notes(self, other):
-        if not isinstance(other, Note):
-            return False
-
-        # Calculate the confidence for each factor
-        pitch_confidence = max(0, 1 - abs(Note.frequency_difference_in_cents(self.pitch, other.pitch)) / 50)
-        start_confidence = max(0, 1 - abs(self.start - other.start) / 0.25)
-        end_confidence = max(0, 1 - abs(self.end - other.end) / 0.25)
-        dynamics_confidence = max(0, 1 - abs(self.velocity - other.velocity) / 30)
-
-        # Calculate the total confidence using the weights
-        total_confidence = (
-            0.7 * pitch_confidence +
-            0.2 * start_confidence +
-            0.05 * end_confidence +
-            0.05 * dynamics_confidence
-        )
-
-        return total_confidence
-        
-    # This function is used to ensure that the note object is properly serialized 
-    @staticmethod
-    def custom_serializer(obj):
-        if isinstance(obj, Note):
-            return obj.to_dict()
-        if isinstance(obj, Difference):
-            return obj.to_dict()
-        raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
-
-    # function to get the difference between two frequencies in unit of cents
-    @staticmethod
-    def frequency_difference_in_cents(freq1: float, freq2: float) -> float:
-        return abs(1200 * np.log2(freq1 / freq2))
+    # Define the string representation of the Note object.
+    def __str__(self):
+        return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
     
-    @staticmethod
-    def is_velocity_equal(my_velocity, other, tolerance=30): # this tolerance needs to be changed
-        # Calculate the minimum and maximum acceptable range for my_velocity
-        min_range = other - tolerance
-        max_range = other + tolerance
-
-        # Check if my_velocity is within the acceptable range
-        return min_range <= my_velocity <= max_range
+    def __repr__(self):
+        return "Pitch: {pitch}, Start: {start:.2f} sec, End: {end:.2f} sec".format(pitch=self.pitch, start=self.start, end=self.end)

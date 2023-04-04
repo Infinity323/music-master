@@ -20,7 +20,7 @@ HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH/
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-MAX_CENTS_ERROR = 31.9 # Max difference between two frequencies in cents before considering them as different notes.
+MIN_PITCH_EQ_CONFIDENCE = 0.638 # Minimum confidence of pitch equality to be considered equal. (%63.8 of 50 = 31.9 cents)
 MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
 MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
@@ -94,13 +94,13 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
         current = f0[i]
         
         # Similar enough frequencies
-        if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
+        if Note.get_pitch_eq_confidence(current, previous) >= MIN_PITCH_EQ_CONFIDENCE: # passing confidence percentage
             # If the note is the same as the previous note, update the duration
             offset = times[i-1]
             new_note = Note(current, amp_maxes[i], offset, 0)
             note_frequencies = [previous]
             while (i < len(f0) and
-                   Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
+                   Note.get_pitch_eq_confidence(current, previous) >= MIN_PITCH_EQ_CONFIDENCE): # passing confidence percentage
                 end_time = times[i]
                 note_frequencies.append(current)
                 i += 1

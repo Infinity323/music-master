@@ -126,44 +126,42 @@ def compare_arrays(ideal_array, actual_array):
     # Calculate the accuracy values
     matches_notes = matches_dynamics = matches_start_stop = 0
     differences = []
-    extra_note_count = 0
+    total_extra_note_penalty = 0
     
     ideal_index = 0
     actual_index = 0
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) <= 50: # bound 50 cents
+            if (Note.get_pitch_eq_confidence(ideal_note.pitch, actual_note.pitch)) >= 0.7: # 70% confident
                 matches_notes += 1
-            if Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
-                matches_dynamics += 1
-            if (abs(ideal_note.start - actual_note.start) <= 0.25 and abs(ideal_note.end - actual_note.end) <= 0.25): # bound 0.25 sec
-                matches_start_stop += 1
-            if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 50: # bound 50 cents
+            else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'pitch'))
-            if not Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
+            if Note.get_velocity_eq_confidence(ideal_note.velocity, actual_note.velocity) >= 0.7: # 70% confident
+                matches_dynamics += 1
+            else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'velocity'))
-            if (abs(ideal_note.start - actual_note.start) > 0.25): # bound 0.25 sec
-                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'start'))
-            if (abs(ideal_note.end - actual_note.end) > 0.25): # bound 0.25 sec
-                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'end'))
+            if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) >= 0.7 and Note.get_end_eq_confidence(ideal_note.start, actual_note.start) >= 0.6): # start > 70% and end > 60%
+                matches_start_stop += 1
+            else:
+                if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) < 0.7): # less than 70% confident
+                    differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'start'))
+                if (Note.get_end_eq_confidence(ideal_note.start, actual_note.start) >= 0.6): # less than 60% confident
+                    differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'end'))
             ideal_index = ideal_index + 1
             actual_index = actual_index + 1
         elif ideal_note is None and actual_note is not None: # extra note
             differences.append(Difference(None, None, actual_index, actual_note, 'extra'))
-            extra_note_count = extra_note_count + 1
+            total_extra_note_penalty = total_extra_note_penalty + Note.get_extra_note_penalty(actual_note)
             actual_index = actual_index + 1
         elif ideal_note is not None and actual_note is None: # missing note
             differences.append(Difference(ideal_index, ideal_note, None, None, 'missing'))
             actual_index = actual_index + 1
 
     ideal_len_aligned = sum(note is not None for note in aligned_ideal)
-    accuracy_notes = round((matches_notes / ideal_len_aligned) * 100, 2)
+    accuracy_notes = max(0, (round((matches_notes / ideal_len_aligned) * 100, 2) - total_extra_note_penalty))
     accuracy_dynamics = round((matches_dynamics / ideal_len_aligned) * 100, 2)
     accuracy_start_stop = round((matches_start_stop / ideal_len_aligned) * 100, 2)
-
-    # Deduct 5% for every extra note that is detected (TODO: make this more dynamic, short blips/extras shouldn't detract this much)
-    accuracy_notes = round(((matches_notes / ideal_len_aligned) * 100) - (extra_note_count * 5), 2)
 
     return accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences
 
