@@ -20,7 +20,7 @@ HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH/
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-MIN_PITCH_EQ_CONFIDENCE = 0.638 # Minimum confidence of pitch equality to be considered equal. (%63.8 of 50 = 31.9 cents)
+MAX_CENTS_DIFFERENCE = 31.9 # Max cents difference between notes.
 MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
 MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
@@ -37,10 +37,10 @@ def signal_processing(rec_file: str) -> Dict:
     """
 
     # Converts sound file to frequency data, etc.
-    f0, times, amp_maxes = get_f0_time_amp(rec_file)
+    f0, times, amplitudes = get_f0_time_amp(rec_file)
 
     # Converts the fundamental frequencies, etc. to notes
-    notes = freq_to_notes(f0, times, amp_maxes)
+    notes = freq_to_notes(f0, times, amplitudes)
 
     # Converts the notes to a JSON file structure
     result = notes_to_JSON(notes)
@@ -48,9 +48,26 @@ def signal_processing(rec_file: str) -> Dict:
     return result
 
 def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
-    normalized_amplitude = (amplitude - np.min(amplitude)) / (np.max(amplitude) - np.min(amplitude))
-    midi_velocity = np.round(normalized_amplitude * 126 + 1).astype(int)
-    return midi_velocity.tolist()  # Convert the NumPy array to a list of native integers
+    """Converts raw amplitude values to velocity values.
+
+    Args:
+        amplitude (np.array): The raw amplitude values
+
+    Returns:
+        np.array: Normalized velocity values
+    """
+
+    # Amplitude value assigned to mezzo forte (velocity 80)
+    MF_RMS = np.log10(0.0282389)
+    amplitude = np.log10(amplitude)
+    lower = np.min(amplitude)
+    upper = MF_RMS
+    # Normalize notes to this mf value
+    normalized_amplitude = (amplitude - lower) / (upper - lower)
+    midi_velocity = np.round(normalized_amplitude * 79 + 1).astype(int)
+
+    # Convert the NumPy array to a list of native integers
+    return midi_velocity.tolist()
 
 def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     """Gets fundamental frequencies, timestamps, and amplitudes from a WAV
@@ -73,22 +90,22 @@ def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     times = librosa.times_like(f0, hop_length=HOP_LENGTH)
 
     # Gets the amplitude of the fundamental frequencies
-    amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
-    amp_maxes = np.max(amplitude, axis=0).tolist()
+    S = librosa.magphase(librosa.stft(y, n_fft=FRAME_LENGTH, hop_length=HOP_LENGTH, win_length=WINDOW_LENGTH, window=np.ones))[0]
+    amplitudes = librosa.feature.rms(S=S, frame_length=FRAME_LENGTH, hop_length=HOP_LENGTH)[0]
 
     # Convert amplitude to MIDI velocity
-    midi_velocities = amplitude_to_midi_velocity(np.array(amp_maxes))
+    midi_velocities = amplitude_to_midi_velocity(amplitudes)
     
     return f0, times, midi_velocities
 
-def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
+def freq_to_notes(f0: np.array, times: np.array, amplitudes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
     a list of notes.
 
     Args:
         f0 (np.array): The array of fundamental frequencies
         times (np.array): The array of timestamps
-        amp_maxes (np.array): The array of max amplitudes
+        amplitudes (np.array): The array of max amplitudes
 
     Returns:
         List[Note]: A list of notes
@@ -98,27 +115,34 @@ def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[No
     note_objects = []
     i = 1
     while i < len(f0):
-        previous = f0[i-1]
-        current = f0[i]
+        previous_freq = f0[i-1]
+        current_freq = f0[i]
+        previous_amp = amplitudes[i-1]
+        current_amp = amplitudes[i]
         
         # Similar enough frequencies
-        if Note.get_pitch_eq_confidence(current, previous) >= MIN_PITCH_EQ_CONFIDENCE: # passing confidence percentage
+        if Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE:
             # If the note is the same as the previous note, update the duration
             offset = times[i-1]
-            new_note = Note(current, amp_maxes[i], offset, 0)
-            note_frequencies = [previous]
+            new_note = Note(current_freq, current_amp, offset, 0)
+            note_frequencies = [previous_freq]
+            note_amplitudes = [previous_amp]
             while (i < len(f0) and
-                   Note.get_pitch_eq_confidence(current, previous) >= MIN_PITCH_EQ_CONFIDENCE): # passing confidence percentage
+                   Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE):
                 end_time = times[i]
-                note_frequencies.append(current)
+                note_frequencies.append(current_freq)
+                note_amplitudes.append(current_amp)
                 i += 1
                 if i >= len(f0):
                     break
-                previous = f0[i-1]
-                current = f0[i]
+                previous_freq = f0[i-1]
+                current_freq = f0[i]
+                previous_amp = amplitudes[i-1]
+                current_amp = amplitudes[i]
             # Average note's frequencies and reset end time
             new_note.pitch = np.average(note_frequencies)
             new_note.end = end_time
+            new_note.velocity = np.max(note_amplitudes)
             note_objects.append(new_note)
 
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)

@@ -83,6 +83,10 @@ class Note:
 
     # function to get the difference between two frequencies in unit of cents
     @staticmethod
+    def difference_cents(freq1: float, freq2: float) -> float:
+        return abs(1200 * np.log2(freq1 / freq2))
+    
+    @staticmethod
     def get_pitch_eq_confidence(freq1: float, freq2: float, tolerance=50) -> float:
         return max(0, 1 - (abs(1200 * np.log2(freq1 / freq2)) / tolerance))
     
@@ -131,4 +135,5 @@ class Note:
         return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
     
     def __repr__(self):
-        return "Pitch: {pitch}, Start: {start:.2f} sec, End: {end:.2f} sec".format(pitch=self.pitch, start=self.start, end=self.end)
+        return "{pitch:.2f} Hz, {velocity} m/s, {start:.2f}-{end:.2f} s".format(
+            pitch=self.pitch, velocity=self.velocity, start=self.start, end=self.end)
