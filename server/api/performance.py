@@ -1,9 +1,10 @@
-from flask import request
+from flask import request, Blueprint
 from random import randint
-
 import json
+import os
+from datetime import datetime
 
-from app import app, db
+from models import db
 from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
@@ -11,26 +12,24 @@ from scripts.signal_processing import signal_processing
 from scripts.compare import compare_arrays, shift_start_time_to_zero
 from scripts.objects import Difference, Difference_with_info, Note
 
-from datetime import datetime
-
-import os
+performance_blueprint = Blueprint("performance", __name__)
 
 # PERFORMANCE
 
 # Get all performance in database
-@app.get("/performance")
+@performance_blueprint.route("/performance", methods=["GET"])
 def getAllPerformances():
     performances = db.session.query(Performance)
     return [ i.serialize for i in performances ]
 
 # Get performance with specific ID from database
-@app.get("/performance/<int:id>")
+@performance_blueprint.route("/performance/<int:id>", methods=["GET"])
 def getSpecificPerformance(id: int):
     performance = db.session.query(Performance).filter(Performance.id == id).first()
     return performance.serialize
 
 # Add performance to database
-@app.post("/performance")
+@performance_blueprint.route("/performance", methods=["POST"])
 def addPerformance():
 
     new_id = randint(1, 1000000)
@@ -112,7 +111,7 @@ def addPerformance():
     return new_performance.serialize
 
 # Delete performance from database
-@app.delete("/performance/<int:id>")
+@performance_blueprint.route("/performance/<int:id>", methods=["DELETE"])
 def deletePerformance(id):
     performance = db.session.query(Performance).filter(Performance.id == id).first()
     if performance:

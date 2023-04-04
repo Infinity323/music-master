@@ -1,4 +1,4 @@
-from app import db
+from models import db
 
 class Goal(db.Model):
     __tablename__ = "goal"

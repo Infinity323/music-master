@@ -112,19 +112,19 @@ class MusicXMLReader:
                 pygame.time.Clock().tick(10)
             pygame.mixer.quit()
 
-def main():
+# def main():
     # Set the environment variable for the MuseScore path based on the operating system
 
     # note: envronemnt must have MuseScore installed!
     # use for Mac '/Applications/MuseScore 4.app/Contents/MacOS/mscore' 
     # use for linux '/usr/share/applications/mscore.desktop'
     # use for Windows?? i think not certain 'C:\Program Files\MuseScore 4/mscore.exe'
-    environment_path = '/Applications/MuseScore 4.app/Contents/MacOS/mscore'
-    environment.set('musescoreDirectPNGPath', environment_path)
+    # environment_path = '/Applications/MuseScore 4.app/Contents/MacOS/mscore'
+    # environment.set('musescoreDirectPNGPath', environment_path)
 
     # Create a MusicXMLReader instance and print the JSON representation of note data
     # reader = MusicXMLReader('example.musicxml')
     # print(reader.save_notes_json())
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

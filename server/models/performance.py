@@ -1,4 +1,4 @@
-from app import db
+from models import db
 
 class Performance(db.Model):
     __tablename__ = "performance"

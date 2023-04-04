@@ -1,27 +1,30 @@
-from flask import request
+from flask import request, Blueprint
 from random import randint
 import json
 
-from app import app, db
+from models import db
 from models.sheetmusic import SheetMusic
 from scripts.musicxml_reader import MusicXMLReader
+
+sheetmusic_blueprint = Blueprint("sheetmusic", __name__)
 
 # SHEET MUSIC
 
 # Get all sheet music in database
-@app.get("/sheetmusic")
+@sheetmusic_blueprint.route("/sheetmusic", methods=["GET"])
 def getAllSheetMusic():
+    
     sheetMusics = db.session.query(SheetMusic)
     return [ i.serialize for i in sheetMusics ]
 
 # Get sheet music with specific ID from database
-@app.get("/sheetmusic/<int:id>")
+@sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["GET"])
 def getSpecificSheetMusic(id: int):
     sheetMusic = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
     return sheetMusic.serialize
 
 # Add sheet music to database
-@app.post("/sheetmusic")
+@sheetmusic_blueprint.route("/sheetmusic", methods=["POST"])
 def addSheetMusic():
     new_id = randint(1, 1000000)
     new_title = request.form.get("title")
@@ -53,7 +56,7 @@ def addSheetMusic():
     return newSheetMusic.serialize
 
 # Delete sheet music from database
-@app.delete("/sheetmusic/<int:id>")
+@sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["DELETE"])
 def deleteSheetMusic(id):
     sheetMusic = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
     if sheetMusic:

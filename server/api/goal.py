@@ -1,25 +1,27 @@
-from flask import request
+from flask import request, Blueprint
 from random import randint
 
-from app import app, db
+from models import db
 from models.goal import Goal
+
+goal_blueprint = Blueprint("goal", __name__)
 
 # PERFORMANCE
 
 # Get all goals in database
-@app.get("/goal")
+@goal_blueprint.route("/goal", methods=["GET"])
 def getAllGoals():
     goals = db.session.query(Goal)
     return [ i.serialize for i in goals ]
 
 # Get goal with specific ID from database
-@app.get("/goal/<int:id>")
+@goal_blueprint.route("/goal/<int:id>", methods=["GET"])
 def getSpecificGoal(id: int):
     goal = db.session.query(Goal).filter(Goal.id == id).first()
     return goal.serialize
 
 # Add goal to database
-@app.post("/goal")
+@goal_blueprint.route("/goal", methods=["POST"])
 def addGoal():
     data = request.get_json()
     new_id = randint(1, 1000000)
@@ -37,7 +39,7 @@ def addGoal():
     return new_goal.serialize
 
 # Delete goal from database
-@app.delete("/goal/<int:id>")
+@goal_blueprint.route("/goal/<int:id>", methods=["DELETE"])
 def deleteGoal(id):
     goal = db.session.query(Goal).filter(Goal.id == id).first()
     if goal:
