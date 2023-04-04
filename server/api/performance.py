@@ -85,16 +85,20 @@ def addPerformance():
         note_info_data = json.load(file)
 
     differences_with_info  = []
+    prev_ideal_index = 0
     for diff in differences:
         # (pitch, velocity, start, or end)
         if diff.diff_type in ["pitch", "velocity", "start", "end"]:
             differences_with_info.append(Difference_with_info(diff, note_info_data[diff.ideal_idx]))
+            prev_ideal_index = diff.ideal_idx
 
         # (extra or missing)
-        if diff.diff_type in ["missing"]:
-            differences_with_info.append(Difference_with_info(diff, note_info_data[diff.ideal_idx], "missing"))
+        if diff.diff_type == "missing":
+            differences_with_info.append(Difference_with_info(diff, note_info_data[diff.ideal_idx], "note_info contains the missing note"))
+            prev_ideal_index = diff.ideal_idx
 
-    # TODO!!! NEED TO FIX the json storage of differences_with_info
+        if diff.diff_type == "extra":
+            differences_with_info.append(Difference_with_info(diff, [note_info_data[prev_ideal_index]], "note_info contains the last known ideal note that was played correctly"))
 
     # save the diff file locally
     diff_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_diff.json"

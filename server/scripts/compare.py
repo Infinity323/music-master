@@ -2,8 +2,32 @@ import numpy as np
 import json
 from .objects import Difference, Note
 
+import pandas as pd # Debugging
+
+MATCH_SCORE = 2
+MISMATCH_PENALTY = -4
+GAP_PENALTY = -3
+INSERT_PENALTY = -4
+
 # This script compares two arrays of Note objects, representing ideal and actual
 # musical performances, and calculates the accuracy and differences between them.
+
+# DEBUGGING FUNCTION
+
+def save_score_matrix_to_csv(score_matrix, ideal_notes, actual_notes, output_file):
+    score_matrix_list = []
+
+    for i in range(score_matrix.shape[0]):
+        row = []
+        for j in range(score_matrix.shape[1]):
+            row.append(int(score_matrix[i, j]))
+        score_matrix_list.append(row)
+
+    columns = [''] + [str(note) for note in actual_notes]
+    index = [''] + [str(note) for note in ideal_notes]
+    df = pd.DataFrame(score_matrix_list, columns=columns, index=index)
+
+    df.to_csv(output_file, sep=',')
 
 # DEBUGGING FUNCTION
 def save_aligned_arrays_to_json(aligned_ideal, aligned_actual, output_file):
@@ -30,7 +54,7 @@ def shift_start_time_to_zero(notes_array):
         note.end -= first_note_start_time
 
 # Implement the Needleman-Wunsch algorithm to find the optimal alignment of two arrays of musical notes.
-def needleman_wunsch(seq1, seq2, insert_penalty=-0.5, gap_penalty=-1, mismatch_penalty=-1, match_score=2):
+def needleman_wunsch(seq1, seq2, insert_penalty=INSERT_PENALTY, gap_penalty=GAP_PENALTY, mismatch_penalty=MISMATCH_PENALTY, match_score=MATCH_SCORE):
     len1, len2 = len(seq1), len(seq2)
     # Create a score matrix of size (len1 + 1) x (len2 + 1) initialized with zeros.
     score_matrix = np.zeros((len1 + 1, len2 + 1), dtype=int)
@@ -64,7 +88,8 @@ def compare_arrays(ideal_array, actual_array):
         return None, None, None, [Difference(None, None, None, None, "error")]
 
     # Use the Needleman-Wunsch algorithm to find the optimal alignment of the two arrays
-    score_matrix = needleman_wunsch(ideal_array, actual_array, gap_penalty=-1, mismatch_penalty=-1, match_score=2)
+    score_matrix = needleman_wunsch(ideal_array, actual_array)
+    save_score_matrix_to_csv(score_matrix, ideal_array, actual_array, 'scripts/temp_dat/score_matrix.csv') # DEBUGGING
     ideal_len, actual_len = len(ideal_array), len(actual_array)
 
     # Traceback through the score matrix to determine the optimal alignment
@@ -73,9 +98,9 @@ def compare_arrays(ideal_array, actual_array):
     aligned_actual = []
 
     while i > 0 or j > 0:
-        match = score_matrix[i - 1, j - 1] + (2 if ideal_array[i - 1] == actual_array[j - 1] else -1) if i > 0 and j > 0 else float('-inf')
-        delete = score_matrix[i - 1, j] + (-1) if i > 0 else float('-inf')
-        insert = score_matrix[i, j - 1] + (-0.5) if j > 0 else float('-inf')
+        match = score_matrix[i - 1, j - 1] + (MATCH_SCORE if ideal_array[i - 1] == actual_array[j - 1] else MISMATCH_PENALTY) if i > 0 and j > 0 else float('-inf')
+        delete = score_matrix[i - 1, j] + (GAP_PENALTY) if i > 0 else float('-inf')
+        insert = score_matrix[i, j - 1] + (INSERT_PENALTY) if j > 0 else float('-inf')
 
         if match >= delete and match >= insert:
             aligned_ideal.append(ideal_array[i - 1])
@@ -129,7 +154,7 @@ def compare_arrays(ideal_array, actual_array):
             extra_note_count = extra_note_count + 1
             actual_index = actual_index + 1
         elif ideal_note is not None and actual_note is None: # missing note
-            differences.append(Difference(ideal_index - extra_note_count, ideal_note, None, None, 'missing'))
+            differences.append(Difference(ideal_index, ideal_note, None, None, 'missing'))
             actual_index = actual_index + 1
 
     ideal_len_aligned = sum(note is not None for note in aligned_ideal)

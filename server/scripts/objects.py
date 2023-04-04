@@ -2,16 +2,16 @@ import numpy as np
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
 class Difference_with_info:
-    def __init__(self, diff, note_info, relative_location="matches"):
+    def __init__(self, diff, note_info, description="note_info contains the note that was supposed to be played and its location"):
         self.diff = diff
         self.note_info = note_info
-        self.relative_location = relative_location
+        self.description = description
     
     # Convert the Difference object to a dictionary for JSON serialization.
     def to_dict(self):
         return {
             "diff": self.diff,
-            "relative_location": self.relative_location,
+            "description": self.description,
             "note_info": self.note_info
         }
 
