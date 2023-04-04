@@ -58,14 +58,8 @@ class Note:
     def __eq__(self, other):
         if not isinstance(other, Note):
             return False
-
-        pitch_difference_in_cents = abs(Note.frequency_difference_in_cents(self.pitch, other.pitch))
-        pitch_match = pitch_difference_in_cents <= 50 # bound 50 cents
-
-        return (pitch_match and
-                Note.is_velocity_equal(self.velocity, other.velocity) and # within 30% accuracy
-                (abs(self.start - other.start) <= 0.25) and # bound 0.25 sec
-                (abs(self.end - other.end) <= 0.25)) # bound 0.25 sec
+        confidence = self.compare_notes(other)
+        return confidence >= 0.7
         
     # Define the string representation of the Note object.
     def __str__(self):
@@ -82,6 +76,26 @@ class Note:
             "start": self.start,
             "end": self.end
         }
+    
+    def compare_notes(self, other):
+        if not isinstance(other, Note):
+            return False
+
+        # Calculate the confidence for each factor
+        pitch_confidence = max(0, 1 - abs(Note.frequency_difference_in_cents(self.pitch, other.pitch)) / 50)
+        start_confidence = max(0, 1 - abs(self.start - other.start) / 0.25)
+        end_confidence = max(0, 1 - abs(self.end - other.end) / 0.25)
+        dynamics_confidence = max(0, 1 - abs(self.velocity - other.velocity) / 30)
+
+        # Calculate the total confidence using the weights
+        total_confidence = (
+            0.7 * pitch_confidence +
+            0.2 * start_confidence +
+            0.05 * end_confidence +
+            0.05 * dynamics_confidence
+        )
+
+        return total_confidence
         
     # This function is used to ensure that the note object is properly serialized 
     @staticmethod
@@ -89,8 +103,6 @@ class Note:
         if isinstance(obj, Note):
             return obj.to_dict()
         if isinstance(obj, Difference):
-            return obj.to_dict()
-        if isinstance(obj, Difference_with_info):
             return obj.to_dict()
         raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
@@ -100,7 +112,7 @@ class Note:
         return abs(1200 * np.log2(freq1 / freq2))
     
     @staticmethod
-    def is_velocity_equal(my_velocity, other, tolerance=100): # this tolerance needs to be changed
+    def is_velocity_equal(my_velocity, other, tolerance=30): # this tolerance needs to be changed
         # Calculate the minimum and maximum acceptable range for my_velocity
         min_range = other - tolerance
         max_range = other + tolerance

@@ -54,7 +54,7 @@ def shift_start_time_to_zero(notes_array):
         note.end -= first_note_start_time
 
 # Implement the Needleman-Wunsch algorithm to find the optimal alignment of two arrays of musical notes.
-def needleman_wunsch(seq1, seq2, insert_penalty=INSERT_PENALTY, gap_penalty=GAP_PENALTY, mismatch_penalty=MISMATCH_PENALTY, match_score=MATCH_SCORE):
+def needleman_wunsch(seq1, seq2, gap_penalty=-2, mismatch_penalty=-2, match_score=1):
     len1, len2 = len(seq1), len(seq2)
     # Create a score matrix of size (len1 + 1) x (len2 + 1) initialized with zeros.
     score_matrix = np.zeros((len1 + 1, len2 + 1), dtype=int)
@@ -73,7 +73,7 @@ def needleman_wunsch(seq1, seq2, insert_penalty=INSERT_PENALTY, gap_penalty=GAP_
             # Calculate the score for a gap in seq2.
             delete = score_matrix[i - 1, j] + gap_penalty
             # Calculate the score for a gap in seq1.
-            insert = score_matrix[i, j - 1] + insert_penalty
+            insert = score_matrix[i, j - 1] + gap_penalty
             # Choose the maximum score and store it in the score matrix.
             score_matrix[i, j] = max(match, delete, insert)
 
@@ -89,7 +89,7 @@ def compare_arrays(ideal_array, actual_array):
 
     # Use the Needleman-Wunsch algorithm to find the optimal alignment of the two arrays
     score_matrix = needleman_wunsch(ideal_array, actual_array)
-    save_score_matrix_to_csv(score_matrix, ideal_array, actual_array, 'scripts/temp_dat/score_matrix.csv') # DEBUGGING
+    save_score_matrix_to_csv(score_matrix, ideal_array, actual_array, 'score_matrix.csv') # DEBUGGING
     ideal_len, actual_len = len(ideal_array), len(actual_array)
 
     # Traceback through the score matrix to determine the optimal alignment
@@ -98,9 +98,9 @@ def compare_arrays(ideal_array, actual_array):
     aligned_actual = []
 
     while i > 0 or j > 0:
-        match = score_matrix[i - 1, j - 1] + (MATCH_SCORE if ideal_array[i - 1] == actual_array[j - 1] else MISMATCH_PENALTY) if i > 0 and j > 0 else float('-inf')
-        delete = score_matrix[i - 1, j] + (GAP_PENALTY) if i > 0 else float('-inf')
-        insert = score_matrix[i, j - 1] + (INSERT_PENALTY) if j > 0 else float('-inf')
+        match = score_matrix[i - 1, j - 1]
+        delete = score_matrix[i - 1, j]
+        insert = score_matrix[i, j - 1]
 
         if match >= delete and match >= insert:
             aligned_ideal.append(ideal_array[i - 1])
@@ -121,7 +121,7 @@ def compare_arrays(ideal_array, actual_array):
     aligned_actual.reverse()
 
     # export aligned arrays (used for DEBUGGING)
-    save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'scripts/temp_dat/aligned_arrays.json')
+    save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'aligned_arrays.json')
 
     # Calculate the accuracy values
     matches_notes = matches_dynamics = matches_start_stop = 0
@@ -162,7 +162,7 @@ def compare_arrays(ideal_array, actual_array):
     accuracy_dynamics = round((matches_dynamics / ideal_len_aligned) * 100, 2)
     accuracy_start_stop = round((matches_start_stop / ideal_len_aligned) * 100, 2)
 
-    # Deduct 5% for every extra note that is detected
+    # Deduct 5% for every extra note that is detected (TODO: make this more dynamic, short blips/extras shouldn't detract this much)
     accuracy_notes = round(((matches_notes / ideal_len_aligned) * 100) - (extra_note_count * 5), 2)
 
     return accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences
