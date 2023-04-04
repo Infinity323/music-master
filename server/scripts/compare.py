@@ -89,7 +89,7 @@ def compare_arrays(ideal_array, actual_array):
 
     # Use the Needleman-Wunsch algorithm to find the optimal alignment of the two arrays
     score_matrix = needleman_wunsch(ideal_array, actual_array)
-    save_score_matrix_to_csv(score_matrix, ideal_array, actual_array, 'score_matrix.csv') # DEBUGGING
+    # save_score_matrix_to_csv(score_matrix, ideal_array, actual_array, 'score_matrix.csv') # DEBUGGING
     ideal_len, actual_len = len(ideal_array), len(actual_array)
 
     # Traceback through the score matrix to determine the optimal alignment
@@ -121,7 +121,7 @@ def compare_arrays(ideal_array, actual_array):
     aligned_actual.reverse()
 
     # export aligned arrays (used for DEBUGGING)
-    save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'aligned_arrays.json')
+    # save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'aligned_arrays.json')
 
     # Calculate the accuracy values
     matches_notes = matches_dynamics = matches_start_stop = 0
