@@ -1,14 +1,15 @@
-import librosa
-import librosa.display # for plotting, debugging
-import numpy as np
-import matplotlib.pyplot as plt
-import json
-from threading import Thread
-from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
-from .objects import Note
+"""Signal Processing
 
-# Receiving the recorded file from the client
-# It will be passed in by performance.py
+This module contains functions needed for the performance API endpoint to
+process the data from a WAV sound file, convert the frequency data into a list
+of usable notes, store the list of extrapolated notes into a JSON, and then
+return that JSON to be stored locally in the file system.
+"""
+import librosa
+import numpy as np
+import json
+from typing import List, Dict, Tuple
+from .objects import Note
 
 # Librosa parameters
 FRAME_LENGTH = 256 # Length of frame in samples. Default 2048
@@ -16,114 +17,52 @@ SAMPLE_RATE = 22050 # Default 22050
 FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
 WINDOW_LENGTH = FRAME_LENGTH//2 # Window length. Default FRAME_LENGTH//2
 HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH//4
+FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
+FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-NUM_SUBPROCESSES = 8
-MAX_CENTS_ERROR = 50 # Max difference between two frequencies in cents before considering them as different notes.
-MIN_NOTE_LENGTH = 0.1 # Min note length in seconds.
-REST_FREQUENCY = 1 # Arbitrary frequency value assigned to rests.
+MAX_CENTS_ERROR = 31.9 # Max difference between two frequencies in cents before considering them as different notes.
+MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
+MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
+REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
 
-def freq_to_notes(f0, times, amp_maxes):
-    # Takes in two lists one for time and one for frequencies, and return a list of Note objects
-    # Store the frequencies in the data/dat/ folder as a JSON
-    frequencies = []
-    amplitudes = []
+def signal_processing(rec_file: str) -> Dict:
+    """Analyzes WAV sound file and returns a JSON containing the list
+    of extrapolated notes.
 
-    for i in range(len(f0)):
-        # This deals with rests
-        if np.isnan(f0[i]):
-            frequencies.append(REST_FREQUENCY)
-            amplitudes.append(0)
-        else:
-            frequencies.append(f0[i])
-            amplitudes.append(amp_maxes[i])
+    Args:
+        rec_file (str): The file path of the WAV file
 
-    note_objects = []
+    Returns:
+        Dict: The JSON with the list of notes
+    """
 
-    # Turns the frequencies into a list of Note objects
-    i = 1
-    while i < len(frequencies):
-        previous = frequencies[i-1]
-        current = frequencies[i]
-        
-        # Similar enough frequencies
-        if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
-            # If the note is the same as the previous note, update the duration
-            start_time = times[i-1]
-            note_obj = Note(current, amplitudes[i], start_time, 0)
-            while (i < len(frequencies) and
-                   Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
-                end_time = times[i]
-                i += 1
-                if i >= len(frequencies):
-                    break
-                previous = frequencies[i-1]
-                # If i is at a point where the subprocesses combined their output, just skip
-                while i % int(len(frequencies)/NUM_SUBPROCESSES) <= 2:
-                    i += 1
-                if i >= len(frequencies):
-                    break
-                current = frequencies[i]
-            note_obj.end = end_time
-            note_objects.append(note_obj)
+    # Converts sound file to frequency data, etc.
+    f0, times, amp_maxes = get_f0_time_amp(rec_file)
 
-        # (Notes that aren't duplicated at all are assumed to be errors and skipped)
-        i += 1
+    # Converts the fundamental frequencies, etc. to notes
+    notes = freq_to_notes(f0, times, amp_maxes)
 
-    # Keep notes that meet the minimum length requirement
-    note_objects = [note for note in note_objects if
-                    note.end - note.start >= MIN_NOTE_LENGTH]
+    # Converts the notes to a JSON file structure
+    result = notes_to_JSON(notes)
 
-    # Replace note pitches that match rest frequency with "Rest"
-    for note in note_objects:
-        if note.pitch == REST_FREQUENCY:
-            note.pitch = "Rest"
+    return result
+
+def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
+    """Gets fundamental frequencies, timestamps, and amplitudes from a WAV
+    sound file.
+
+    Args:
+        rec_file (str): The file path of the WAV file
+
+    Returns:
+        Tuple[np.array, np.array, np.array]: The arrays for fundamental
+            frequency, their times, and amplitudes
+    """
     
-    return note_objects
-
-# Turns the notes into a JSON file structure
-def notes_to_JSON(note_struct):
-    test = []
-    for i in range(len(note_struct)):
-        test.append(note_struct[i].__dict__)
-
-    result_dict = {
-        "size": len(note_struct),
-        "notes": test
-    }
-
-    result_object = json.dumps(result_dict, indent=4)
-
-    return result_object
-
-# Wrapper function for librosa.pyin to use with futures
-def pyin_wrapper(y):
-    f0, _, _ = librosa.pyin(y,
-                            fmin=librosa.note_to_hz('C0'),
-                            fmax=librosa.note_to_hz('C7'),
-                            frame_length=FRAME_LENGTH)
-    return f0
-
-# Analyzes wave file, puts it into a data structure
-def signal_processing(rec_file):
-
-    y, _ = librosa.load(rec_file, sr=SAMPLE_RATE)
+    y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
     y, _ = librosa.effects.trim(y)
     
-    # Split up time domain data into chunks
-    time_domain = [y[int(i/NUM_SUBPROCESSES*len(y)):int((i+1)/NUM_SUBPROCESSES*len(y))-1]
-                   for i in range(NUM_SUBPROCESSES)]
-    # Start subprocesses
-    futures = []
-    with ProcessPoolExecutor(max_workers=NUM_SUBPROCESSES) as executor:
-        futures = [executor.submit(pyin_wrapper, subarray) for subarray in time_domain]
-        wait(futures, return_when=ALL_COMPLETED)
-    
-    # Merge results and delete any extraneous frequencies
-    f0 = np.array([i.result() for i in futures])
-    f0 = f0.flatten()
-    original_f0_len = len(f0)
-    for i in range(NUM_SUBPROCESSES-2, 0, -1):
-        f0 = np.delete(f0, int(i/NUM_SUBPROCESSES*original_f0_len))
+    f0 = librosa.yin(y, fmin=FMIN, fmax=FMAX, sr=sr, frame_length=FRAME_LENGTH)
 
     # Get times for frequencies
     times = librosa.times_like(f0, hop_length=HOP_LENGTH)
@@ -131,11 +70,98 @@ def signal_processing(rec_file):
     # Gets the amplitude of the fundamental frequencies
     amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
     amp_maxes = np.max(amplitude, axis=0).tolist()
+    
+    return f0, times, amp_maxes
 
-    # Converts the fundamental frequencies to the notes data structure
-    notes = freq_to_notes(f0, times, amp_maxes)
+def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
+    """Converts an array of frequencies, timestamps, and amplitudes into
+    a list of notes.
 
-    # Converts the notes data structure to a JSON file structure
-    result = notes_to_JSON(notes)
+    Args:
+        f0 (np.array): The array of fundamental frequencies
+        times (np.array): The array of timestamps
+        amp_maxes (np.array): The array of max amplitudes
 
-    return result
+    Returns:
+        List[Note]: A list of notes
+    """
+
+    # Turns the frequencies into a list of Note objects
+    note_objects = []
+    i = 1
+    while i < len(f0):
+        previous = f0[i-1]
+        current = f0[i]
+        
+        # Similar enough frequencies
+        if Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR:
+            # If the note is the same as the previous note, update the duration
+            offset = times[i-1]
+            new_note = Note(current, amp_maxes[i], offset, 0)
+            note_frequencies = [previous]
+            while (i < len(f0) and
+                   Note.frequency_difference_in_cents(current, previous) <= MAX_CENTS_ERROR):
+                end_time = times[i]
+                note_frequencies.append(current)
+                i += 1
+                if i >= len(f0):
+                    break
+                previous = f0[i-1]
+                current = f0[i]
+            # Average note's frequencies and reset end time
+            new_note.pitch = np.average(note_frequencies)
+            new_note.end = end_time
+            note_objects.append(new_note)
+
+        # (Notes that aren't duplicated at all are assumed to be errors and skipped)
+        i += 1
+
+    # YIN is kind of noisy. If a note isn't long enough, merge it with the
+    # previous note
+    last_good_index = 0
+    last_good_end = 0
+    for i in range(len(note_objects)):
+        if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
+            note_objects[last_good_index].end = note_objects[i].end
+            note_objects[i].pitch = REST_FREQUENCY
+        else:
+            last_good_index = i
+            last_good_end = note_objects[i].end
+
+    # Keep notes that don't match the rest frequency
+    note_objects = [note for note in note_objects if
+                    note.pitch != REST_FREQUENCY]
+
+    # Cut last note's ending short because there might be garbage attached
+    note_objects[-1].end = last_good_end
+    
+    # Time shift notes to start at 0
+    offset = note_objects[0].start
+    for note in note_objects:
+        note.start -= offset
+        note.end -= offset
+    
+    return note_objects
+
+def notes_to_JSON(notes: List[Note]) -> Dict:
+    """Converts a list of notes into a JSON.
+
+    Args:
+        notes (List[Note]): The list of notes
+
+    Returns:
+        Dict: A dict containing the number of notes and the list of notes
+    """
+    
+    notes_JSON_array = []
+    for i in range(len(notes)):
+        notes_JSON_array.append(notes[i].__dict__)
+
+    result_dict = {
+        "size": len(notes),
+        "notes": notes_JSON_array
+    }
+
+    result_object = json.dumps(result_dict, indent=4)
+
+    return result_object

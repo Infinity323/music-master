@@ -4,11 +4,13 @@ import Recorder from 'matt-diamond-recorderjs';
 import { baseUrl } from '../App';
 import { BpmContext, SheetMusicIdContext } from '../utils/Contexts';
 import useMicrophone from '../utils/UseMicrophone';
+import loading_gif from '../assets/images/loading_gif.gif'
 
 function RecordControl() {
   const [isRecording, setIsRecording] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [performanceId, setPerformanceId] = useState(-1);
   const [countdownDisplay, setCountdownDisplay] = useState(10);
   const inputRef = useRef();
@@ -89,12 +91,14 @@ function RecordControl() {
     formData.append("sheet_music_id", sheetMusicId);
     formData.append("file", blob);
 
+    setIsLoading(true);
     await fetch(baseUrl + "/performance", {
       method: "POST",
       body: formData
     }).then((res) => res.json())
       .then((data) => setPerformanceId(data.id))
       .catch(err => console.error(err));
+    setIsLoading(false);
   }
 
   const viewResults = () => {
@@ -110,7 +114,7 @@ function RecordControl() {
             <>
               <h2>Start Recording</h2>
               <p>Begin playing after the countdown.</p>
-              <div className="btn small" onClick={startRecording}>Start</div>
+              <div className={isLoading ? "btn small disabled" : "btn small"} onClick={startRecording}>Start</div>
             </>
           : ""
       }
@@ -120,8 +124,8 @@ function RecordControl() {
           ?
             <>
               <p>or</p>
-              <label className="btn small" style={{width: 200}}>
-                Upload a Recording
+              <label className={isLoading ? "btn small disabled" : "btn small"} style={{width: 200}}>
+                {isLoading ? "Uploading..." : "Upload a Recording"}
                 <input type="file" onChange={() => {uploadPrerecorded(inputRef.current.files[0])}} ref={inputRef}/>
               </label>
             </>
@@ -166,6 +170,15 @@ function RecordControl() {
                   : ""
               }
             </>
+          : ""
+      }
+      {
+        /* Loading gif */
+        isLoading
+          ?
+            <div style={{margin:30}}>
+              <img src={loading_gif} width="40px" alt="Loading..."/>
+            </div>
           : ""
       }
     </>

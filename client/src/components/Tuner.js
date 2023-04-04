@@ -11,6 +11,7 @@ function Tuner() {
   const textColor = style.getPropertyValue('--text-color');
   const btnColor = style.getPropertyValue('--btn-color');
   const selectColor = style.getPropertyValue('--select-color');
+  const borderColor = "rgba(1, 1, 1, 0.2)";
 
   const microphone = useMicrophone();
   const currentNote = useContext(TunerContext)[0];
@@ -32,21 +33,21 @@ function Tuner() {
           minimumValue={-50}
           maximumValue={50}
           interval={10}
-          tickBrush={"rgba(1, 1, 1, 0.5)"}
+          tickBrush={borderColor}
           tickStrokeThickness={1}
           tickEndExtent={0.5}
           labelInterval={10}
           labelExtent={0.025}
           labelsPreTerminal={0}
           labelsPostInitial={0}
-          font="11px Segoe UI"
+          font="11px AppleRegular"
           value={currentNote.cents ? currentNote.cents : 0}
           isNeedleDraggingEnabled={true}
           needleBrush={selectColor}
           needleOutline={textColor}
           needleStrokeThickness={1}
           backingBrush={btnColor}
-          backingOutline={"rgba(1, 1, 1, 0.5)"}
+          backingOutline={borderColor}
           backingStrokeThickness={1}
           transitionDuration={200}
           rangeBrushes={"#E81F1F, #E89F1F, #E8D91F, #93E81F, #62E81F, #93E81F, #E8D91F, #E89F1F, #E81F1F"}

@@ -44,6 +44,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+.pytest_cache/
 
 # Translations
 *.mo
@@ -97,4 +98,4 @@ dist/
 *.sketch
 
 .vscode/
-data/
+server/data/
