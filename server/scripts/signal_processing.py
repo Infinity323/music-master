@@ -47,6 +47,11 @@ def signal_processing(rec_file: str) -> Dict:
 
     return result
 
+def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
+    normalized_amplitude = (amplitude - np.min(amplitude)) / (np.max(amplitude) - np.min(amplitude))
+    midi_velocity = np.round(normalized_amplitude * 126 + 1).astype(int)
+    return midi_velocity.tolist()  # Convert the NumPy array to a list of native integers
+
 def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     """Gets fundamental frequencies, timestamps, and amplitudes from a WAV
     sound file.
@@ -70,8 +75,11 @@ def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     # Gets the amplitude of the fundamental frequencies
     amplitude = np.abs(librosa.stft(y, hop_length=HOP_LENGTH))
     amp_maxes = np.max(amplitude, axis=0).tolist()
+
+    # Convert amplitude to MIDI velocity
+    midi_velocities = amplitude_to_midi_velocity(np.array(amp_maxes))
     
-    return f0, times, amp_maxes
+    return f0, times, midi_velocities
 
 def freq_to_notes(f0: np.array, times: np.array, amp_maxes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
