@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import json
 from threading import Thread
 from concurrent.futures import ProcessPoolExecutor, wait, ALL_COMPLETED
-from .note import Note
+from .objects import Note
 
 # Receiving the recorded file from the client
 # It will be passed in by performance.py

@@ -1,6 +1,6 @@
 import numpy as np
 import json
-from .note import Note
+from .objects import Difference, Note
 
 # This script compares two arrays of Note objects, representing ideal and actual
 # musical performances, and calculates the accuracy and differences between them.
@@ -17,39 +17,6 @@ def save_aligned_arrays_to_json(aligned_ideal, aligned_actual, output_file):
 
     with open(output_file, 'w') as f:
         json.dump(aligned_data, f, default=Note.custom_serializer, indent=4)
-
-
-# Define the Difference class representing the differences between ideal and actual Note objects.
-class Difference:
-    def __init__(self, ideal_idx, ideal_val, actual_idx, actual_val, diff_type):
-        self.ideal_idx = ideal_idx
-        self.ideal_val = ideal_val
-        self.actual_idx = actual_idx
-        self.actual_val = actual_val
-        self.diff_type = diff_type
-
-    # Define the string representation of the Difference object.
-    def __repr__(self):
-        return f"\n* diff_type: {self.diff_type} *\n Ideal: index {self.ideal_idx}, ({self.ideal_val})\n Actual: index {self.actual_idx}, ({self.actual_val})"
-    
-    # Define the equality method for comparing two Difference objects.
-    def __eq__(self, other):
-        if not isinstance(other, Difference):
-            return False
-        return (self.ideal_idx == other.ideal_idx and
-                self.ideal_val == other.ideal_val and
-                self.actual_idx == other.actual_idx and
-                self.actual_val == other.actual_val)
-    
-    # Convert the Difference object to a dictionary for JSON serialization.
-    def to_dict(self):
-        return {
-            "ideal_idx": self.ideal_idx,
-            "ideal_val": self.ideal_val,
-            "actual_idx": self.actual_idx,
-            "actual_val": self.actual_val,
-            "diff_type": self.diff_type
-        }
     
 # this will ensure that the start time for the actual array happens at 0.0
 def shift_start_time_to_zero(notes_array):
@@ -129,12 +96,15 @@ def compare_arrays(ideal_array, actual_array):
     aligned_actual.reverse()
 
     # export aligned arrays (used for DEBUGGING)
-    # save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'scripts/temp_dat/aligned_arrays.json')
+    save_aligned_arrays_to_json(aligned_ideal, aligned_actual, 'scripts/temp_dat/aligned_arrays.json')
 
     # Calculate the accuracy values
     matches_notes = matches_dynamics = matches_start_stop = 0
     differences = []
     extra_note_count = 0
+    
+    ideal_index = 0
+    actual_index = 0
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
@@ -145,18 +115,22 @@ def compare_arrays(ideal_array, actual_array):
             if (abs(ideal_note.start - actual_note.start) <= 0.25 and abs(ideal_note.end - actual_note.end) <= 0.25): # bound 0.25 sec
                 matches_start_stop += 1
             if abs(Note.frequency_difference_in_cents(ideal_note.pitch, actual_note.pitch)) > 50: # bound 50 cents
-                differences.append(Difference(i, ideal_note, i, actual_note, 'pitch'))
+                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'pitch'))
             if not Note.is_velocity_equal(actual_note.velocity, ideal_note.velocity): # within 30%
-                differences.append(Difference(i, ideal_note, i, actual_note, 'velocity'))
+                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'velocity'))
             if (abs(ideal_note.start - actual_note.start) > 0.25): # bound 0.25 sec
-                differences.append(Difference(i, ideal_note, i, actual_note, 'start'))
+                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'start'))
             if (abs(ideal_note.end - actual_note.end) > 0.25): # bound 0.25 sec
-                differences.append(Difference(i, ideal_note, i, actual_note, 'end'))
-        elif ideal_note is None and actual_note is not None:
-            differences.append(Difference(None, None, i, actual_note, 'extra'))
+                differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'end'))
+            ideal_index = ideal_index + 1
+            actual_index = actual_index + 1
+        elif ideal_note is None and actual_note is not None: # extra note
+            differences.append(Difference(None, None, actual_index, actual_note, 'extra'))
             extra_note_count = extra_note_count + 1
-        elif ideal_note is not None and actual_note is None:
-            differences.append(Difference(i - extra_note_count, ideal_note, None, None, 'missing'))
+            actual_index = actual_index + 1
+        elif ideal_note is not None and actual_note is None: # missing note
+            differences.append(Difference(ideal_index - extra_note_count, ideal_note, None, None, 'missing'))
+            actual_index = actual_index + 1
 
     ideal_len_aligned = sum(note is not None for note in aligned_ideal)
     accuracy_notes = round((matches_notes / ideal_len_aligned) * 100, 2)

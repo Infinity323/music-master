@@ -39,9 +39,15 @@ def addSheetMusic():
     xmlReader = MusicXMLReader(new_xml_file_path, new_midi_file_path)
     xmlReader.save_notes_json(new_dat_file_path)
 
+    # save note info locally
+    note_info = xmlReader.get_notes_and_measure_num()
+    note_info_file_path = "data/dat/" + new_title + "_note_info.json"
+    with open(note_info_file_path, 'w') as note_info_file:
+        json.dump([info for info in note_info], note_info_file, indent=4)
+
     # Add to database
     # TODO: goal entity should update this tempo, currently it is set to None
-    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_xml_file_path, new_dat_file_path, None)
+    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_xml_file_path, new_dat_file_path, None, note_info_file_path)
     db.session.add(newSheetMusic)
     db.session.commit()
     return newSheetMusic.serialize

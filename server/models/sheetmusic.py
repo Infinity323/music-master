@@ -12,8 +12,9 @@ class SheetMusic(db.Model):
     tempo = db.Column(db.Integer)
     performances = db.relationship('Performance', backref='sheet_music', lazy=True)
     goals = db.relationship('Goal', backref='sheet_music', lazy=True)
+    note_info_file_path = db.Column(db.String)
 
-    def __init__(self, id: int, title: str, composer: str, instrument: str, pdf_file_path: str, data_file_path: str, tempo: int):
+    def __init__(self, id: int, title: str, composer: str, instrument: str, pdf_file_path: str, data_file_path: str, tempo: int, note_info_file_path: str):
         self.id = id
         self.title = title
         self.composer = composer
@@ -21,6 +22,7 @@ class SheetMusic(db.Model):
         self.pdf_file_path = pdf_file_path
         self.data_file_path = data_file_path
         self.tempo = tempo
+        self.note_info_file_path = note_info_file_path
 
     @property
     def serialize(self):
@@ -31,5 +33,6 @@ class SheetMusic(db.Model):
             "instrument": self.instrument,
             "pdf_file_path": self.pdf_file_path,
             "data_file_path": self.data_file_path,
-            "tempo": self.tempo
+            "tempo": self.tempo,
+            "note_info_file_path": self.note_info_file_path
         }

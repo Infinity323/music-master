@@ -8,8 +8,8 @@ from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
 from scripts.signal_processing import signal_processing
-from scripts.compare import compare_arrays, Difference, shift_start_time_to_zero
-from scripts.note import Note
+from scripts.compare import compare_arrays, shift_start_time_to_zero
+from scripts.objects import Difference, Difference_with_info, Note
 
 from datetime import datetime
 
@@ -79,10 +79,27 @@ def addPerformance():
     # run comparison algorithms
     new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_tempo_percent_accuracy, differences = compare_arrays(ideal_notes, filtered_actual_notes)
 
+    # append info to differences
+    note_info_file_path = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().note_info_file_path
+    with open(note_info_file_path) as file:
+        note_info_data = json.load(file)
+
+    differences_with_info  = []
+    for diff in differences:
+        # (pitch, velocity, start, or end)
+        if diff.diff_type in ["pitch", "velocity", "start", "end"]:
+            differences_with_info.append(Difference_with_info(diff, note_info_data[diff.ideal_idx]))
+
+        # (extra or missing)
+        if diff.diff_type in ["missing"]:
+            differences_with_info.append(Difference_with_info(diff, note_info_data[diff.ideal_idx], "missing"))
+
+    # TODO!!! NEED TO FIX the json storage of differences_with_info
+
     # save the diff file locally
     diff_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_diff.json"
     with open(diff_json_path, 'w') as diff_json_file:
-        json.dump([d.to_dict() for d in differences], diff_json_file, indent=4, default=Note.custom_serializer)
+        json.dump([info.to_dict() for info in differences_with_info], diff_json_file, indent=4, default=Note.custom_serializer)
     
     # send info to database
     new_performance = Performance(new_id, new_sheet_music_id, new_run_number, new_date_time, new_tempo_percent_accuracy, new_average_tempo, new_tuning_percent_accuracy, new_dynamics_percent_accuracy, new_wav_file_path, wav_json_file_path, diff_json_path)

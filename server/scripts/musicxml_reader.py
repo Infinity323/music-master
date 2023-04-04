@@ -4,6 +4,13 @@ import pretty_midi
 from music21 import converter, environment, pitch, tempo, note as m21note
 from mido import MidiFile
 
+# used for indicating things like "dotted quared note"
+def get_type_with_dots(element):
+    type_with_dots = element.duration.type
+    for _ in range(element.duration.dots):
+        type_with_dots = "dotted " + type_with_dots
+    return type_with_dots
+
 class MusicXMLReader:
     def __init__(self, xml_file, midi_file_out, custom_tempo=120):
         # Parse the MusicXML file and create a MIDI file
@@ -52,23 +59,36 @@ class MusicXMLReader:
         # Get a list of notes and rests for the specified instrument
         elements_list = []
         elements = self.xml_score.parts[part_index].flat.getElementsByClass([m21note.Note, m21note.Rest])
-        
+
+        # Dictionary to store the count of notes and rests in each measure
+        measure_position_count = {}
+
         for element in elements:
+            measure_number = element.measureNumber
+            if measure_number not in measure_position_count:
+                measure_position_count[measure_number] = 1
+
             if isinstance(element, m21note.Note):
                 elements_list.append({
                                     "element": "note",
                                     "name": element.nameWithOctave,
-                                    "type": element.duration.type,
-                                    "measure": element.measureNumber
+                                    "type": get_type_with_dots(element),
+                                    "measure": measure_number,
+                                    "position": measure_position_count[measure_number]
                                 })
             elif isinstance(element, m21note.Rest):
                 elements_list.append({
                                     "element": "rest",
-                                    "type": element.duration.type,
-                                    "measure": element.measureNumber
+                                    "type": get_type_with_dots(element),
+                                    "measure": measure_number,
+                                    "position": measure_position_count[measure_number]
                                 })
-        
+
+            # Increment the count for the current measure
+            measure_position_count[measure_number] += 1
+
         return elements_list
+
 
     def save_notes_json(self, json_file_out, part_index=0):
         # Save note data as a JSON file and return the JSON data as a string

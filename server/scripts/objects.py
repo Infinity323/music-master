@@ -1,5 +1,52 @@
 import numpy as np
 
+# Define the Difference class representing the differences between ideal and actual Note objects.
+class Difference_with_info:
+    def __init__(self, diff, note_info, relative_location="matches"):
+        self.diff = diff
+        self.note_info = note_info
+        self.relative_location = relative_location
+    
+    # Convert the Difference object to a dictionary for JSON serialization.
+    def to_dict(self):
+        return {
+            "diff": self.diff,
+            "relative_location": self.relative_location,
+            "note_info": self.note_info
+        }
+
+# Define the Difference class representing the differences between ideal and actual Note objects.
+class Difference:
+    def __init__(self, ideal_idx, ideal_val, actual_idx, actual_val, diff_type):
+        self.ideal_idx = ideal_idx
+        self.ideal_val = ideal_val
+        self.actual_idx = actual_idx
+        self.actual_val = actual_val
+        self.diff_type = diff_type
+
+    # Define the string representation of the Difference object.
+    def __repr__(self):
+        return f"\n* diff_type: {self.diff_type} *\n Ideal: index {self.ideal_idx}, ({self.ideal_val})\n Actual: index {self.actual_idx}, ({self.actual_val})"
+    
+    # Define the equality method for comparing two Difference objects.
+    def __eq__(self, other):
+        if not isinstance(other, Difference):
+            return False
+        return (self.ideal_idx == other.ideal_idx and
+                self.ideal_val == other.ideal_val and
+                self.actual_idx == other.actual_idx and
+                self.actual_val == other.actual_val)
+    
+    # Convert the Difference object to a dictionary for JSON serialization.
+    def to_dict(self):
+        return {
+            "ideal_idx": self.ideal_idx,
+            "ideal_val": self.ideal_val,
+            "actual_idx": self.actual_idx,
+            "actual_val": self.actual_val,
+            "diff_type": self.diff_type
+        }
+
 class Note:
     def __init__(self, pitch, velocity, start, end):
         self.pitch = pitch
@@ -41,6 +88,10 @@ class Note:
     def custom_serializer(obj):
         if isinstance(obj, Note):
             return obj.to_dict()
+        if isinstance(obj, Difference):
+            return obj.to_dict()
+        if isinstance(obj, Difference_with_info):
+            return obj.to_dict()
         raise TypeError(f'Object of type {obj.__class__.__name__} is not JSON serializable')
 
     # function to get the difference between two frequencies in unit of cents
@@ -49,7 +100,7 @@ class Note:
         return abs(1200 * np.log2(freq1 / freq2))
     
     @staticmethod
-    def is_velocity_equal(my_velocity, other, tolerance=30):
+    def is_velocity_equal(my_velocity, other, tolerance=100): # this tolerance needs to be changed
         # Calculate the minimum and maximum acceptable range for my_velocity
         min_range = other - tolerance
         max_range = other + tolerance
