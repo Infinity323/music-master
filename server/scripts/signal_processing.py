@@ -25,6 +25,13 @@ MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
 MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
 
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        else:
+            return super(NpEncoder, self).default(obj)
+
 def signal_processing(rec_file: str) -> Dict:
     """Analyzes WAV sound file and returns a JSON containing the list
     of extrapolated notes.
@@ -190,10 +197,10 @@ def notes_to_JSON(notes: List[Note]) -> Dict:
         notes_JSON_array.append(notes[i].__dict__)
 
     result_dict = {
-        "size": len(notes),
+        "size": int(len(notes)),
         "notes": notes_JSON_array
     }
 
-    result_object = json.dumps(result_dict, indent=4)
+    result_object = json.dumps(result_dict, indent=4, cls=NpEncoder)
 
     return result_object
