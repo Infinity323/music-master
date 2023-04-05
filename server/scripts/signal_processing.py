@@ -12,7 +12,7 @@ from typing import List, Dict, Tuple
 from .objects import Note
 
 # Librosa parameters
-FRAME_LENGTH = 256 # Length of frame in samples. Default 2048
+FRAME_LENGTH = 882 # Length of frame in samples. Default 2048
 SAMPLE_RATE = 22050 # Default 22050
 FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
 WINDOW_LENGTH = FRAME_LENGTH//2 # Window length. Default FRAME_LENGTH//2

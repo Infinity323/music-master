@@ -1,4 +1,7 @@
+from flask import Blueprint
 from models import db
+
+model_sheetmusic_blueprint = Blueprint("model_sheetmusic", __name__)
 
 class SheetMusic(db.Model):
     __tablename__ = "sheet_music"
