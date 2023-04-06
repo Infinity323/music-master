@@ -23,8 +23,8 @@ def initialize_notes(path):
 def test_cmajor_expected():
     # File exported from MuseScore
     file = WAV_DATA_PATH + "cmaj_expected.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("CMajor.json")
     
     assert(len(notes) == len(xml_notes))
@@ -34,8 +34,8 @@ def test_cmajor_expected():
 def test_cmajor_actual():
     # File is an actual piano recording
     file = WAV_DATA_PATH + "cmaj_actual.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("CMajor.json")
     
     assert(len(notes) == len(xml_notes))
@@ -45,8 +45,8 @@ def test_cmajor_actual():
 def test_happy_birthday_expected():
     # File exported from MuseScore
     file = WAV_DATA_PATH + "happybirthday_expected.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Happy Birthday.json")
     
     assert(len(notes) == len(xml_notes))
@@ -56,8 +56,8 @@ def test_happy_birthday_expected():
 def test_happy_birthday_actual():
     # File is an actual piano recording
     file = WAV_DATA_PATH + "happybirthday_actual.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Happy Birthday.json")
     
     assert(len(notes) == len(xml_notes))
@@ -67,8 +67,8 @@ def test_happy_birthday_actual():
 def test_happy_birthday_staccato():
     # File exported from MuseScore (staccato)
     file = WAV_DATA_PATH + "happybirthday_staccato.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Happy Birthday.json")
     
     assert(len(notes) == len(xml_notes))
@@ -78,8 +78,8 @@ def test_happy_birthday_staccato():
 def test_wet_hands_expected():
     # File exported from MuseScore
     file = WAV_DATA_PATH + "wethands_expected.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Wet Hands.json")
     
     assert(len(notes) == len(xml_notes))
@@ -89,8 +89,8 @@ def test_wet_hands_expected():
 def test_wet_hands_actual():
     # File is an actual piano recording
     file = WAV_DATA_PATH + "wethands_actual.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Wet Hands.json")
     
     assert(len(notes) == len(xml_notes))
@@ -100,8 +100,8 @@ def test_wet_hands_actual():
 def test_gerudo_valley_expected():
     # File exported from MuseScore
     file = WAV_DATA_PATH + "gerudovalley_expected.wav"
-    f0, times, velocities, confidences = get_f0_time_amp(file)
-    notes = freq_to_notes(f0, times, velocities, confidences)
+    f0, times, velocities, confidences = get_f0_time_amp_crepe(file)
+    notes = freq_to_notes_crepe(f0, times, velocities, confidences)
     xml_notes = initialize_notes("Gerudo Valley.json")
     
     assert(len(notes) == len(xml_notes))

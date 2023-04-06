@@ -13,9 +13,9 @@ class SheetMusic(db.Model):
     pdf_file_path = db.Column(db.String)
     data_file_path = db.Column(db.String)
     tempo = db.Column(db.Integer)
+    note_info_file_path = db.Column(db.String)
     performances = db.relationship('Performance', backref='sheet_music', lazy=True)
     goals = db.relationship('Goal', backref='sheet_music', lazy=True)
-    note_info_file_path = db.Column(db.String)
 
     def __init__(self, id: int, title: str, composer: str, instrument: str, pdf_file_path: str, data_file_path: str, tempo: int, note_info_file_path: str):
         self.id = id

@@ -39,7 +39,7 @@ def addSheetMusic():
     new_xml_file_data.save(new_xml_file_path)
 
     # Read XML file and convert to MIDI
-    xmlReader = MusicXMLReader(new_xml_file_path, new_midi_file_path)
+    xmlReader = MusicXMLReader(new_xml_file_path, new_midi_file_path, new_instrument)
     xmlReader.save_notes_json(new_dat_file_path)
 
     # save note info locally

@@ -4,6 +4,14 @@ import pretty_midi
 from music21 import converter, environment, pitch, tempo, note as m21note
 from mido import MidiFile
 
+FREQUENCY_OFFSETS = {
+    "Piano": 0,
+    "Guitar": 0,
+    "Clarinet": -2,
+}
+
+SEMITONE_RATIO = 1.05946
+
 # used for indicating things like "dotted quared note"
 def get_type_with_dots(element):
     type_with_dots = element.duration.type
@@ -12,12 +20,15 @@ def get_type_with_dots(element):
     return type_with_dots
 
 class MusicXMLReader:
-    def __init__(self, xml_file, midi_file_out, custom_tempo=120):
+    def __init__(self, xml_file, midi_file_out, instrument="Piano", custom_tempo=120):
         # Parse the MusicXML file and create a MIDI file
         self.xml_score = converter.parse(xml_file)
 
         # Set the custom tempo
         self.set_custom_tempo(custom_tempo)
+        
+        # Set the instrument
+        self.instrument = instrument
 
         # Create a MIDI file
         self.xml_score.write("midi", midi_file_out)
@@ -48,11 +59,13 @@ class MusicXMLReader:
         notes_list = []
         notes = self.pretty_midi.instruments[part_index].notes
         for note in notes:
-            notes_list.append({"pitch": pitch.Pitch(midi=note.pitch).frequency, # use nameWithOctave for A4
-                               "velocity": note.velocity,
-                               "start": note.start,
-                               "end": note.end
-                               })
+            notes_list.append({
+                "pitch": pitch.Pitch(midi=note.pitch).frequency * # use nameWithOctave for A4
+                    (SEMITONE_RATIO**FREQUENCY_OFFSETS.get(self.instrument)), # apply instrument pitch offset
+                "velocity": note.velocity,
+                "start": note.start,
+                "end": note.end
+            })
         return notes_list
     
     def get_notes_and_measure_num(self, part_index=0):

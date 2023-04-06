@@ -13,14 +13,17 @@ import json
 from typing import List, Dict, Tuple
 from .objects import Note
 
-# Signal processing parameters
-FRAME_LENGTH = 512 # Length of frame in samples. Default 2048
-SAMPLE_RATE = 16000 # Default 22050
-FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
-HOP_LENGTH = 40 # Frame increment in samples. Default FRAME_LENGTH//4
-WINDOW_LENGTH = HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//2
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
+# YIN signal processing parameters
+YIN_FRAME_LENGTH = 256
+YIN_HOP_LENGTH = YIN_FRAME_LENGTH//4
+YIN_WINDOW_LENGTH = YIN_FRAME_LENGTH//2
+# CREPE signal processing parameters
+CREPE_FRAME_LENGTH = 512 # Length of frame in samples. Default 2048
+CREPE_SAMPLE_RATE = 16000 # Default 22050
+CREPE_HOP_LENGTH = 40 # Frame increment in samples. Default FRAME_LENGTH//4
+CREPE_WINDOW_LENGTH = CREPE_HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//2
 # Note extrapolation parameters
 MIN_CREPE_CONFIDENCE = 0.93
 MAX_CENTS_DIFFERENCE = 35 # Max cents difference between notes.
@@ -47,10 +50,10 @@ def signal_processing(rec_file: str) -> Dict:
     """
 
     # Converts sound file to frequency data, etc.
-    f0, times, amplitudes, confidences = get_f0_time_amp(rec_file)
+    f0, times, amplitudes = get_f0_time_amp_crepe(rec_file)
 
     # Converts the fundamental frequencies, etc. to notes
-    notes = freq_to_notes(f0, times, amplitudes, confidences)
+    notes = freq_to_notes_yin(f0, times, amplitudes)
 
     # Converts the notes to a JSON file structure
     result = notes_to_JSON(notes)
@@ -68,7 +71,7 @@ def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
     """
 
     # Amplitude value assigned to mezzo forte (velocity 80)
-    MF_RMS = np.log10(0.01181757)
+    MF_RMS = np.log10(0.0282389)
     amplitude = np.log10(amplitude)
     lower = np.min(amplitude)
     upper = MF_RMS
@@ -79,39 +82,66 @@ def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
     # Convert the NumPy array to a list of native integers
     return midi_velocity.tolist()
 
-def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array, np.array]:
+def get_f0_time_amp_yin(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     """Gets fundamental frequencies, timestamps, and amplitudes from a WAV
-    sound file.
+    sound file. YIN implementation.
 
     Args:
         rec_file (str): The file path of the WAV file
 
     Returns:
-        Tuple[np.array, np.array, np.array]: The arrays for fundamental
+        Tuple[np.array, np.array, np.array, np.array]: The arrays for fundamental
             frequency, their times, and amplitudes
     """
     
-    # audio, sr = torchcrepe.load.audio(rec_file)
-    audio, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
+    audio, sr = librosa.load(rec_file)
+    audio, _ = librosa.effects.trim(audio)
+    
+    f0 = librosa.yin(audio, sr=sr, fmin=FMIN, fmax=FMAX, frame_length=YIN_FRAME_LENGTH, win_length=YIN_WINDOW_LENGTH, hop_length=YIN_HOP_LENGTH)
+
+    # Get times for frequencies
+    times = np.array([YIN_HOP_LENGTH/sr*i for i in range(f0.size)])
+
+    # Gets the amplitude of the fundamental frequencies
+    S = librosa.magphase(librosa.stft(audio, n_fft=YIN_FRAME_LENGTH, hop_length=YIN_HOP_LENGTH, win_length=YIN_WINDOW_LENGTH, window=np.ones))[0]
+    amplitudes = librosa.feature.rms(S=S, frame_length=YIN_FRAME_LENGTH, hop_length=YIN_HOP_LENGTH)[0]
+
+    # Convert amplitude to MIDI velocity
+    midi_velocities = amplitude_to_midi_velocity(amplitudes)
+    
+    return f0, times, midi_velocities
+
+def get_f0_time_amp_crepe(rec_file: str) -> Tuple[np.array, np.array, np.array, np.array]:
+    """Gets fundamental frequencies, timestamps, amplitudes, and confidences from a WAV
+    sound file. CREPE implementation.
+
+    Args:
+        rec_file (str): The file path of the WAV file
+
+    Returns:
+        Tuple[np.array, np.array, np.array, np.array]: The arrays for fundamental
+            frequency, their times, amplitudes, and confidences
+    """
+    
+    audio, sr = librosa.load(rec_file, sr=CREPE_SAMPLE_RATE)
     audio, _ = librosa.effects.trim(audio)
     audio_tensor = torch.from_numpy(np.array([audio]))
     
-    f0, periodicities = torchcrepe.predict(audio_tensor, sr, HOP_LENGTH, FMIN, FMAX, 'tiny', return_periodicity=True)
+    f0, periodicities = torchcrepe.predict(audio_tensor, sr, CREPE_HOP_LENGTH, FMIN, FMAX, 'tiny', return_periodicity=True)
 
     # Get times for frequencies
-    # times = librosa.times_like(f0, hop_length=HOP_LENGTH)
-    times = np.array([HOP_LENGTH/SAMPLE_RATE*i for i in range(f0.size(1))])
+    times = np.array([CREPE_HOP_LENGTH/CREPE_SAMPLE_RATE*i for i in range(f0.size(1))])
 
     # Gets the amplitude of the fundamental frequencies
-    S = librosa.magphase(librosa.stft(audio, n_fft=FRAME_LENGTH, hop_length=int(HOP_LENGTH/2), win_length=int(WINDOW_LENGTH/2), window=np.ones))[0]
-    amplitudes = librosa.feature.rms(S=S, frame_length=FRAME_LENGTH, hop_length=int(HOP_LENGTH/2))[0]
+    S = librosa.magphase(librosa.stft(audio, n_fft=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2), win_length=int(CREPE_WINDOW_LENGTH/2), window=np.ones))[0]
+    amplitudes = librosa.feature.rms(S=S, frame_length=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2))[0]
 
     # Convert amplitude to MIDI velocity
     midi_velocities = amplitude_to_midi_velocity(amplitudes)
     
     return f0.numpy().flatten(), times, midi_velocities, periodicities.numpy().flatten()
 
-def freq_to_notes(f0: np.array, times: np.array, amplitudes: np.array) -> List[Note]:
+def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
     a list of notes.
 
@@ -188,7 +218,7 @@ def freq_to_notes(f0: np.array, times: np.array, amplitudes: np.array) -> List[N
     
     return note_objects
 
-def freq_to_notes(f0, times, amplitudes, confidences):
+def freq_to_notes_crepe(f0, times, amplitudes, confidences):
 
     # Turns the frequencies into a list of Note objects
     note_objects = []
