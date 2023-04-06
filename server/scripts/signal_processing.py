@@ -6,23 +6,24 @@ of usable notes, store the list of extrapolated notes into a JSON, and then
 return that JSON to be stored locally in the file system.
 """
 import librosa
-import crepe
+import torchcrepe
+import torch
 import numpy as np
 import json
 from typing import List, Dict, Tuple
 from .objects import Note
 
 # Librosa parameters
-FRAME_LENGTH = 882 # Length of frame in samples. Default 2048
-SAMPLE_RATE = 22050 # Default 22050
+FRAME_LENGTH = 256 # Length of frame in samples. Default 2048
+SAMPLE_RATE = 16000 # Default 22050
 FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
-WINDOW_LENGTH = FRAME_LENGTH//2 # Window length. Default FRAME_LENGTH//2
-HOP_LENGTH = FRAME_LENGTH//4 # Frame increment in samples. Default FRAME_LENGTH//4
+HOP_LENGTH = 160 # Frame increment in samples. Default FRAME_LENGTH//4
+WINDOW_LENGTH = HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//2
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # Signal processing function parameters
-MIN_CREPE_CONFIDENCE = 0.84
-MAX_CENTS_DIFFERENCE = 31.9 # Max cents difference between notes.
+MIN_CREPE_CONFIDENCE = 0.93
+MAX_CENTS_DIFFERENCE = 35 # Max cents difference between notes.
 MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
 MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
@@ -90,23 +91,25 @@ def get_f0_time_amp(rec_file: str) -> Tuple[np.array, np.array, np.array, np.arr
             frequency, their times, and amplitudes
     """
     
-    y, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
-    y, _ = librosa.effects.trim(y)
+    # audio, sr = torchcrepe.load.audio(rec_file)
+    audio, sr = librosa.load(rec_file, sr=SAMPLE_RATE)
+    audio, _ = librosa.effects.trim(audio)
+    audio_tensor = torch.from_numpy(np.array([audio]))
     
-    # f0 = librosa.yin(y, fmin=FMIN, fmax=FMAX, sr=sr, frame_length=FRAME_LENGTH)
+    f0, periodicities = torchcrepe.predict(audio_tensor, sr, HOP_LENGTH, FMIN, FMAX, 'tiny', return_periodicity=True)
 
-    # # Get times for frequencies
+    # Get times for frequencies
     # times = librosa.times_like(f0, hop_length=HOP_LENGTH)
-    times, f0, confidences, _ = crepe.predict(y, sr, viterbi=True)
+    times = np.array([HOP_LENGTH/SAMPLE_RATE*i for i in range(f0.size(1))])
 
     # Gets the amplitude of the fundamental frequencies
-    S = librosa.magphase(librosa.stft(y, n_fft=FRAME_LENGTH, hop_length=HOP_LENGTH, win_length=WINDOW_LENGTH, window=np.ones))[0]
-    amplitudes = librosa.feature.rms(S=S, frame_length=FRAME_LENGTH, hop_length=HOP_LENGTH)[0]
+    S = librosa.magphase(librosa.stft(audio, n_fft=FRAME_LENGTH, hop_length=int(HOP_LENGTH/2), win_length=int(WINDOW_LENGTH/2), window=np.ones))[0]
+    amplitudes = librosa.feature.rms(S=S, frame_length=FRAME_LENGTH, hop_length=int(HOP_LENGTH/2))[0]
 
     # Convert amplitude to MIDI velocity
     midi_velocities = amplitude_to_midi_velocity(amplitudes)
     
-    return f0, times, midi_velocities, confidences + [0]
+    return f0.numpy().flatten(), times, midi_velocities, periodicities.numpy().flatten()
 
 def freq_to_notes(f0: np.array, times: np.array, amplitudes: np.array) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
@@ -197,16 +200,18 @@ def freq_to_notes(f0, times, amplitudes, confidences):
         current_amp = amplitudes[i]
         
         # Similar enough frequencies
-        if (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
-            confidences[i] >= MIN_CREPE_CONFIDENCE):
+        if (confidences[i] >= MIN_CREPE_CONFIDENCE or
+            (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
+             confidences[i] >= MIN_CREPE_CONFIDENCE - 0.1)):
             # If the note is the same as the previous note, update the duration
             offset = times[i-1]
             new_note = Note(current_freq, current_amp, offset, 0)
             note_frequencies = [previous_freq]
             note_amplitudes = [previous_amp]
             while (i < len(f0) and
-                   Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
-                   confidences[i] >= MIN_CREPE_CONFIDENCE):
+                   (confidences[i] >= MIN_CREPE_CONFIDENCE or
+                    (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
+                     confidences[i] >= MIN_CREPE_CONFIDENCE - 0.1))):
                 end_time = times[i]
                 note_frequencies.append(current_freq)
                 note_amplitudes.append(current_amp)
@@ -227,13 +232,13 @@ def freq_to_notes(f0, times, amplitudes, confidences):
         i += 1
 
     # If a note isn't long enough, merge it with the previous note
-    last_good_index = 0
-    for i in range(len(note_objects)):
-        if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
-            note_objects[last_good_index].end = note_objects[i].end
-            note_objects[i].pitch = REST_FREQUENCY
-        else:
-            last_good_index = i
+    # last_good_index = 0
+    # for i in range(len(note_objects)):
+    #     if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
+    #         note_objects[last_good_index].end = note_objects[i].end
+    #         note_objects[i].pitch = REST_FREQUENCY
+    #     else:
+    #         last_good_index = i
 
     # Keep notes that are long enough
     note_objects = [note for note in note_objects if

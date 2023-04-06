@@ -5,8 +5,8 @@ Test signal processing note extrapolation.
 from scripts.signal_processing import *
 import json
 
-WAV_DATA_PATH = "server/tests/data/wav/"
-JSON_DATA_PATH = "server/tests/data/dat/"
+WAV_DATA_PATH = "data/wav/"
+JSON_DATA_PATH = "data/dat/"
 
 MAX_CENTS_DIFFERENCE = 10
 
