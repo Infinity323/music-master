@@ -3,10 +3,12 @@
 Test signal processing note extrapolation.
 """
 from scripts.signal_processing import *
+import os
 import json
 
-WAV_DATA_PATH = "data/wav/"
-JSON_DATA_PATH = "data/dat/"
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+WAV_DATA_PATH = TEST_DIR + "/data/wav/"
+JSON_DATA_PATH = TEST_DIR + "/data/dat/"
 
 MAX_CENTS_DIFFERENCE = 10
 

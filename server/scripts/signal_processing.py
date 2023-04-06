@@ -13,15 +13,15 @@ import json
 from typing import List, Dict, Tuple
 from .objects import Note
 
-# Librosa parameters
-FRAME_LENGTH = 256 # Length of frame in samples. Default 2048
+# Signal processing parameters
+FRAME_LENGTH = 512 # Length of frame in samples. Default 2048
 SAMPLE_RATE = 16000 # Default 22050
 FRAME_PERIOD = FRAME_LENGTH/SAMPLE_RATE # Frame duration in seconds.
-HOP_LENGTH = 160 # Frame increment in samples. Default FRAME_LENGTH//4
+HOP_LENGTH = 40 # Frame increment in samples. Default FRAME_LENGTH//4
 WINDOW_LENGTH = HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//2
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
-# Signal processing function parameters
+# Note extrapolation parameters
 MIN_CREPE_CONFIDENCE = 0.93
 MAX_CENTS_DIFFERENCE = 35 # Max cents difference between notes.
 MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
@@ -68,13 +68,13 @@ def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
     """
 
     # Amplitude value assigned to mezzo forte (velocity 80)
-    MF_RMS = np.log10(0.0282389)
+    MF_RMS = np.log10(0.01181757)
     amplitude = np.log10(amplitude)
     lower = np.min(amplitude)
     upper = MF_RMS
     # Normalize notes to this mf value
     normalized_amplitude = (amplitude - lower) / (upper - lower)
-    midi_velocity = np.round(normalized_amplitude * 79 + 1).astype(int)
+    midi_velocity = np.round(normalized_amplitude * 80 + 1).astype(int)
 
     # Convert the NumPy array to a list of native integers
     return midi_velocity.tolist()
@@ -211,7 +211,7 @@ def freq_to_notes(f0, times, amplitudes, confidences):
             while (i < len(f0) and
                    (confidences[i] >= MIN_CREPE_CONFIDENCE or
                     (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
-                     confidences[i] >= MIN_CREPE_CONFIDENCE - 0.1))):
+                     confidences[i] >= MIN_CREPE_CONFIDENCE - 0.15))):
                 end_time = times[i]
                 note_frequencies.append(current_freq)
                 note_amplitudes.append(current_amp)
