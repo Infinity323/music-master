@@ -47,6 +47,8 @@ class Difference:
             "diff_type": self.diff_type
         }
 
+
+A4 = 440.0
 class Note:
     def __init__(self, pitch, velocity, start, end):
         self.pitch = pitch
@@ -85,6 +87,11 @@ class Note:
     @staticmethod
     def difference_cents(freq1: float, freq2: float) -> float:
         return abs(1200 * np.log2(freq1 / freq2))
+
+    @staticmethod
+    def round_frequency(freq: float) -> float:
+        exponent = np.round(12*np.log2(freq/A4))
+        return A4*2**(exponent/12.0)
     
     @staticmethod
     def get_pitch_eq_confidence(freq1: float, freq2: float, tolerance=50) -> float:

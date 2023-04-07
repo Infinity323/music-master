@@ -28,8 +28,7 @@ CREPE_WINDOW_LENGTH = CREPE_HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//
 # Note extrapolation parameters
 MIN_CREPE_CONFIDENCE = 0.93
 MAX_CENTS_DIFFERENCE = 31.5 # Max cents difference between notes.
-MIN_NOTE_LENGTH = 0.09 # Min note length in seconds.
-MIN_NOTE_DISTANCE = YIN_HOP_LENGTH/YIN_SAMPLE_RATE # Min note distance before merging in seconds.
+MIN_NOTE_DISTANCE = YIN_HOP_LENGTH/YIN_SAMPLE_RATE + 1e-10 # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
 
 class NpEncoder(json.JSONEncoder):
@@ -39,7 +38,7 @@ class NpEncoder(json.JSONEncoder):
         else:
             return super(NpEncoder, self).default(obj)
 
-def signal_processing(rec_file: str) -> Dict:
+def signal_processing(rec_file: str, bpm: int=100) -> Dict:
     """Analyzes WAV sound file and returns a JSON containing the list
     of extrapolated notes.
 
@@ -51,10 +50,10 @@ def signal_processing(rec_file: str) -> Dict:
     """
 
     # Converts sound file to frequency data, etc.
-    f0, times, amplitudes = get_f0_time_amp_crepe(rec_file)
+    f0, times, amplitudes = get_f0_time_amp_yin(rec_file)
 
     # Converts the fundamental frequencies, etc. to notes
-    notes = freq_to_notes_yin(f0, times, amplitudes)
+    notes = freq_to_notes_yin(f0, times, amplitudes, bpm)
 
     # Converts the notes to a JSON file structure
     result = notes_to_JSON(notes)
@@ -142,7 +141,7 @@ def get_f0_time_amp_crepe(rec_file: str) -> Tuple[np.array, np.array, np.array, 
     
     return f0.numpy().flatten(), times, midi_velocities, periodicities.numpy().flatten()
 
-def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> List[Note]:
+def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: int) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
     a list of notes.
 
@@ -154,6 +153,8 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> Li
     Returns:
         List[Note]: A list of notes
     """
+
+    MIN_NOTE_LENGTH = 60.0/bpm/6.0 # Allow for 16th note
 
     # Turns the frequencies into a list of Note objects
     note_objects = []
@@ -169,7 +170,7 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> Li
             # If the note is the same as the previous note, update the duration
             offset = times[i-1]
             new_note = Note(current_freq, current_amp, offset, 0)
-            note_frequencies = [previous_freq]
+            note_frequencies = [Note.round_frequency(previous_freq)]
             note_amplitudes = [previous_amp]
             while (i < len(f0) and
                    Note.difference_cents(current_freq, note_frequencies[0]) <= MAX_CENTS_DIFFERENCE):
@@ -191,39 +192,46 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> Li
 
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
-
-    # # Merge identical notes that are too close to each other
-    # for i in range(1, len(note_objects)):
-    #     if (note_objects[i].start - note_objects[i-1].end <= YIN_HOP_LENGTH/YIN_SAMPLE_RATE and
-    #         Note.difference_cents(note_objects[i].pitch, note_objects[i-1].pitch) <= MAX_CENTS_DIFFERENCE):
-    #         note_objects[i-1].end = note_objects[i].end
-    #         note_objects[i-1].pitch = (note_objects[i-1].pitch + note_objects[i].pitch)/2
-    #         note_objects[i].pitch = REST_FREQUENCY
-            
+    
     # YIN is kind of noisy. If a note isn't long enough, merge it with the
     # previous note
     last_good_index = 0
-    last_good_end = 0
     for i in range(len(note_objects)):
         if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
+            # note_objects[last_good_index].end = note_objects[i].end
+            note_objects[i].pitch = REST_FREQUENCY
+        else:
+            last_good_index = i
+
+    # Keep notes that don't exceed FMAX
+    note_objects = [note for note in note_objects if
+                    note.pitch < FMAX]
+
+    # Merge identical notes that are too close to each other
+    last_good_index = 0
+    last_good_end = 0
+    for i in range(1, len(note_objects)):
+        if (Note.difference_cents(note_objects[i].pitch, note_objects[last_good_index].pitch) <= MAX_CENTS_DIFFERENCE and
+            note_objects[i].start - note_objects[last_good_index].end <= YIN_HOP_LENGTH/YIN_SAMPLE_RATE):
             note_objects[last_good_index].end = note_objects[i].end
             note_objects[i].pitch = REST_FREQUENCY
         else:
             last_good_index = i
             last_good_end = note_objects[i].end
-
-    # Keep notes that don't match the rest frequency
+            
+    # Keep notes that don't exceed FMAX
     note_objects = [note for note in note_objects if
-                    note.pitch != REST_FREQUENCY]
+                    note.pitch < FMAX]
 
-    # Cut last note's ending short because there might be garbage attached
-    note_objects[-1].end = last_good_end
+    if len(note_objects) > 0:
+        # Cut last note's ending short because there might be garbage attached
+        note_objects[-1].end = last_good_end
     
-    # Time shift notes to start at 0
-    offset = note_objects[0].start
-    for note in note_objects:
-        note.start -= offset
-        note.end -= offset
+        # Time shift notes to start at 0
+        offset = note_objects[0].start
+        for note in note_objects:
+            note.start -= offset
+            note.end -= offset
     
     return note_objects
 

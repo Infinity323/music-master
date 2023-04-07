@@ -46,10 +46,10 @@ def addPerformance():
     # new_wav_file_path = "data/wav/Happy_Birthday_Piano_Perfect.wav" # test perfect wav
 
     # set new average tempo 
-    new_average_tempo = 120 # (TO-DO) change constant!
+    new_average_tempo = int(request.form.get("average_tempo"))
 
     # analyze recording
-    notes_from_rec = signal_processing(new_wav_file_path)
+    notes_from_rec = signal_processing(new_wav_file_path, new_average_tempo)
     rec_json_path = "data/dat/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + "_rec.json"
     
     # save notes info into a json file
