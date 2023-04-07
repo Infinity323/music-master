@@ -16,19 +16,20 @@ from .objects import Note
 FMIN = librosa.note_to_hz('C2') # Min detectable frequency (~65 Hz)
 FMAX = librosa.note_to_hz('C7') # Max detectable frequency (~2093 Hz)
 # YIN signal processing parameters
+YIN_SAMPLE_RATE = 22050
 YIN_FRAME_LENGTH = 256
-YIN_HOP_LENGTH = YIN_FRAME_LENGTH//4
+YIN_HOP_LENGTH = YIN_FRAME_LENGTH//6 # Frame increment in samples. Default FRAME_LENGTH//4
 YIN_WINDOW_LENGTH = YIN_FRAME_LENGTH//2
 # CREPE signal processing parameters
 CREPE_FRAME_LENGTH = 512 # Length of frame in samples. Default 2048
 CREPE_SAMPLE_RATE = 16000 # Default 22050
-CREPE_HOP_LENGTH = 40 # Frame increment in samples. Default FRAME_LENGTH//4
+CREPE_HOP_LENGTH = 40
 CREPE_WINDOW_LENGTH = CREPE_HOP_LENGTH*2 # Window length. Default FRAME_LENGTH//2
 # Note extrapolation parameters
 MIN_CREPE_CONFIDENCE = 0.93
-MAX_CENTS_DIFFERENCE = 35 # Max cents difference between notes.
-MIN_NOTE_LENGTH = 0.15 # Min note length in seconds.
-MIN_NOTE_DISTANCE = 0.05 # Min note distance before merging in seconds.
+MAX_CENTS_DIFFERENCE = 31.5 # Max cents difference between notes.
+MIN_NOTE_LENGTH = 0.09 # Min note length in seconds.
+MIN_NOTE_DISTANCE = YIN_HOP_LENGTH/YIN_SAMPLE_RATE # Min note distance before merging in seconds.
 REST_FREQUENCY = 2205 # Arbitrary frequency value assigned to rests.
 
 class NpEncoder(json.JSONEncoder):
@@ -171,7 +172,7 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> Li
             note_frequencies = [previous_freq]
             note_amplitudes = [previous_amp]
             while (i < len(f0) and
-                   Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE):
+                   Note.difference_cents(current_freq, note_frequencies[0]) <= MAX_CENTS_DIFFERENCE):
                 end_time = times[i]
                 note_frequencies.append(current_freq)
                 note_amplitudes.append(current_amp)
@@ -191,6 +192,14 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array) -> Li
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
 
+    # # Merge identical notes that are too close to each other
+    # for i in range(1, len(note_objects)):
+    #     if (note_objects[i].start - note_objects[i-1].end <= YIN_HOP_LENGTH/YIN_SAMPLE_RATE and
+    #         Note.difference_cents(note_objects[i].pitch, note_objects[i-1].pitch) <= MAX_CENTS_DIFFERENCE):
+    #         note_objects[i-1].end = note_objects[i].end
+    #         note_objects[i-1].pitch = (note_objects[i-1].pitch + note_objects[i].pitch)/2
+    #         note_objects[i].pitch = REST_FREQUENCY
+            
     # YIN is kind of noisy. If a note isn't long enough, merge it with the
     # previous note
     last_good_index = 0
@@ -260,15 +269,6 @@ def freq_to_notes_crepe(f0, times, amplitudes, confidences):
 
         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
         i += 1
-
-    # If a note isn't long enough, merge it with the previous note
-    # last_good_index = 0
-    # for i in range(len(note_objects)):
-    #     if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
-    #         note_objects[last_good_index].end = note_objects[i].end
-    #         note_objects[i].pitch = REST_FREQUENCY
-    #     else:
-    #         last_good_index = i
 
     # Keep notes that are long enough
     note_objects = [note for note in note_objects if
