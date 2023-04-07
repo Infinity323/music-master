@@ -16,6 +16,10 @@ class Metronome extends Component {
       currentBeatInBar: 0,
       beatsPerBar: 4,
       BPM: 100,
+      btn3: false,
+      btn4: false,
+      btn5: false,
+      btn6: false,
       // Internal state variables
       lookahead: 25,
       scheduleAheadTime: 0.1,
@@ -30,10 +34,98 @@ class Metronome extends Component {
    * Increments the next note time and current beat in bar.
    * Adjusts seconds per beat in case metronome was adjusted.
    */
-  nextBeat = () => {
-    if(this.state.currentBeatInBar === 4){
+  chgbtn3 = () => {
+    if(this.state.btn3 === false){
       this.setState(state => ({
-        currentBeatInBar: (state.currentBeatInBar - 4)
+        btn3: true,
+        beatsPerBar: 3
+      }));
+    }
+    else{
+      this.setState(state => ({
+        btn3: false,
+        btn4: false,
+        btn5: false,
+        btn6: false,
+        beatsPerBar: 2
+      }));
+    }
+  }
+  chgbtn4 = () => {
+    if(this.state.btn4 === false){
+      this.setState(state => ({
+        btn3: true,
+        btn4: true,
+        beatsPerBar: 4
+      }));
+    }
+    else{
+      this.setState(state => ({
+        btn4: false,
+        btn5: false,
+        btn6: false,
+        beatsPerBar: 3
+      }));
+    }
+  }
+  chgbtn5 = () => {
+    if(this.state.btn5 === false){
+      this.setState(state => ({
+        btn3: true,
+        btn4: true,
+        btn5: true,
+        beatsPerBar: 5
+      }));
+    }
+    else{
+      this.setState(state => ({
+        btn5: false,
+        btn6: false,
+        beatsPerBar: 4
+      }));
+    }
+  }
+  chgbtn6 = () => {
+    if(this.state.btn6 === false){
+      this.setState(state => ({
+        btn3: true,
+        btn4: true,
+        btn5: true,
+        btn6: true,
+        beatsPerBar: 6
+      }));
+    }
+    else{
+      this.setState(state => ({
+        btn6: false,
+        beatsPerBar: 5
+      }));
+    }
+    if(this.state.btn5 === false){
+      this.setState(state => ({
+        beatsPerBar: 4
+      }));
+    }
+  }
+  nextBeat = () => {
+    if(this.state.currentBeatInBar >= 2 && this.state.btn3 === true && this.state.btn4 === false){
+      this.setState(state => ({
+        currentBeatInBar: 0
+      }));
+    }
+    else if(this.state.currentBeatInBar >= 3 && this.state.btn4 === true && this.state.btn5 === false){
+      this.setState(state => ({
+        currentBeatInBar: 0
+      }));
+    }
+    else if(this.state.currentBeatInBar >= 4 && this.state.btn5 === true && this.state.btn6 === false){
+      this.setState(state => ({
+        currentBeatInBar: 0
+      }));
+    }
+    else if(this.state.currentBeatInBar >= 5 && this.state.btn5 === true && this.state.btn6 === true){
+      this.setState(state => ({
+        currentBeatInBar: 0
       }));
     }
     else{
@@ -145,7 +237,7 @@ class Metronome extends Component {
         <Flex flexDir="row" alignItems="center">
           <Box>
             <div className="btn metro" onClick={this.startStopMetro}>
-              <img src={image_metronome} id="metronome" alt="Start/Stop Metronome"/>
+              <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
             </div>
           </Box>
           <Flex flexDir="column" alignItems="center">
@@ -155,17 +247,23 @@ class Metronome extends Component {
               </div>
             </Box>
             <Box>
-              <CircularProgress value={this.state.currentBeatInBar > 0 ? 100 : 0} size='15px' color='green' thickness='18px'>
-                <CircularProgressLabel>{1}</CircularProgressLabel>
+              <CircularProgress value={this.state.currentBeatInBar >= 0 ? 100 : 0} size='22px' color='green' thickness='18px'>
+                <CircularProgressLabel>{}</CircularProgressLabel>
               </CircularProgress>
-              <CircularProgress value={this.state.currentBeatInBar > 1 ? 100 : 0} size='15px' color='green' thickness='18px'>
-                <CircularProgressLabel>{2}</CircularProgressLabel>
+              <CircularProgress value={this.state.currentBeatInBar >= 1 ? 100 : 0} size='22px' color='green' thickness='18px'>
+                <CircularProgressLabel>{}</CircularProgressLabel>
               </CircularProgress>
-              <CircularProgress value={this.state.currentBeatInBar > 2 ? 100 : 0} size='15px' color='green' thickness='18px'>
-                <CircularProgressLabel>{3}</CircularProgressLabel>
+              <CircularProgress value={(this.state.currentBeatInBar >= 2 && this.state.btn3 === true) ? 100 : 0} size='22px' color='green' thickness='18px'>
+              <CircularProgressLabel><div className={(this.state.btn3 === true) ? "btn cb3" : "btn cb3off"} onClick={this.chgbtn3}></div></CircularProgressLabel>
               </CircularProgress>
-              <CircularProgress value={this.state.currentBeatInBar > 3 ? 100 : 0} size='15px' color='green' thickness='18px'>
-                <CircularProgressLabel>{4}</CircularProgressLabel>
+              <CircularProgress value={(this.state.currentBeatInBar >= 3 && this.state.btn4 === true) ? 100 : 0} size='22px' color='green' thickness='18px'>
+                <CircularProgressLabel><div className={(this.state.btn4 === true) ? "btn cb4" : "btn cb4off"} onClick={this.chgbtn4}></div></CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={(this.state.currentBeatInBar >= 4 && this.state.btn5 === true) ? 100 : 0} size='22px' color='green' thickness='18px'>
+                <CircularProgressLabel><div className={(this.state.btn5 === true) ? "btn cb5" : "btn cb5off"} onClick={this.chgbtn5}></div></CircularProgressLabel>
+              </CircularProgress>
+              <CircularProgress value={((this.state.currentBeatInBar >= 5 && this.state.btn6 === true) ? 100 : 0)} size='22px' color='green' thickness='18px'>
+                <CircularProgressLabel><div className={(this.state.btn6 === true) ? "btn cb6" : "btn cb6off"} onClick={this.chgbtn6}></div></CircularProgressLabel>
               </CircularProgress>
             </Box>
             <Box>
