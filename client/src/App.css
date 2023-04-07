@@ -2,61 +2,49 @@
 /*      Colors      */
 /********************/
 :root {
-  font-size: 16px;
   --bg-color: ghostwhite;
   --text-color: black;
   --btn-color: #E8EBF7;
   --hover-color: #ACBED8;
   --select-color: #D78521;
-  --border-color: rgba(1, 1, 1, 0.2);
   --unused-color: #DE1A1A;
-}
-
-/********************/
-/*       Font       */
-/********************/
-@font-face {
-  font-family: 'AppleRegular';
-  src: local('SF-Pro-Text-Regular'),
-    url('./assets/fonts/SF-Pro-Text-Regular.otf');
-}
-@font-face {
-  font-family: 'AppleSemibold';
-  src: local('SF-Pro-Text-Semibold'),
-    url('./assets/fonts/SF-Pro-Text-Semibold.otf');
 }
 
 /********************/
 /*  General Styles  */
 /********************/
+html {
+  /* Black to show which regions will not be displayed on Pi */
+  background-color: black;
+}
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   user-select: none;
-  font-size: 1.2rem;
+  font-size: 20px;
+  min-width: 800px;
+  max-width: 800px;
+  min-height: 480px;
+  max-height: 480px;
 }
 div .content {
-  font-family: 'AppleRegular';
-  width: 80vw;
-  height: 80vh;
+  width: 600px;
+  height: 400px;
   margin: auto auto;
-  padding-top: 5vh;
+  padding-top: 20px;
   text-align: center;
 }
 .title {
-  font-family: 'AppleSemibold';
   margin: 0px;
   padding-top: 20px;
   padding-bottom: 40px;
   text-align: center;
 }
 h2 {
-  font-family: 'AppleSemibold';
   margin: 0px;
   margin-bottom: 20px;
 }
 .modal {
-  font-family: 'AppleRegular';
   position: absolute;
   top: 40px;
   left: 40px;
@@ -79,7 +67,7 @@ h2 {
 /********************/
 .btn {
   background-color: var(--btn-color);
-  border: 1px solid var(--border-color);
+  border: 1px solid black;
   border-radius: 10px;
   margin: 5px 5px;
   padding: 20px 20px;
@@ -110,15 +98,11 @@ h2 {
 .btn.small {
   padding: 0px;
   height: 30px;
-  line-height: 30px;
   width: 120px;
   display: inline-block;
 }
 .btn.medium {
   width: 100px;
-}
-.btn.selected {
-  background-color: var(--select-color);
 }
 .btn#uploadMusic, .btn#submitForm {
   float: left;
@@ -145,9 +129,6 @@ h2 {
   margin-left: 10px;
   display: inline-block;
 }
-img.corner {
-  width: 60px;
-}
 
 /********************/
 /*       Table      */
@@ -155,12 +136,12 @@ img.corner {
 table {
   margin-left: auto;
   margin-right: auto;
-  height: 100%;
-  max-height: 100%;
-  width: 90%;
+  min-height: 400px;
+  max-height: 400px;
 }
 table tr.header {
   background-color: var(--btn-color);
+  border: 1px solid black;
 }
 table tr.data {
   text-align: left;
@@ -172,24 +153,17 @@ table tr.data.selected {
   background-color: var(--select-color);
 }
 .tbody {
-  height: 100%;
-  width: 100%;
+  height: 300px;
+  width: 600px;
   overflow: auto;
-  border: 1px solid var(--border-color);
-}
-tbody {
-  width: 100%;
-  display: table;
-}
-th#title {
-  width: 50%;
+  border: 1px solid rgba(1, 1, 1, 0.2);
 }
 
 /********************/
 /*   Chart Styles   */
 /********************/
 div .chart {
-  height: 80%;
+  height: 300px;
   position: relative;
 }
 
@@ -199,11 +173,13 @@ div .chart {
 select {
   background-color: var(--btn-color);
   color: var(--text-color);
-  font-size: 1rem;
+  font-size: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: left;
 }
 input {
-  font-size: 1rem;
+  font-size: 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 input[type=file] {
   display: none;
@@ -213,7 +189,7 @@ input[type=file] {
 /*    Metronome     */
 /********************/
 div.metronome {
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -228,7 +204,7 @@ div.metronome.playing {
 }
 div.metro.bpm {
   background-color: var(--hover-color);
-  border: 1px solid var(--border-color);
+  border: 1px solid black;
   border-radius: 10px;
   margin: 2.5px;
   text-align: center;
@@ -238,7 +214,7 @@ div.metro.bpm {
   width: 60px;
 }
 div.btn.metro {
-  border: 1px solid var(--border-color);  
+  border: 1px solid black;  
   padding: 10px;
   height: 50px;
   width: 50px;
@@ -247,15 +223,81 @@ div.btn.bpm {
   margin: 2.5px;
   padding: 0px;
   height: 30px;
-  line-height: 30px;
   width: 30px;
   max-width: 120px;
   display: inline-block;
 }
-/* TODO: consolidate */
+div.btn.cb3 {
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb3off {
+  background-color: black;
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb4 {
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb4off {
+  background-color: black;
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb5 {
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb5off {
+  background-color: black;
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb6 {
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
+div.btn.cb6off {
+  background-color: black;
+  margin: 1.5px;
+  padding: 0px;
+  height: 10px;
+  width: 10px;
+  max-width: 120px;
+  display: inline-block;
+}
 .metronome-playing{
   background-color:#DE1A1A;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -265,7 +307,7 @@ div.btn.bpm {
 }
 .metronome{
   background-color:azure;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 10px;
   width: 160px;
   margin: 5px 5px;
@@ -273,18 +315,15 @@ div.btn.bpm {
   text-decoration: none;
   display: inline-block;
 }
-img#metronome {
-  width: 50px;
-}
 
 /********************/
 /*      Tuner       */
 /********************/
 div.tuner-center {
   display: flex;
-  width: 25vw;
-  height: 25vw;
-  border: 1px solid var(--border-color);
+  width: 200px;
+  height: 200px;
+  border: 1px solid rgba(1, 1, 1, 0.5);
   border-radius: 50%;
   background-color: var(--btn-color);
   vertical-align: middle;
@@ -293,18 +332,17 @@ div.tuner-center {
 }
 div.tuner-gauge {
   text-align: left;
-  height: 20vh;
-  width: 60vw;
+  width: 400px;
   margin: auto auto;
 }
 text.tuner-center {
   margin: auto;
 }
 text.tuner-center .note-name {
-  font-size: 4rem;
+  font-size: 60px;
 }
 text.tuner-center .freq {
-  font-size: 1rem;
+  font-size: 18px;
 }
 
 /********************/
@@ -313,37 +351,7 @@ text.tuner-center .freq {
 div.countdown {
   padding: 30px;
   font-weight: bold;
-  font-size: 8rem;
-}
-
-/********************/
-/*     Slider       */
-/********************/
-.slider {
-  width: 300px;
-  height: 40px;
-  border-radius: 50%;
-}
-.slider-track {
-  background-color: rgba(1, 1, 1, 0.2);
-}
-.slider-track.slider-track-0 {
-  background-color: var(--hover-color);
-}
-.slider .slider-track {
-  top: 15px;
-  height: 10px;
-}
-.slider-thumb {
-  cursor: pointer;
-  background-color: var(--btn-color);
-  width: 40px;
-  height: 40px;
-  border-radius: 100%;
-  outline: none;
-}
-.slider-thumb:active {
-  background-color: var(--select-color);
+  font-size: 128px;
 }
 
 /********************/
@@ -368,20 +376,6 @@ div.countdown {
   background: var(--bg-color);
 }
 
-/********************/
-/* Page Transitions */
-/********************/
-.page {
-  position: absolute;
-  width: 100vw;
-  height: 100vh;
-}
-.page-enter {
-  opacity: 0;
-  transform: translateY(5%);
-}
-.page-enter-active {
-  opacity: 1;
-  transform: translateY(0%);
-  transition: opacity 100ms ease-out, transform 100ms ease-out;
+table, th, td {
+  border: 1px solid;
 }
