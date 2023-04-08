@@ -73,17 +73,18 @@ This project's organization is vaguely based on [React Flask Boilerplate](https:
 
 ## Building and Packaging
 
-
 Package Backend (run this in server dir):
-```
+
+```bash
 pyinstaller music_master_backend.spec
 ```
+
 This will create an executable file of your Flask app in the dist directory.
 Move the generated executable file to your Electron app's project root directory.
 
 Package everything together:
-```
+
+```bash
 npm run build
 npm run electron-pack
 ```
-
