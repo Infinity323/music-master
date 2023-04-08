@@ -89,6 +89,7 @@ function RecordControl() {
   const onStop = async (blob) => {
     const formData = new FormData();
     formData.append("sheet_music_id", sheetMusicId);
+    formData.append("average_tempo", bpm);
     formData.append("file", blob);
 
     setIsLoading(true);

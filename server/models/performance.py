@@ -1,4 +1,7 @@
-from app import db
+from flask import Blueprint
+from models import db
+
+model_performance_blueprint = Blueprint("model_performance", __name__)
 
 class Performance(db.Model):
     __tablename__ = "performance"

@@ -24,6 +24,8 @@ var/
 *.egg
 *.DS_Store
 package-lock.json
+music_master_backend
+music_maser_backend.exe
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

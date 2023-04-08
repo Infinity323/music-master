@@ -1,4 +1,7 @@
-from app import db
+from flask import Blueprint
+from models import db
+
+model_goal_blueprint = Blueprint("model_goal", __name__)
 
 class Goal(db.Model):
     __tablename__ = "goal"
