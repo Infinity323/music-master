@@ -14,7 +14,7 @@ function SheetMusicDropdown() {
     control: (styles) => ({
       ...styles,
       backgroundColor: buttonColor,
-      borderColor: borderColor,
+      borderColor: "rgba(1, 1, 1, 0)",
       color: textColor,
       fontSize: 16,
       width: 300
@@ -38,7 +38,6 @@ function SheetMusicDropdown() {
       return {
         ...styles,
         backgroundColor: backgroundColor,
-        borderColor: "red",
         width: 300
       };
     }

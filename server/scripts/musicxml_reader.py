@@ -7,7 +7,11 @@ from mido import MidiFile
 FREQUENCY_OFFSETS = {
     "Piano": 0,
     "Guitar": 0,
+    "Violin": 0,
+    "Flute": 0,
     "Clarinet": -2,
+    "Trumpet": -2,
+    "Saxophone": 3,
 }
 
 SEMITONE_RATIO = 1.05946
@@ -28,7 +32,10 @@ class MusicXMLReader:
         self.set_custom_tempo(custom_tempo)
         
         # Set the instrument
-        self.instrument = instrument
+        if not FREQUENCY_OFFSETS.get(instrument):
+            self.instrument = "Piano"
+        else:
+            self.instrument = instrument
 
         # Create a MIDI file
         self.xml_score.write("midi", midi_file_out)

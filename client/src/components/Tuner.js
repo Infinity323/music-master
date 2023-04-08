@@ -45,10 +45,10 @@ function Tuner() {
           isNeedleDraggingEnabled={true}
           needleBrush={selectColor}
           needleOutline={textColor}
-          needleStrokeThickness={1}
+          needleStrokeThickness={0.5}
           backingBrush={btnColor}
-          backingOutline={borderColor}
-          backingStrokeThickness={1}
+          backingOutline=""
+          backingStrokeThickness={0}
           transitionDuration={200}
           rangeBrushes={"#E81F1F, #E89F1F, #E8D91F, #93E81F, #62E81F, #93E81F, #E8D91F, #E89F1F, #E81F1F"}
         >

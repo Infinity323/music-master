@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { baseUrl } from '../App';
+import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import Modal from 'react-modal'
+import Select from 'react-select';
 
 function SheetMusicTable() {
   const [error, setError] = useState(null);
@@ -28,9 +29,58 @@ function SheetMusicTable() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [composer, setComposer] = useState("");
-    const [instrument, setInstrument] = useState("");
+    const [instrument, setInstrument] = useState("Piano");
     const [file, setFile] = useState(null);
     const inputRef = useRef();
+
+    const instruments = [
+      { name: "Piano" },
+      { name: "Guitar" },
+      { name: "Violin" },
+      { name: "Flute" },
+      { name: "Clarinet" },
+      { name: "Trumpet" },
+      { name: "Saxophone" }
+    ];
+
+    const backgroundColor = style.getPropertyValue('--bg-color');
+    const borderColor = "rgba(1, 1, 1, 0.2)";
+    const buttonColor = style.getPropertyValue('--btn-color');
+    const textColor = style.getPropertyValue('--text-color');
+
+    // Dropdown styles
+    const styles = {
+      control: (styles) => ({
+        ...styles,
+        backgroundColor: buttonColor,
+        borderColor: "rgba(1, 1, 1, 0)",
+        color: textColor,
+        fontSize: 16,
+        width: 300
+      }),
+      option: (styles) => {
+        return {
+          ...styles,
+          backgroundColor: backgroundColor,
+          color: textColor,
+          fontSize: 16,
+          width: 300
+        };
+      },
+      singleValue: (styles) => {
+        return {
+          ...styles,
+          color: textColor
+        };
+      },
+      menu: (styles) => {
+        return {
+          ...styles,
+          backgroundColor: backgroundColor,
+          width: 300
+        };
+      }
+    };
 
     function openModal() {
       setModalIsOpen(true);
@@ -63,8 +113,15 @@ function SheetMusicTable() {
           <br/><input type="text" onChange={(e) => setTitle(e.target.value)}/><br/>
           Composer: {composer}
           <br/><input type="text" onChange={(e) => setComposer(e.target.value)}/><br/>
-          Instrument: {instrument}
-          <br/><input type="text" onChange={(e) => setInstrument(e.target.value)}/><br/>
+          Instrument:
+            <Select
+              options={instruments.map(item => ({label: item.name, value: item.name}))}
+              styles={styles}
+              maxMenuHeight={200}
+              onChange={e => setInstrument(e.value)}
+              defaultValue={{ label: "Piano", value: "Piano" }}
+              isSearchable={false}
+            />
           File Upload: 
           <br/>
           <label className="btn small">

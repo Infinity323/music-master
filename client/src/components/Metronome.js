@@ -203,10 +203,10 @@ class Metronome extends Component {
 
   render() {
     return ( 
-      <div className={this.state.isBeat ? "metronome playing" : "metronome"}>
+      <div className="metronome">
         <Flex flexDir="row" alignItems="center">
           <Box>
-            <div className="btn metro" onClick={this.startStopMetro}>
+            <div className={this.state.isPlaying ? "btn metro playing" : "btn metro"} onClick={this.startStopMetro}>
               <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
             </div>
           </Box>
