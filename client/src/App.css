@@ -2,6 +2,7 @@
 /*      Colors      */
 /********************/
 :root {
+  font-size: 16px;
   --bg-color: ghostwhite;
   --text-color: black;
   --btn-color: #E8EBF7;
@@ -28,26 +29,18 @@
 /********************/
 /*  General Styles  */
 /********************/
-html {
-  /* Black to show which regions will not be displayed on Pi */
-  background-color: black;
-}
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   user-select: none;
-  font-size: 20px;
-  min-width: 800px;
-  max-width: 800px;
-  min-height: 480px;
-  max-height: 480px;
+  font-size: 1.2rem;
 }
 div .content {
   font-family: 'AppleRegular';
-  width: 600px;
-  height: 400px;
+  width: 80vw;
+  height: 80vh;
   margin: auto auto;
-  padding-top: 20px;
+  padding-top: 5vh;
   text-align: center;
 }
 .title {
@@ -152,6 +145,9 @@ h2 {
   margin-left: 10px;
   display: inline-block;
 }
+img.corner {
+  width: 60px;
+}
 
 /********************/
 /*       Table      */
@@ -159,8 +155,9 @@ h2 {
 table {
   margin-left: auto;
   margin-right: auto;
-  min-height: 400px;
-  max-height: 400px;
+  height: 100%;
+  max-height: 100%;
+  width: 90%;
 }
 table tr.header {
   background-color: var(--btn-color);
@@ -175,17 +172,24 @@ table tr.data.selected {
   background-color: var(--select-color);
 }
 .tbody {
-  height: 300px;
-  width: 600px;
+  height: 100%;
+  width: 100%;
   overflow: auto;
   border: 1px solid var(--border-color);
+}
+tbody {
+  width: 100%;
+  display: table;
+}
+th#title {
+  width: 50%;
 }
 
 /********************/
 /*   Chart Styles   */
 /********************/
 div .chart {
-  height: 300px;
+  height: 80%;
   position: relative;
 }
 
@@ -195,11 +199,11 @@ div .chart {
 select {
   background-color: var(--btn-color);
   color: var(--text-color);
-  font-size: 16px;
+  font-size: 1rem;
   text-align: left;
 }
 input {
-  font-size: 16px;
+  font-size: 1rem;
 }
 input[type=file] {
   display: none;
@@ -209,18 +213,18 @@ input[type=file] {
 /*    Metronome     */
 /********************/
 div.metronome {
+  background-color: var(--btn-color);
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  width: 160px;
   margin: 5px 5px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 200ms;
+  transition-duration: 50ms;
 }
 div.metronome.playing {
   background-color: var(--select-color);
-  transition-duration: 200ms;
+  transition-duration: 50ms;
 }
 div.metro.bpm {
   background-color: var(--hover-color);
@@ -248,25 +252,19 @@ div.btn.bpm {
   max-width: 120px;
   display: inline-block;
 }
-.metronome-playing{
-  background-color:#DE1A1A;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  width: 160px;
-  margin: 5px 5px;
-  text-align: center;
-  text-decoration: none;
+div.btn.cb {
+  margin: 1.5px;
+  padding: 0px;
+  height: 11px;
+  width: 11px;
+  max-width: 120px;
   display: inline-block;
 }
-.metronome{
-  background-color:azure;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  width: 160px;
-  margin: 5px 5px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
+div.btn.cb.off {
+  background-color: rgba(1, 1, 1, 0.5);
+}
+img#metronome {
+  width: 50px;
 }
 
 /********************/
@@ -274,8 +272,8 @@ div.btn.bpm {
 /********************/
 div.tuner-center {
   display: flex;
-  width: 200px;
-  height: 200px;
+  width: 25vw;
+  height: 25vw;
   border: 1px solid var(--border-color);
   border-radius: 50%;
   background-color: var(--btn-color);
@@ -285,17 +283,18 @@ div.tuner-center {
 }
 div.tuner-gauge {
   text-align: left;
-  width: 400px;
+  height: 20vh;
+  width: 60vw;
   margin: auto auto;
 }
 text.tuner-center {
   margin: auto;
 }
 text.tuner-center .note-name {
-  font-size: 60px;
+  font-size: 4rem;
 }
 text.tuner-center .freq {
-  font-size: 18px;
+  font-size: 1rem;
 }
 
 /********************/
@@ -304,7 +303,7 @@ text.tuner-center .freq {
 div.countdown {
   padding: 30px;
   font-weight: bold;
-  font-size: 128px;
+  font-size: 8rem;
 }
 
 /********************/
@@ -357,4 +356,22 @@ div.countdown {
 }
 ::-webkit-scrollbar-corner {
   background: var(--bg-color);
+}
+
+/********************/
+/* Page Transitions */
+/********************/
+.page {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+}
+.page-enter {
+  opacity: 0;
+  transform: translateY(5%);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0%);
+  transition: opacity 100ms ease-out, transform 100ms ease-out;
 }

@@ -127,9 +127,9 @@ function SheetMusicTable() {
           <div className="tbody">
             <tbody>
               <tr className="header">
-                <th width="400px">Title</th>
-                <th width="150px">Composer</th>
-                <th width="150px">Instrument</th>
+                <th id="title">Title</th>
+                <th id="composer">Composer</th>
+                <th id="instrument">Instrument</th>
               </tr>
               {items.map(item => (
                 <tr className={selected === item.id ? "data selected" : "data"}
