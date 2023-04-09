@@ -7,7 +7,6 @@ Prerequisites:
 * Raspberry Pi 4 with Debian Bullseye OS
 * Python 3
 * Pip
-* [PostgreSQL](https://www.postgresql.org/download/linux/debian/)
 * NPM
 
 Clone repository:
@@ -37,15 +36,6 @@ source env/bin/activate
 pip3 install -r requirements.txt
 ```
 
-### TODO: PostgreSQL
-
-```bash
-host: localhost
-username: <%= ENV['DATABASE_USER'] %>
-password: <%= ENV['DATABASE_PASSWORD'] %>
-```
-
-
 ## Running
 
 To start the frontend, in one terminal:
@@ -64,8 +54,6 @@ flask run
 ```
 
 The frontend will run on `localhost:3000`, while the backend will run on `localhost:5000`.
-
-Ensure Postgres is running on `localhost:5432`.
 
 ## Notes
 

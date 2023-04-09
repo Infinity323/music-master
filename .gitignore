@@ -99,5 +99,11 @@ dist/
 # Sketch files
 *.sketch
 
+# VS Code
 .vscode/
+
+# Runtime data
 server/data/
+
+# Flask stuff
+instance/

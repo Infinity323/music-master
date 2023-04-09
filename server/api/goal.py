@@ -1,4 +1,5 @@
 from flask import request, Blueprint
+from datetime import date
 from random import randint
 
 from models import db
@@ -27,8 +28,8 @@ def addGoal():
     new_id = randint(1, 1000000)
     new_sheet_music_id = data.get("sheet_music_id")
     new_name = data.get("name")
-    new_start_date = data.get("start_date")
-    new_end_date = data.get("end_date")
+    new_start_date = date.today()
+    new_end_date = date.fromisoformat(data.get("end_date"))
     new_tempo_percent_accuracy = data.get("tempo_percent_accuracy")
     new_average_tempo = data.get("average_tempo")
     new_tuning_percent_accuracy = data.get("tuning_percent_accuracy")
