@@ -5,6 +5,7 @@ import Modal from 'react-modal'
 import Select from 'react-select';
 
 function SheetMusicTable() {
+  const [responseStatus, setResponseStatus] = useState(200);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
@@ -12,17 +13,19 @@ function SheetMusicTable() {
 
   useEffect(() => {
     fetch(baseUrl + "/sheetmusic")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setItems(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      )
+      .then(res => {
+        setResponseStatus(res.status);
+        return res.json();
+      })
+      .then(result => {
+        setIsLoaded(true);
+        setItems(result);
+      })
+      .catch(error => {
+        // Network connection error
+        setIsLoaded(true);
+        setError(error);
+      });
   }, []);
 
   function UploadButton() {    
@@ -126,7 +129,11 @@ function SheetMusicTable() {
           <br/>
           <label className="btn small">
             Choose File
-            <input type="file" onChange={() => setFile(inputRef.current.files[0])} ref={inputRef}/>
+            <input
+              type="file"
+              accept=".musicxml"
+              onChange={() => setFile(inputRef.current.files[0])}
+              ref={inputRef}/>
           </label>
           <br/>
           <div
@@ -150,7 +157,7 @@ function SheetMusicTable() {
     function deleteMusic() {
       fetch(baseUrl + "/sheetmusic/" + selected, {
         method: "DELETE"
-      }).then((res) => res.json());
+      }).then(res => res.json());
       const index = items.findIndex(item => item.id === selected);
       items.splice(index, 1);
       setItems(items);
@@ -165,17 +172,22 @@ function SheetMusicTable() {
     )
   }
 
-  if (error) {
+  if (error || responseStatus >= 400) {
     return (
-      <div className="content">
-        {error.name}: {error.message}
-      </div>
+      <p className="error">
+        SheetMusicTable failed to render.
+        <br/>
+        { responseStatus >= 400
+          ? responseStatus < 500
+            ? `Client-side error (bad request)` // 400-499
+            : `Server-side error (Flask encountered an error)` // 500-599
+          : `Could not connect to ${baseUrl} (is Flask running?)`
+        }
+      </p>
     );
   } else if (!isLoaded) {
     return (
-      <div className="content">
-        <img src={loading_gif} width="50px" alt="Loading..."/>
-      </div>
+      <img src={loading_gif} width="50px" alt="Loading..."/>
     );
   } else {
     return (
