@@ -1,16 +1,30 @@
 import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import backArrow from '../assets/images/back_arrow.png'
-import lightMode from '../assets/images/light_mode.png'
-import darkMode from '../assets/images/dark_mode.png'
+import backArrow from '../assets/images/back_arrow.png';
+import backArrowWhite from '../assets/images/back_arrow_white.png';
+import lightMode from '../assets/images/light_mode.png';
+import darkMode from '../assets/images/dark_mode.png';
 import { style } from '../App';
 import { ThemeContext } from '../utils/Contexts';
 
 export function BackButton() {
+  const theme = useContext(ThemeContext)[0];
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Preload images
+    const imageList = [backArrow, backArrowWhite];
+    imageList.forEach(image => {
+      new Image().src = image;
+    });
+  }, []);
+
   return (
     <div className="btn back" onClick={() => navigate(-1)}>
-      <img src={backArrow} className="corner" alt="Back"/>
+      <img
+        src={theme === "light" ? backArrow : backArrowWhite}
+        className="corner"
+        alt="Back"/>
     </div>
   );
 }
@@ -25,11 +39,11 @@ export function ThemeButton() {
   }
 
   function setLightMode() {
-    style.setProperty('--bg-color', 'ghostwhite');
+    style.setProperty('--bg-color', '#E8EAF6');
     style.setProperty('--text-color', 'black');
-    style.setProperty('--btn-color', '#E8EBF7');
-    style.setProperty('--hover-color', '#ACBED8');
-    style.setProperty('--select-color', '#D78521');
+    style.setProperty('--btn-color', '#C5CAE9');
+    style.setProperty('--hover-color', '#9FA8DA');
+    style.setProperty('--select-color', '#5C6BC0');
     style.setProperty('--hover-shadow-color', 'rgba(1, 1, 1, 0.2)');
   }
 
@@ -38,7 +52,7 @@ export function ThemeButton() {
     style.setProperty('--text-color', 'gainsboro');
     style.setProperty('--btn-color', '#414141');
     style.setProperty('--hover-color', '#525252');
-    style.setProperty('--select-color', '#CA3E47');
+    style.setProperty('--select-color', '#5C6BC0');
     style.setProperty('--hover-shadow-color', 'white');
   }
 
@@ -48,8 +62,13 @@ export function ThemeButton() {
   }
   
   useEffect(() => {
+    // Preload images
+    const imageList = [lightMode, darkMode];
+    imageList.forEach(image => {
+      new Image().src = image;
+    });
     setProperties();
-  });
+  }, []);
 
   useEffect(() => {
     if (theme === "dark") setDarkMode();
@@ -58,10 +77,9 @@ export function ThemeButton() {
   
   return (
     <div className="btn settings" onClick={toggleTheme}>
-      {
-        theme === "dark"
-          ? <img src={darkMode} className="corner" alt="Dark"/>
-          : <img src={lightMode} className="corner" alt="Light"/>
+      { theme === "dark"
+        ? <img src={darkMode} className="corner" alt="Dark"/>
+        : <img src={lightMode} className="corner" alt="Light"/>
       }
     </div>
   );
