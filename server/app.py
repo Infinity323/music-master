@@ -10,6 +10,7 @@ def create_app():
     CORS(app)
     app.config.from_object(config.Config)
     
+    # Initialize database connection and autogenerate tables
     db.init_app(app)
     from models.goal import model_goal_blueprint
     from models.performance import model_performance_blueprint
@@ -17,6 +18,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # Import endpoints
     from api.sheetmusic import sheetmusic_blueprint
     from api.performance import performance_blueprint
     from api.goal import goal_blueprint
@@ -29,9 +31,8 @@ def create_app():
     app.register_blueprint(goal_blueprint)
 
     # Initialize data subdirectories
-    os.makedirs("data/xml", exist_ok=True)
-    os.makedirs("data/wav", exist_ok=True)
-    os.makedirs("data/dat", exist_ok=True)
+    for dir in config.DATA_DIRS:
+        os.makedirs(dir, exist_ok=True)
 
     return app
 

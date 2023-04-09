@@ -1,10 +1,9 @@
-import os
-
 class Config(object):
-    SQLALCHEMY_DATABASE_URI = "postgresql://postgres:password@localhost:5432/music_master"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///music_master.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    DATA_DIRS = {
-        "xml": "data/xml",
-        "wav": "data/wav",
-        "dat": "data/dat",
-    }
+
+DATA_DIRS = [
+    "data/xml",
+    "data/wav",
+    "data/dat",
+]

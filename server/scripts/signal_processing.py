@@ -44,6 +44,7 @@ def signal_processing(rec_file: str, bpm: int=100) -> Dict:
 
     Args:
         rec_file (str): The file path of the WAV file
+        bpm (int): The BPM of the recording
 
     Returns:
         Dict: The JSON with the list of notes
@@ -149,6 +150,7 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
         f0 (np.array): The array of fundamental frequencies
         times (np.array): The array of timestamps
         amplitudes (np.array): The array of max amplitudes
+        bpm (int): The BPM of the recording
 
     Returns:
         List[Note]: A list of notes
@@ -198,8 +200,7 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
     last_good_index = 0
     for i in range(len(note_objects)):
         if note_objects[i].end - note_objects[i].start < MIN_NOTE_LENGTH:
-            # note_objects[last_good_index].end = note_objects[i].end
-            note_objects[i].pitch = REST_FREQUENCY
+            note_objects[i].pitch = REST_FREQUENCY # Mark for deletion
         else:
             last_good_index = i
 
@@ -209,24 +210,31 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
 
     # Merge identical notes that are too close to each other
     last_good_index = 0
-    last_good_end = 0
     for i in range(1, len(note_objects)):
-        if (Note.difference_cents(note_objects[i].pitch, note_objects[last_good_index].pitch) <= MAX_CENTS_DIFFERENCE and
+        if (Note.difference_cents(note_objects[i].pitch, note_objects[last_good_index].pitch) <= 10 and
             note_objects[i].start - note_objects[last_good_index].end <= YIN_HOP_LENGTH/YIN_SAMPLE_RATE):
             note_objects[last_good_index].end = note_objects[i].end
-            note_objects[i].pitch = REST_FREQUENCY
+            note_objects[i].pitch = REST_FREQUENCY # Mark for deletion
         else:
             last_good_index = i
-            last_good_end = note_objects[i].end
             
-    # Keep notes that don't exceed FMAX
+    # Delete notes that need to be deleted
     note_objects = [note for note in note_objects if
                     note.pitch < FMAX]
 
-    if len(note_objects) > 0:
-        # Cut last note's ending short because there might be garbage attached
-        note_objects[-1].end = last_good_end
+    # Merge two identical notes when the first one is MUCH louder than the next
+    # This assumes first note is the hammer and second note is trailing sound
+    for i in range(1, len(note_objects)):
+        if (Note.difference_cents(note_objects[i].pitch, note_objects[i-1].pitch) <= 10 and
+            note_objects[i-1].velocity - note_objects[i].velocity >= 30):
+            note_objects[i-1].end = note_objects[i].end
+            note_objects[i].pitch = REST_FREQUENCY # Mark for deletion
     
+    # Delete notes that need to be deleted
+    note_objects = [note for note in note_objects if
+                    note.pitch < FMAX]
+
+    if len(note_objects) > 0:    
         # Time shift notes to start at 0
         offset = note_objects[0].start
         for note in note_objects:
