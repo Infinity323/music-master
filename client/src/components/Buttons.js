@@ -1,39 +1,50 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import backArrow from '../assets/images/back_arrow.png'
-import settingsIcon from '../assets/images/settings_icon.png'
-import lightMode from '../assets/images/light_mode.png'
-import darkMode from '../assets/images/dark_mode.png'
+import backArrow from '../assets/images/back_arrow.png';
+import backArrowWhite from '../assets/images/back_arrow_white.png';
+import lightMode from '../assets/images/light_mode.png';
+import darkMode from '../assets/images/dark_mode.png';
 import { style } from '../App';
+import { ThemeContext } from '../utils/Contexts';
 
 export function BackButton() {
+  const theme = useContext(ThemeContext)[0];
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Preload images
+    const imageList = [backArrow, backArrowWhite];
+    imageList.forEach(image => {
+      new Image().src = image;
+    });
+  }, []);
+
   return (
     <div className="btn back" onClick={() => navigate(-1)}>
-      <img src={backArrow} className="corner" alt="Back"/>
+      <img
+        src={theme === "light" ? backArrow : backArrowWhite}
+        className="corner"
+        alt="Back"/>
     </div>
   );
 }
 
-export function SettingsButton() {
-  const [clicked, setClicked] = useState(false);  
+export function ThemeButton() {
+  const [theme, setTheme] = useContext(ThemeContext); 
 
   function setProperties() {
     // Set default color values on first application load
-    if (style.getPropertyValue('--bg-color') === "" ||
-        style.getPropertyValue('--text-color') === "" ||
-        style.getPropertyValue('--btn-color') === "" ||
-        style.getPropertyValue('--hover-color') === "" ||
-        style.getPropertyValue('--select-color') === "")
-      setLightMode();
+    if (theme === "light") setLightMode();
+    else setDarkMode();
   }
 
   function setLightMode() {
-    style.setProperty('--bg-color', 'ghostwhite');
+    style.setProperty('--bg-color', '#E8EAF6');
     style.setProperty('--text-color', 'black');
-    style.setProperty('--btn-color', '#E8EBF7');
-    style.setProperty('--hover-color', '#ACBED8');
-    style.setProperty('--select-color', '#D78521');
+    style.setProperty('--btn-color', '#C5CAE9');
+    style.setProperty('--hover-color', '#9FA8DA');
+    style.setProperty('--select-color', '#5C6BC0');
+    style.setProperty('--hover-shadow-color', 'rgba(1, 1, 1, 0.2)');
   }
 
   function setDarkMode() {
@@ -41,20 +52,35 @@ export function SettingsButton() {
     style.setProperty('--text-color', 'gainsboro');
     style.setProperty('--btn-color', '#414141');
     style.setProperty('--hover-color', '#525252');
-    style.setProperty('--select-color', '#CA3E47');
+    style.setProperty('--select-color', '#5C6BC0');
+    style.setProperty('--hover-shadow-color', 'white');
+  }
+
+  function toggleTheme() {
+    if (theme === "light") setTheme("dark");
+    else setTheme("light");
   }
   
   useEffect(() => {
+    // Preload images
+    const imageList = [lightMode, darkMode];
+    imageList.forEach(image => {
+      new Image().src = image;
+    });
     setProperties();
-  });
+  }, []);
+
+  useEffect(() => {
+    if (theme === "dark") setDarkMode();
+    else setLightMode();
+  }, [theme]);
   
   return (
-    <div className={clicked ? "btn settings expanded" : "btn settings"} onClick={() => setClicked(!clicked)}>
-      <img src={settingsIcon} className="corner" alt="Settings"/>
-      <div class="settings-menu">
-        <img src={lightMode} className="corner" alt="Settings" onClick={() => setLightMode()}/>
-        <img src={darkMode} className="corner" alt="Settings" onClick={() => setDarkMode()}/>
-      </div>
+    <div className="btn settings" onClick={toggleTheme}>
+      { theme === "dark"
+        ? <img src={darkMode} className="corner" alt="Dark"/>
+        : <img src={lightMode} className="corner" alt="Light"/>
+      }
     </div>
   );
 }

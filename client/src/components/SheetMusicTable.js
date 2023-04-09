@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { baseUrl } from '../App';
+import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import Modal from 'react-modal'
+import Select from 'react-select';
 
 function SheetMusicTable() {
+  const [responseStatus, setResponseStatus] = useState(200);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
@@ -11,26 +13,77 @@ function SheetMusicTable() {
 
   useEffect(() => {
     fetch(baseUrl + "/sheetmusic")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setItems(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      )
+      .then(res => {
+        setResponseStatus(res.status);
+        return res.json();
+      })
+      .then(result => {
+        setIsLoaded(true);
+        setItems(result);
+      })
+      .catch(error => {
+        // Network connection error
+        setIsLoaded(true);
+        setError(error);
+      });
   }, []);
 
   function UploadButton() {    
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [title, setTitle] = useState("");
     const [composer, setComposer] = useState("");
-    const [instrument, setInstrument] = useState("");
+    const [instrument, setInstrument] = useState("Piano");
     const [file, setFile] = useState(null);
     const inputRef = useRef();
+
+    const instruments = [
+      { name: "Piano" },
+      { name: "Guitar" },
+      { name: "Violin" },
+      { name: "Flute" },
+      { name: "Clarinet" },
+      { name: "Trumpet" },
+      { name: "Saxophone" }
+    ];
+
+    const backgroundColor = style.getPropertyValue('--bg-color');
+    const borderColor = "rgba(1, 1, 1, 0.2)";
+    const buttonColor = style.getPropertyValue('--btn-color');
+    const textColor = style.getPropertyValue('--text-color');
+
+    // Dropdown styles
+    const styles = {
+      control: (styles) => ({
+        ...styles,
+        backgroundColor: buttonColor,
+        borderColor: "rgba(1, 1, 1, 0)",
+        color: textColor,
+        fontSize: 16,
+        width: 300
+      }),
+      option: (styles) => {
+        return {
+          ...styles,
+          backgroundColor: backgroundColor,
+          color: textColor,
+          fontSize: 16,
+          width: 300
+        };
+      },
+      singleValue: (styles) => {
+        return {
+          ...styles,
+          color: textColor
+        };
+      },
+      menu: (styles) => {
+        return {
+          ...styles,
+          backgroundColor: backgroundColor,
+          width: 300
+        };
+      }
+    };
 
     function openModal() {
       setModalIsOpen(true);
@@ -63,13 +116,24 @@ function SheetMusicTable() {
           <br/><input type="text" onChange={(e) => setTitle(e.target.value)}/><br/>
           Composer: {composer}
           <br/><input type="text" onChange={(e) => setComposer(e.target.value)}/><br/>
-          Instrument: {instrument}
-          <br/><input type="text" onChange={(e) => setInstrument(e.target.value)}/><br/>
+          Instrument:
+            <Select
+              options={instruments.map(item => ({label: item.name, value: item.name}))}
+              styles={styles}
+              maxMenuHeight={200}
+              onChange={e => setInstrument(e.value)}
+              defaultValue={{ label: "Piano", value: "Piano" }}
+              isSearchable={false}
+            />
           File Upload: 
           <br/>
           <label className="btn small">
             Choose File
-            <input type="file" onChange={() => setFile(inputRef.current.files[0])} ref={inputRef}/>
+            <input
+              type="file"
+              accept=".musicxml"
+              onChange={() => setFile(inputRef.current.files[0])}
+              ref={inputRef}/>
           </label>
           <br/>
           <div
@@ -93,7 +157,7 @@ function SheetMusicTable() {
     function deleteMusic() {
       fetch(baseUrl + "/sheetmusic/" + selected, {
         method: "DELETE"
-      }).then((res) => res.json());
+      }).then(res => res.json());
       const index = items.findIndex(item => item.id === selected);
       items.splice(index, 1);
       setItems(items);
@@ -108,17 +172,22 @@ function SheetMusicTable() {
     )
   }
 
-  if (error) {
+  if (error || responseStatus >= 400) {
     return (
-      <div className="content">
-        {error.name}: {error.message}
-      </div>
+      <p className="error">
+        SheetMusicTable failed to render.
+        <br/>
+        { responseStatus >= 400
+          ? responseStatus < 500
+            ? `Client-side error (bad request)` // 400-499
+            : `Server-side error (Flask encountered an error)` // 500-599
+          : `Could not connect to ${baseUrl} (is Flask running?)`
+        }
+      </p>
     );
   } else if (!isLoaded) {
     return (
-      <div className="content">
-        <img src={loading_gif} width="50px" alt="Loading..."/>
-      </div>
+      <img src={loading_gif} width="50px" alt="Loading..."/>
     );
   } else {
     return (

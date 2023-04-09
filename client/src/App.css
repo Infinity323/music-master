@@ -3,13 +3,15 @@
 /********************/
 :root {
   font-size: 16px;
-  --bg-color: ghostwhite;
+  /* These colors get overwritten in Buttons.js */
+  --bg-color: #E8EAF6;
   --text-color: black;
-  --btn-color: #E8EBF7;
-  --hover-color: #ACBED8;
-  --select-color: #D78521;
+  --btn-color: #9FA8DA;
+  --hover-color: #5C6BC0;
+  --select-color: #3949AB;
   --border-color: rgba(1, 1, 1, 0.2);
-  --unused-color: #DE1A1A;
+  --shadow-color: rgba(1, 1, 1, 0.2);
+  --hover-shadow-color: rgba(1, 1, 1, 0.2);
 }
 
 /********************/
@@ -34,6 +36,7 @@ body {
   color: var(--text-color);
   user-select: none;
   font-size: 1.2rem;
+
 }
 div .content {
   font-family: 'AppleRegular';
@@ -65,6 +68,9 @@ h2 {
   background-color: var(--bg-color);
   padding: 10px;
 }
+.modal:focus {
+  outline: 0;
+}
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -73,19 +79,22 @@ h2 {
   bottom: 0;
   background-color: rgba(1, 1, 1, 0.5);
 }
+p.error {
+  color: red;
+}
 
 /********************/
 /*   Button Styles  */
 /********************/
 .btn {
   background-color: var(--btn-color);
-  border: 1px solid var(--border-color);
   border-radius: 10px;
   margin: 5px 5px;
   padding: 20px 20px;
   text-align: center;
   text-decoration: none;
   display: block;
+  box-shadow: 0px 0px 2px var(--shadow-color);
 }
 .btn.disabled {
   pointer-events: none;
@@ -94,6 +103,8 @@ h2 {
 .btn:hover {
   cursor: pointer;
   background-color: var(--hover-color);
+  box-shadow: 0px 0px 2px 1px var(--hover-shadow-color);
+  transition-duration: 200ms;
 }
 .btn.menu {
   width: 400px;
@@ -158,9 +169,11 @@ table {
   height: 100%;
   max-height: 100%;
   width: 90%;
+  box-shadow: 0px 0px 2px var(--shadow-color);
+  background-color: var(--bg-color);
 }
 table tr.header {
-  background-color: var(--btn-color);
+  background-color: var(--hover-color);
 }
 table tr.data {
   text-align: left;
@@ -175,7 +188,6 @@ table tr.data.selected {
   height: 100%;
   width: 100%;
   overflow: auto;
-  border: 1px solid var(--border-color);
 }
 tbody {
   width: 100%;
@@ -213,22 +225,16 @@ input[type=file] {
 /*    Metronome     */
 /********************/
 div.metronome {
-  background-color: var(--btn-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--bg-color);
   border-radius: 10px;
   margin: 5px 5px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition-duration: 50ms;
-}
-div.metronome.playing {
-  background-color: var(--select-color);
-  transition-duration: 50ms;
+  box-shadow: 0px 0px 2px var(--shadow-color);
 }
 div.metro.bpm {
-  background-color: var(--hover-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--btn-color);
   border-radius: 10px;
   margin: 2.5px;
   text-align: center;
@@ -238,10 +244,13 @@ div.metro.bpm {
   width: 60px;
 }
 div.btn.metro {
-  border: 1px solid var(--border-color);  
   padding: 10px;
   height: 50px;
   width: 50px;
+}
+div.btn.metro.playing {
+  background-color: var(--select-color);
+  transition-duration: 200ms;
 }
 div.btn.bpm {
   margin: 2.5px;
@@ -274,18 +283,18 @@ div.tuner-center {
   display: flex;
   width: 25vw;
   height: 25vw;
-  border: 1px solid var(--border-color);
   border-radius: 50%;
   background-color: var(--btn-color);
+  box-shadow: 0px 0px 2px var(--shadow-color);
   vertical-align: middle;
   margin: auto;
   margin-top: 20px;
 }
 div.tuner-gauge {
   text-align: left;
-  height: 20vh;
   width: 60vw;
   margin: auto auto;
+  box-shadow: 0px 0px 2px var(--shadow-color);
 }
 text.tuner-center {
   margin: auto;

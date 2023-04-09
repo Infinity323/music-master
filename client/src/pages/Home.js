@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { SettingsButton } from "../components/Buttons";
+import { ThemeButton } from "../components/Buttons";
 
 function Home() {
   const navigate = useNavigate();
 
   return(
     <>
-      <SettingsButton/>
+      <ThemeButton/>
       <div className="content">
         <h1 className="title">Music Master</h1>
         <div className="btn menu" onClick={() => navigate("/tuner")}>Tuner/Metronome</div>

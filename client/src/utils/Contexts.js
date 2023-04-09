@@ -6,3 +6,5 @@ export const SheetMusicIdContext = createContext();
 export const TunerContext = createContext();
 // Context for BPM to be shared between pages
 export const BpmContext = createContext();
+// Context for UI theme
+export const ThemeContext = createContext();
