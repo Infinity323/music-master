@@ -159,9 +159,9 @@ def compare_arrays(ideal_array, actual_array):
             actual_index = actual_index + 1
 
     ideal_len_aligned = sum(note is not None for note in aligned_ideal)
-    accuracy_notes = max(0, (round((matches_notes / ideal_len_aligned) * 100, 2) - total_extra_note_penalty))
-    accuracy_dynamics = round((matches_dynamics / ideal_len_aligned) * 100, 2)
-    accuracy_start_stop = round((matches_start_stop / ideal_len_aligned) * 100, 2)
+    accuracy_notes = max(0, (round((matches_notes / ideal_len_aligned) * 100, 2) - total_extra_note_penalty)) / 100
+    accuracy_dynamics = round((matches_dynamics / ideal_len_aligned) * 100, 2) / 100
+    accuracy_start_stop = round((matches_start_stop / ideal_len_aligned) * 100, 2) / 100
 
     return accuracy_notes, accuracy_dynamics, accuracy_start_stop, differences
 
