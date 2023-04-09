@@ -19,6 +19,7 @@ function PracticeHistoryGraph() {
   
   const navigate = useNavigate();
   // Module rendering hooks
+  const [responseStatus, setResponseStatus] = useState(200);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   // Chart data rendering hooks
@@ -163,34 +164,46 @@ function PracticeHistoryGraph() {
     { type: "all", value: Number.MAX_SAFE_INTEGER }
   ]
 
+  /**
+   * Runs on first time render.
+   * Grabs ALL performances and ALL goals from database.
+   */
   useEffect(() => {
-    // Grabs ALL performances and ALL goals from database on first render
-    // Could change to only select performances and goals that match sheet_music_id
+    // Get performances
     fetch(baseUrl + "/performance")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(false);
-          setPerformances(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      );
+      .then(res => {
+        setResponseStatus(res.status);
+        return res.json();
+      })
+      .then(result => {
+        setIsLoaded(false);
+        setPerformances(result);
+      })
+      .catch(error => {
+        // Network connection error
+        setIsLoaded(true);
+        setError(error);
+      });
+    // Get goals
     fetch(baseUrl + "/goal")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(false);
-          setGoals(result);
-        },
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      );
+      .then(res => {
+        setResponseStatus(res.status);
+        return res.json();
+      })
+      .then(result => {
+        setIsLoaded(false);
+        setGoals(result);
+      })
+      .catch(error => {
+        // Network connection error
+        setIsLoaded(true);
+        setError(error);
+      });
   }, []);
+
+  /**
+   * Re-renders component when sheet music or data changes.
+   */
   useEffect(() => {
     setIsLoaded(false);
     setSelectedGoal(-1);
@@ -248,6 +261,7 @@ function PracticeHistoryGraph() {
       ],
     });
   }, [selectedMusic, performances, goals, timeWindow]);
+  
   useEffect(() => {
     setIsLoaded(true);
   }, [data]);
@@ -258,20 +272,27 @@ function PracticeHistoryGraph() {
 
   function changeTimeWindow(timeWindow) {
     setTimeWindow(timeWindow);
-    setTimeWindowOffset(timeWindowOffsets.find(e => { return e.type === timeWindow; }).value)
+    setTimeWindowOffset(timeWindowOffsets.find(e => {
+      return e.type === timeWindow;
+    }).value)
   }
 
-  if (error) {
+  if (error || responseStatus >= 400) {
     return (
-      <div className="content">
-        {error.name}: {error.message}
-      </div>
+      <p className="error">
+        PracticeHistoryGraph failed to render.
+        <br/>
+        { responseStatus >= 400
+          ? responseStatus < 500
+            ? `Client-side error (bad request)` // 400-499
+            : `Server-side error (Flask encountered an error)` // 500-599
+          : `Could not connect to ${baseUrl} (is Flask running?)`
+        }
+      </p>
     );
   } else if (!isLoaded) {
     return (
-      <div className="content">
-        <img src={loading_gif} width="30px" alt="Loading..."/>
-      </div>
+      <img src={loading_gif} width="50px" alt="Loading..."/>
     );
   } else {
     return (
@@ -286,7 +307,12 @@ function PracticeHistoryGraph() {
           changeTimeWindow={changeTimeWindow}
         />
         <AddGoalButton goals={goals} setGoals={setGoals}/>
-        <DeleteGoalButton goals={goals} setGoals={setGoals} selectedGoal={selectedGoal} setSelectedGoal={setSelectedGoal}/>
+        <DeleteGoalButton
+          goals={goals}
+          setGoals={setGoals}
+          selectedGoal={selectedGoal}
+          setSelectedGoal={setSelectedGoal}
+        />
       </>
     );
   }

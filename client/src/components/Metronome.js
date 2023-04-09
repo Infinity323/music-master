@@ -1,6 +1,8 @@
-import React, { Component } from 'react'
-import image_metronome from '../assets/images/metronome.png'
+import React, { Component } from 'react';
+import image_metronome from '../assets/images/metronome.png';
+import image_metronome_white from '../assets/images/metronome_white.png';
 import { Flex, Box, CircularProgress, CircularProgressLabel } from '@chakra-ui/react';
+import { ThemeContext } from '../utils/Contexts';
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -15,7 +17,7 @@ class Metronome extends Component {
       // User-customizable state variables
       currentBeatInBar: 0,
       beatsPerBar: 4,
-      BPM: 100,
+      bpm: 100,
       btn3: true,
       btn4: true,
       btn5: false,
@@ -104,7 +106,7 @@ class Metronome extends Component {
    * Adjusts seconds per beat in case metronome was adjusted.
    */
   nextBeat = () => {
-    var secondsPerBeat = 60.0 / this.state.BPM;
+    var secondsPerBeat = 60.0 / this.state.bpm;
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
       currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
@@ -179,9 +181,9 @@ class Metronome extends Component {
   decBPM = () => {
     // Prevent 0 tempo
     this.setState({
-      BPM: this.state.BPM - 10 === 0
-        ? this.state.BPM
-        : this.state.BPM - 10
+      BPM: this.state.bpm - 10 === 0
+        ? this.state.bpm
+        : this.state.bpm - 10
     });
   }
 
@@ -191,9 +193,9 @@ class Metronome extends Component {
   incBPM = () => {
     // Max tempo is 240
     this.setState({
-      BPM: this.state.BPM + 10 > 240 
-        ? this.state.BPM
-        : this.state.BPM + 10
+      BPM: this.state.bpm + 10 > 240 
+        ? this.state.bpm
+        : this.state.bpm + 10
     });
   }
 
@@ -202,18 +204,21 @@ class Metronome extends Component {
   }
 
   render() {
+    let theme = this.context[0];
     return ( 
-      <div className={this.state.isBeat ? "metronome playing" : "metronome"}>
+      <div className="metronome">
         <Flex flexDir="row" alignItems="center">
           <Box>
-            <div className="btn metro" onClick={this.startStopMetro}>
-              <img src={image_metronome} alt="Start/Stop Metronome" height={50} width={50}/>
+            <div className={this.state.isPlaying ? "btn metro playing" : "btn metro"} onClick={this.startStopMetro}>
+              <img
+                src={theme === "light" ? image_metronome : image_metronome_white}
+                alt="Start/Stop Metronome" height={50} width={50}/>
             </div>
           </Box>
           <Flex flexDir="column" alignItems="center">
             <Box>
               <div className="metro bpm">
-                {this.state.BPM}
+                {this.state.bpm}
               </div>
             </Box>
             <Box width={80}>
@@ -272,5 +277,6 @@ class Metronome extends Component {
     );
   }
 }
+Metronome.contextType = ThemeContext;
 
 export default Metronome;

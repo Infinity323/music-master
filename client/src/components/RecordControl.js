@@ -108,79 +108,77 @@ function RecordControl() {
 
   return (
     <>
-      {
-        /* Start recording view */
+      { /* Start recording view */
         !isRecording && !isComplete
-          ?
-            <>
-              <h2>Start Recording</h2>
-              <p>Begin playing after the countdown.</p>
-              <div className={isLoading ? "btn small disabled" : "btn small"} onClick={startRecording}>Start</div>
-            </>
-          : ""
+        ? <>
+            <h2>Start Recording</h2>
+            <p>Begin playing after the countdown.</p>
+            <div
+              className={isLoading ? "btn small disabled" : "btn small"}
+              onClick={startRecording}
+            >
+              Start
+            </div>
+          </>
+        : ""
       }
-      {
-        /* Upload button */
+      { /* Upload button */
         !isStarting && !isRecording && !isComplete
-          ?
-            <>
-              <p>or</p>
-              <label className={isLoading ? "btn small disabled" : "btn small"} style={{width: 200}}>
-                {isLoading ? "Uploading..." : "Upload a Recording"}
-                <input type="file" onChange={() => {uploadPrerecorded(inputRef.current.files[0])}} ref={inputRef}/>
-              </label>
-            </>
-          : ""
+        ? <>
+            <p>or</p>
+            <label
+              className={isLoading ? "btn small disabled" : "btn small"}
+              style={{width: 200}}
+            >
+              {isLoading ? "Uploading..." : "Upload a Recording"}
+              <input
+                type="file"
+                accept=".wav"
+                onChange={() => {uploadPrerecorded(inputRef.current.files[0])}}
+                ref={inputRef}/>
+            </label>
+          </>
+        : ""
       }
-      {
-        /* Countdown */
+      { /* Countdown */
         isStarting
-          ?
-            <div className="countdown">
-              {"" + countdownDisplay}
-            </div>
-          : ""
+        ? <div className="countdown">
+            {"" + countdownDisplay}
+          </div>
+        : ""
       }
-      {
-        /* Recording in progress view */
+      { /* Recording in progress view */
         isRecording
-          ?
-            <>
-              <h2>Recording in Progress</h2>
-              <div className="btn small" onClick={stopRecording}>Stop</div>
-              <div className="btn small" onClick={cancelRecording}>Cancel</div>
-            </>
-          : ""
+        ? <>
+            <h2>Recording in Progress</h2>
+            <div className="btn small" onClick={stopRecording}>Stop</div>
+            <div className="btn small" onClick={cancelRecording}>Cancel</div>
+          </>
+        : ""
       }
-      {
-        /* Recording complete view */
+      { /* Recording complete view */
         isComplete
-          ?
-            <>
-              <h2>Recording Complete</h2>
-              {
-                performanceId !== -1
-                  ?
-                    <div
-                      className="btn medium"
-                      onClick={viewResults} 
-                      style={{margin: "auto auto"}}
-                    >
-                      View Results
-                    </div>
-                  : ""
-              }
-            </>
-          : ""
+        ? <>
+            <h2>Recording Complete</h2>
+            { performanceId !== -1
+              ? <div
+                  className="btn medium"
+                  onClick={viewResults} 
+                  style={{margin: "auto auto"}}
+                >
+                  View Results
+                </div>
+              : ""
+            }
+          </>
+        : ""
       }
-      {
-        /* Loading gif */
+      { /* Loading gif */
         isLoading
-          ?
-            <div style={{margin:30}}>
-              <img src={loading_gif} width="40px" alt="Loading..."/>
-            </div>
-          : ""
+        ? <div style={{margin:30}}>
+            <img src={loading_gif} width="40px" alt="Loading..."/>
+          </div>
+        : ""
       }
     </>
   );

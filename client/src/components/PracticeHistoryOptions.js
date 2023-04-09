@@ -10,6 +10,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
     control: (styles) => ({
       ...styles,
       backgroundColor: style.getPropertyValue('--btn-color'),
+      borderColor: "rgba(1, 1, 1, 0)",
       color: style.getPropertyValue('--text-color'),
       fontSize: 16,
       width: 300
