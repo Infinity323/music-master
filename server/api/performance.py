@@ -2,7 +2,7 @@ from flask import request, Blueprint
 from random import randint
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 from models import db
 from models.performance import Performance
@@ -37,7 +37,7 @@ def addPerformance():
     new_sheet_music_id = request.form.get("sheet_music_id")
     selected_sheet_music_name = db.session.query(SheetMusic).filter(SheetMusic.id == new_sheet_music_id).first().title
     new_run_number = len(db.session.query(Performance).all()) + 1
-    new_date_time = datetime.now()
+    new_date_time = datetime.now(timezone.utc)
 
     # construct new file path and handle file upload
     new_wav_file_path = "data/wav/" + new_sheet_music_id + "_" + selected_sheet_music_name + "_" + str(new_run_number) + ".wav"
