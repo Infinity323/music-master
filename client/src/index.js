@@ -11,15 +11,17 @@ import Recording from './pages/Recording';
 import Performance from './pages/Performance';
 import reportWebVitals from './reportWebVitals';
 import { RouterProvider, createHashRouter } from 'react-router-dom';
+import NotFound from './pages/NotFound';
 
 export const routes = [
-  { path: '/', name: 'Home', element: <Home/>, nodeRef: createRef() },
-  { path: '/tuner', name: 'Tuner', element: <TunerMetronome/>, nodeRef: createRef() },
-  { path: '/history', name: 'Practice History', element: <PracticeHistory/>, nodeRef: createRef() },
-  { path: '/sheetmusic', name: 'Sheet Music', element: <SheetMusic/>, nodeRef: createRef() },
-  { path: '/startpracticesession', name: 'Start Practice Session', element: <StartPracticeSession/>, nodeRef: createRef() },
-  { path: '/recording', name: 'Recording', element: <Recording/>, nodeRef: createRef() },
-  { path: '/performance', name: 'Performance', element: <Performance/>, nodeRef: createRef() }
+  { path: '/', element: <Home/>, nodeRef: createRef() },
+  { path: '/tuner', element: <TunerMetronome/>, nodeRef: createRef() },
+  { path: '/history', element: <PracticeHistory/>, nodeRef: createRef() },
+  { path: '/sheetmusic', element: <SheetMusic/>, nodeRef: createRef() },
+  { path: '/startpracticesession', element: <StartPracticeSession/>, nodeRef: createRef() },
+  { path: '/recording', element: <Recording/>, nodeRef: createRef() },
+  { path: '/performance/:performanceId', element: <Performance/>, nodeRef: createRef() },
+  { path: '*', element: <NotFound/>, nodeRef: createRef() }
 ];
 
 const router = createHashRouter([
