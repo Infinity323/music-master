@@ -59,7 +59,7 @@ function SheetMusicTable() {
         borderColor: "rgba(1, 1, 1, 0)",
         color: textColor,
         fontSize: 16,
-        width: 300
+        width: 200
       }),
       option: (styles) => {
         return {
@@ -67,7 +67,7 @@ function SheetMusicTable() {
           backgroundColor: backgroundColor,
           color: textColor,
           fontSize: 16,
-          width: 300
+          width: 200
         };
       },
       singleValue: (styles) => {
@@ -80,7 +80,7 @@ function SheetMusicTable() {
         return {
           ...styles,
           backgroundColor: backgroundColor,
-          width: 300
+          width: 200
         };
       }
     };
@@ -117,14 +117,15 @@ function SheetMusicTable() {
           Composer: {composer}
           <br/><input type="text" onChange={(e) => setComposer(e.target.value)}/><br/>
           Instrument:
-            <Select
-              options={instruments.map(item => ({label: item.name, value: item.name}))}
-              styles={styles}
-              maxMenuHeight={200}
-              onChange={e => setInstrument(e.value)}
-              defaultValue={{ label: "Piano", value: "Piano" }}
-              isSearchable={false}
-            />
+          <Select
+            options={instruments.map(item => ({label: item.name, value: item.name}))}
+            styles={styles}
+            maxMenuHeight={200}
+            onChange={e => setInstrument(e.value)}
+            defaultValue={{ label: "Piano", value: "Piano" }}
+            isSearchable={false}
+          />
+          <br/>
           File Upload: 
           <br/>
           <label className="btn small">
