@@ -16,7 +16,7 @@ FREQUENCY_OFFSETS = {
 
 SEMITONE_RATIO = 1.05946
 
-# used for indicating things like "dotted quared note"
+# used for indicating things like "dotted quarter note"
 def get_type_with_dots(element):
     type_with_dots = element.duration.type
     for _ in range(element.duration.dots):
@@ -60,6 +60,14 @@ class MusicXMLReader:
     def print_score(self):
         # Display the parsed MusicXML score
         self.xml_score.show()
+
+    def get_tempo(self):
+        # Return the first detected tempo and assume that for the entire piece
+        if self.pretty_midi.get_tempo_changes()[1].size > 0:
+            return self.pretty_midi.get_tempo_changes()[1][0]
+        else:
+            # Default tempo is 120
+            return 120
 
     def get_notes(self, part_index=0):
         # Get a list of notes for the specified instrument
@@ -113,8 +121,10 @@ class MusicXMLReader:
     def save_notes_json(self, json_file_out, part_index=0):
         # Save note data as a JSON file and return the JSON data as a string
         notes = self.get_notes(part_index)
+        tempo = self.get_tempo()
         data = {
             "size": len(notes),
+            "tempo": tempo,
             "notes": notes
         }
 

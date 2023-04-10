@@ -1,3 +1,7 @@
+"""Sheet Music API
+
+API endpoints to access interact with the sheet_music schema in the database.
+"""
 from flask import request, Blueprint
 from random import randint
 import json
@@ -8,23 +12,27 @@ from models.sheetmusic import SheetMusic
 from models.goal import Goal
 from models.performance import Performance
 from scripts.musicxml_reader import MusicXMLReader
+from config import JSON_DIR, XML_DIR, WAV_DIR, TMP_DIR
 
 sheetmusic_blueprint = Blueprint("sheetmusic", __name__)
-
-# SHEET MUSIC
 
 # Get all sheet music in database
 @sheetmusic_blueprint.route("/sheetmusic", methods=["GET"])
 def getAllSheetMusic():
-    
-    sheetMusics = db.session.query(SheetMusic)
-    return [ i.serialize for i in sheetMusics ]
+    sheet_musics = db.session.query(SheetMusic)
+    if sheet_musics:
+        return [ i.serialize for i in sheet_musics ]
+    else:
+        return []
 
 # Get sheet music with specific ID from database
 @sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["GET"])
 def getSpecificSheetMusic(id: int):
-    sheetMusic = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
-    return sheetMusic.serialize
+    sheet_music = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
+    if sheet_music:
+        return sheet_music.serialize
+    else:
+        return {}
 
 # Add sheet music to database
 @sheetmusic_blueprint.route("/sheetmusic", methods=["POST"])
@@ -34,20 +42,26 @@ def addSheetMusic():
     new_composer = request.form.get("composer")
     new_instrument = request.form.get("instrument")
 
+    # Make new subdirectories for the sheet music
+    new_subdir = "{}_{}".format(new_id, new_title)
+    os.makedirs(JSON_DIR + new_subdir, exist_ok=True)
+    os.makedirs(WAV_DIR + new_subdir, exist_ok=True)
+    
     # Construct new file path and handle file upload
-    new_xml_file_path = "data/xml/" + new_title + ".musicxml"
-    new_midi_file_path = "data/dat/" + new_title + ".mid"
-    new_dat_file_path = "data/dat/" + new_title + ".json"
+    new_xml_file_path = "{}/{}.musicxml".format(XML_DIR, new_subdir)
+    new_midi_file_path = "{}/{}.mid".format(TMP_DIR, new_subdir)
+    new_dat_file_path = "{}/{}/master.json".format(JSON_DIR, new_subdir)
     new_xml_file_data = request.files.get("file")
     new_xml_file_data.save(new_xml_file_path)
 
     # Read XML file and convert to MIDI
-    xmlReader = MusicXMLReader(new_xml_file_path, new_midi_file_path, new_instrument)
-    xmlReader.save_notes_json(new_dat_file_path)
+    xml_reader = MusicXMLReader(new_xml_file_path, new_midi_file_path, new_instrument)
+    new_tempo = xml_reader.get_tempo()
+    xml_reader.save_notes_json(new_dat_file_path)
 
     # save note info locally
-    note_info = xmlReader.get_notes_and_measure_num()
-    note_info_file_path = "data/dat/" + new_title + "_note_info.json"
+    note_info = xml_reader.get_notes_and_measure_num()
+    note_info_file_path = "{}/{}/note_info.json".format(JSON_DIR, new_subdir)
     with open(note_info_file_path, 'w') as note_info_file:
         json.dump([info for info in note_info], note_info_file, indent=4)
 
@@ -59,17 +73,18 @@ def addSheetMusic():
         print("temp midi file does not exist and cannot be deleted.")
 
     # Add to database
-    # TODO: goal entity should update this tempo, currently it is set to None
-    newSheetMusic = SheetMusic(new_id, new_title, new_composer, new_instrument, new_xml_file_path, new_dat_file_path, None, note_info_file_path)
-    db.session.add(newSheetMusic)
+    new_sheet_music = SheetMusic(new_id, new_title, new_composer, new_instrument,
+                                 new_xml_file_path, new_dat_file_path, new_tempo,
+                                 note_info_file_path)
+    db.session.add(new_sheet_music)
     db.session.commit()
-    return newSheetMusic.serialize
+    return new_sheet_music.serialize
 
 # Delete sheet music from database
 @sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["DELETE"])
 def deleteSheetMusic(id):
     # get current sheet music object
-    sheetMusic = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
+    sheet_music = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
 
     # clear all associated goals
     associated_goals = db.session.query(Goal).filter(Goal.sheet_music_id == id)
@@ -77,7 +92,8 @@ def deleteSheetMusic(id):
         db.session.delete(goal)
     
     # clear all associated performances (for each loop)
-    associated_performances = db.session.query(Performance).filter(Performance.sheet_music_id == id)
+    associated_performances = (db.session.query(Performance)
+                               .filter(Performance.sheet_music_id == id))
     for performance in associated_performances:   
         # delete associated .wav files
         wav_file_path = performance.wav_file_path
@@ -107,11 +123,11 @@ def deleteSheetMusic(id):
         db.session.delete(performance)
 
     # clear sheet music
-    if sheetMusic:
+    if sheet_music:
         # delete all associated data files
 
         # delete musicxml file
-        musicxml_file_path = sheetMusic.pdf_file_path
+        musicxml_file_path = sheet_music.pdf_file_path
         if os.path.isfile(musicxml_file_path):
             os.remove(musicxml_file_path)
             print("musicxml file has been deleted.")
@@ -119,7 +135,7 @@ def deleteSheetMusic(id):
             print("musicxml file does not exist and cannot be deleted.")
 
         # delete musicxml dat json
-        musicxml_data_file_path = sheetMusic.data_file_path
+        musicxml_data_file_path = sheet_music.data_file_path
         if os.path.isfile(musicxml_data_file_path):
             os.remove(musicxml_data_file_path)
             print("musicxml dat file has been deleted.")
@@ -127,7 +143,7 @@ def deleteSheetMusic(id):
             print("musicxml dat file does not exist and cannot be deleted.")
 
         # delete note info json
-        note_info_file_path = sheetMusic.note_info_file_path
+        note_info_file_path = sheet_music.note_info_file_path
         if os.path.isfile(note_info_file_path):
             os.remove(note_info_file_path)
             print("note info file has been deleted.")
@@ -135,8 +151,8 @@ def deleteSheetMusic(id):
             print("note info file does not exist and cannot be deleted.")
 
         # delete entry
-        db.session.delete(sheetMusic)
+        db.session.delete(sheet_music)
         db.session.commit()
-        return sheetMusic.serialize
+        return sheet_music.serialize
     else:
         return {}
