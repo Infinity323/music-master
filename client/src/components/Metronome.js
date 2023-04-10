@@ -181,7 +181,7 @@ class Metronome extends Component {
   decBPM = () => {
     // Prevent 0 tempo
     this.setState({
-      BPM: this.state.bpm - 10 === 0
+      bpm: this.state.bpm - 10 === 0
         ? this.state.bpm
         : this.state.bpm - 10
     });
@@ -193,7 +193,7 @@ class Metronome extends Component {
   incBPM = () => {
     // Max tempo is 240
     this.setState({
-      BPM: this.state.bpm + 10 > 240 
+      bpm: this.state.bpm + 10 > 240 
         ? this.state.bpm
         : this.state.bpm + 10
     });
