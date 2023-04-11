@@ -177,7 +177,9 @@ function PracticeHistoryGraph() {
       })
       .then(result => {
         setIsLoaded(false);
-        setPerformances(result);
+        setPerformances(result.sort((a, b) => {
+          return a.date_time.localeCompare(b.date_time);
+        }));
       })
       .catch(error => {
         // Network connection error

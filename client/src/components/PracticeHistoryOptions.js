@@ -13,7 +13,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
       borderColor: "rgba(1, 1, 1, 0)",
       color: style.getPropertyValue('--text-color'),
       fontSize: 16,
-      width: 300
+      width: 250
     }),
     option: (styles) => {
       return {
@@ -21,7 +21,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
         backgroundColor: style.getPropertyValue('--bg-color'),
         color: style.getPropertyValue('--text-color'),
         fontSize: 16,
-        width: 300
+        width: 250
       };
     },
     singleValue: (styles) => {
@@ -34,7 +34,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
       return {
         ...styles,
         backgroundColor: style.getPropertyValue('--bg-color'),
-        width: 300
+        width: 250
       };
     }
   };
