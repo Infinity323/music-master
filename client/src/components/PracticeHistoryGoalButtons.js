@@ -124,7 +124,10 @@ function DeleteGoalButton({goals, setGoals, selectedGoal, setSelectedGoal}) {
 
   return (
     <>
-      <div className={selectedGoal === -1 ? "btn small disabled" : "btn small"} onClick={deleteGoal}>
+      <div
+        className={selectedGoal === -1 ? "btn small delete disabled" : "btn small delete"}
+        onClick={deleteGoal}
+      >
         Delete Goal
       </div>
     </>

@@ -11,6 +11,8 @@
   --select-color: #3949AB;
   --border-color: rgba(1, 1, 1, 0.2);
   --shadow-color: rgba(1, 1, 1, 0.2);
+  --delete-color: #FF3131;
+  --delete-hover-color: #FF5858;
   --hover-shadow-color: rgba(1, 1, 1, 0.2);
 }
 
@@ -79,6 +81,17 @@ h2 {
   bottom: 0;
   background-color: rgba(1, 1, 1, 0.5);
 }
+.modal.small {
+  top: 25vh;
+  left: 25vw;
+  right: 25vw;
+  bottom: 25vh;
+  background-color: var(--bg-color);
+  padding: 10px;
+}
+.modal p {
+  margin-top: 0px;
+}
 h2.error, p.error {
   color: red;
 }
@@ -144,6 +157,12 @@ h2.error, p.error {
 .btn#submitForm, .btn#closeForm {
   position: absolute;
   bottom: 10px;
+}
+.btn.delete {
+  background-color: var(--delete-color);
+}
+.btn.delete:hover {
+  background-color: var(--delete-hover-color);
 }
 
 /********************/
