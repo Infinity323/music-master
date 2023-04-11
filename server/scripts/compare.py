@@ -137,7 +137,7 @@ def compare_arrays(ideal_array, actual_array):
                 matches_notes += 1
             else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'pitch'))
-            if Note.get_velocity_eq_confidence(ideal_note.velocity, actual_note.velocity) >= 0.7: # 70% confident
+            if Note.get_velocity_eq_confidence(ideal_note.velocity, actual_note.velocity) >= 0.6: # 60% confident
                 matches_dynamics += 1
             else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'velocity'))
