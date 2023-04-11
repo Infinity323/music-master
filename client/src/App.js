@@ -12,8 +12,8 @@ export const { style } = document.documentElement;
 function App() {
   const location = useLocation();
   const currentOutlet = useOutlet();
-  const { nodeRef } =
-    routes.find((route) => route.path === location.pathname) ?? {};
+  const { nodeRef } = routes.find((route) => route.path === location.pathname)
+    ?? {};
 
   const [theme, setTheme] = useState("light");
   const [selectedMusic, setSelectedMusic] = useState(-1);

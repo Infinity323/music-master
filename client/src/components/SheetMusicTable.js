@@ -59,7 +59,7 @@ function SheetMusicTable() {
         borderColor: "rgba(1, 1, 1, 0)",
         color: textColor,
         fontSize: 16,
-        width: 300
+        width: 200
       }),
       option: (styles) => {
         return {
@@ -67,7 +67,7 @@ function SheetMusicTable() {
           backgroundColor: backgroundColor,
           color: textColor,
           fontSize: 16,
-          width: 300
+          width: 200
         };
       },
       singleValue: (styles) => {
@@ -80,7 +80,7 @@ function SheetMusicTable() {
         return {
           ...styles,
           backgroundColor: backgroundColor,
-          width: 300
+          width: 200
         };
       }
     };
@@ -111,21 +111,25 @@ function SheetMusicTable() {
         <div className="btn medium" id="uploadMusic" onClick={openModal}>
           Upload
         </div>
-        <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className="modal" overlayClassName="modal-overlay">
-          Title: {title}
+        <Modal
+          isOpen={modalIsOpen} onRequestClose={closeModal}
+          className="modal" overlayClassName="modal-overlay"
+        >
+          Title
           <br/><input type="text" onChange={(e) => setTitle(e.target.value)}/><br/>
-          Composer: {composer}
+          Composer
           <br/><input type="text" onChange={(e) => setComposer(e.target.value)}/><br/>
-          Instrument:
-            <Select
-              options={instruments.map(item => ({label: item.name, value: item.name}))}
-              styles={styles}
-              maxMenuHeight={200}
-              onChange={e => setInstrument(e.value)}
-              defaultValue={{ label: "Piano", value: "Piano" }}
-              isSearchable={false}
-            />
-          File Upload: 
+          Instrument
+          <Select
+            options={instruments.map(item => ({label: item.name, value: item.name}))}
+            styles={styles}
+            maxMenuHeight={200}
+            onChange={e => setInstrument(e.value)}
+            defaultValue={{ label: "Piano", value: "Piano" }}
+            isSearchable={false}
+          />
+          <br/>
+          File Upload
           <br/>
           <label className="btn small">
             Choose File
@@ -135,7 +139,7 @@ function SheetMusicTable() {
               onChange={() => setFile(inputRef.current.files[0])}
               ref={inputRef}/>
           </label>
-          <br/>
+          {file ? file.name : ""}
           <div
             className={title === "" || composer === "" || instrument === "" || file === null
               ? "btn medium disabled"
@@ -154,6 +158,8 @@ function SheetMusicTable() {
   }
 
   function DeleteButton() {
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+
     function deleteMusic() {
       fetch(baseUrl + "/sheetmusic/" + selected, {
         method: "DELETE"
@@ -164,10 +170,41 @@ function SheetMusicTable() {
       setSelected(-1);
     }
 
+    function openModal() {
+      setModalIsOpen(true);
+    }
+    function closeModal() {
+      setModalIsOpen(false);
+    }
+
     return (
       <>
-        <div className={selected === -1 ? "btn medium disabled" : "btn medium"} onClick={deleteMusic}
-          id="deleteMusic">Delete</div>
+        <div
+          className={selected === -1 ? "btn medium disabled" : "btn medium"}
+          onClick={openModal}
+          id="deleteMusic"
+        >
+          Delete
+        </div>
+        <Modal
+          isOpen={modalIsOpen} onRequestClose={closeModal}
+          className="modal small" overlayClassName="modal-overlay"
+        >
+          <p>
+            Are you sure you want to delete?
+            <br/>
+            All associated practice history data will be lost. 
+          </p>
+          <p className="error">
+            This action cannot be undone.
+          </p>
+          <div className="btn medium delete" id="submitForm" onClick={deleteMusic}>
+            Delete
+          </div>
+          <div className="btn medium" id="closeForm" onClick={closeModal}>
+            Cancel
+          </div>
+        </Modal>
       </>
     )
   }

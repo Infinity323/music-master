@@ -50,6 +50,7 @@ function SheetMusicDropdown() {
   const [selected, setSelected] = useContext(SheetMusicIdContext);
   
   useEffect(() => {
+    setSelected(-1);
     fetch(baseUrl + "/sheetmusic")
       .then(res => {
         setResponseStatus(res.status);

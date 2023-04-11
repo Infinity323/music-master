@@ -155,7 +155,7 @@ if __name__ == "__main__":
     # Test Case 24: Extra note at the end
     # Test Case 25: Two extra notes at the end
 
-    # TO-DO
+    # TODO:
     # add 3 seperate percent accuracies to the code (note, dynamic, tempo)
     # fix start detection
     # add robustness against extra note and/or missing notes
