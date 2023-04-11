@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { BackButton, HomeButton } from '../components/Buttons';
+import { ChartButton } from '../components/Buttons';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { useNavigate } from 'react-router-dom';
@@ -84,8 +84,7 @@ function Performance() {
   } else {
     return (
       <>
-        <BackButton/>
-        <HomeButton/>
+        <ChartButton/>
         <div className="content">
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
           <PerformanceGraph/>

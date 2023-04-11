@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BackButton } from '../components/Buttons';
+import { HomeButton } from '../components/Buttons';
 import SheetMusicDropdown from '../components/SheetMusicDropdown';
 import { SheetMusicIdContext } from '../utils/Contexts';
 import BpmSelector from "../components/BpmSelector";
@@ -24,7 +24,7 @@ function StartPracticeSession() {
 
   return (
     <>
-      <BackButton/>
+      <HomeButton/>
       <div className="content">
         <h2>Start Practice Session</h2>
         <p>Select the piece to practice.</p>

@@ -1,11 +1,11 @@
-import { BackButton } from '../components/Buttons';
+import { HomeButton } from '../components/Buttons';
 import Metronome from '../components/Metronome';
 import Tuner from '../components/Tuner';
 
 function TunerMetronome() {
   return (
     <>
-      <BackButton/>
+      <HomeButton/>
       <div className="content">
         <Metronome/>
         <Tuner/>
