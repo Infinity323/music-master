@@ -128,7 +128,13 @@ h2.error, p.error {
   width: 60px;
   height: 60px;
   padding: 5px 5px;
-  overflow: hidden;
+  position: absolute;
+}
+.btn.home {
+  width: 60px;
+  height: 60px;
+  padding: 5px 5px;
+  right: 0px;
   position: absolute;
 }
 .btn.small {
