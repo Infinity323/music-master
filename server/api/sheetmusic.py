@@ -43,7 +43,7 @@ def addSheetMusic():
     new_instrument = request.form.get("instrument")
 
     # Make new subdirectories for the sheet music
-    new_subdir = "{}_{}".format(new_id, new_title)
+    new_subdir = "/{}_{}".format(new_id, new_title)
     os.makedirs(JSON_DIR + new_subdir, exist_ok=True)
     os.makedirs(WAV_DIR + new_subdir, exist_ok=True)
     
@@ -119,6 +119,10 @@ def deleteSheetMusic(id):
         else:
             print("rec dat file does not exist and cannot be deleted.")
 
+        # delete now-empty run subfolder
+        runs_folder_name = str(sheet_music.id) + "_" + sheet_music.title + "/runs"
+        os.rmdir('data/json/' + runs_folder_name)
+
         # delete performance entries
         db.session.delete(performance)
 
@@ -149,6 +153,11 @@ def deleteSheetMusic(id):
             print("note info file has been deleted.")
         else:
             print("note info file does not exist and cannot be deleted.")
+
+        # delete now-empty subfolders
+        folder_name = str(sheet_music.id) + "_" + sheet_music.title
+        os.rmdir('data/json/' + folder_name)
+        os.rmdir('data/wav/' + folder_name)
 
         # delete entry
         db.session.delete(sheet_music)
