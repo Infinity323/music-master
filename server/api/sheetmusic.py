@@ -150,7 +150,7 @@ def deleteSheetMusic(id):
         else:
             print("note info file does not exist and cannot be deleted.")
 
-        # delete empty folders
+        # delete now-empty subfolders
         folder_name = str(sheet_music.id) + "_" + sheet_music.title
         os.rmdir('data/json/' + folder_name)
         os.rmdir('data/wav/' + folder_name)
