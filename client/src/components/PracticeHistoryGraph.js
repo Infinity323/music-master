@@ -157,8 +157,10 @@ function PracticeHistoryGraph() {
 
   // Time window offsets (ms)
   const timeWindowOffsets = [
+    { type: "hour", value: 3600000 },
+    { type: "few-hours", value: 10800000 },
     { type: "day", value: 86400000 },
-    { type: "three-days", value: 259200000 },
+    { type: "few-days", value: 259200000 },
     { type: "week", value: 604800000 },
     { type: "month", value: 2678400000 },
     { type: "all", value: Number.MAX_SAFE_INTEGER }
