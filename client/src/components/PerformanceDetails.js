@@ -117,6 +117,23 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
         }
     }
 
+    if (diff_type === 'end') {
+        const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
+        if (ideal_val[diff_type] > actual_val[diff_type]) {
+            return (
+                <>
+                Ended note too soon, by {difference.toFixed(2)} seconds.
+                </>
+            );
+        } else  {
+            return (
+                <>
+                Ended note too late, by {difference.toFixed(2)} seconds.
+                </>
+            );
+        }
+    }
+
     if (diff_type === 'missing') {
         return <span>Note is {diff_type}.</span>;
     }
