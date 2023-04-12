@@ -178,6 +178,7 @@ def deletePerformance(id):
         os.remove(path)
 
         # TODO: delete data file
+        
 
         # remove entry from database
         db.session.delete(performance)
