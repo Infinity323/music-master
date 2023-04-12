@@ -83,13 +83,38 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
     }
 
     if (diff_type === 'velocity') {
-        return (
-            <>
-            Ideal: {valueLabels[diff_type]} {ideal_val[diff_type].toFixed(0)}
-            <br />
-            Actual: {valueLabels[diff_type]} {actual_val[diff_type].toFixed(0)}
-            </>
-        );
+        const difference = actual_val[diff_type].toFixed(0) - ideal_val[diff_type].toFixed(0);
+        const percentageDifference = (abs(difference) / ideal_val[diff_type].toFixed(0)) * 100;
+        if (ideal_val[diff_type].toFixed(0) > actual_val[diff_type].toFixed(0)) {
+            return (
+                <>
+                Consider increasing dynamic by {percentageDifference.toFixed(0)}% here.
+                </>
+            );
+        } else  {
+            return (
+                <>
+                Consider decreasing dynamic by {percentageDifference.toFixed(0)}% here.
+                </>
+            );
+        }
+    }
+
+    if (diff_type === 'start') {
+        const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
+        if (ideal_val[diff_type] > actual_val[diff_type]) {
+            return (
+                <>
+                Started note too soon, by {difference.toFixed(2)} seconds.
+                </>
+            );
+        } else  {
+            return (
+                <>
+                Started note too late, by {difference.toFixed(2)} seconds.
+                </>
+            );
+        }
     }
 
     if (diff_type === 'missing') {
