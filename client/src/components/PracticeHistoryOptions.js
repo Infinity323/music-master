@@ -40,8 +40,10 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
   };
 
   const timeWindowOptions = [
+    { value: "hour", label: "Past Hour" },
+    { value: "few-hours", label: "Past Few Hours" },
     { value: "day", label: "Past Day" },
-    { value: "three-days", label: "Past Three Days" },
+    { value: "few-days", label: "Past Few Days" },
     { value: "week", label: "Past Week" },
     { value: "month", label: "Past Month" },
     { value: "all", label: "All Time" }
@@ -73,7 +75,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
         </div>
         <br/>
         <br/>
-        Change time window:
+        Adjust Display Range
         <Select
           options={timeWindowOptions}
           styles={styles}

@@ -6,18 +6,31 @@ import { ThemeContext } from '../utils/Contexts';
 
 //Circle
 //https://medium.com/tinyso/how-to-create-an-animated-svg-circular-progress-component-in-react-5123c7d24391
-const Circular = ({size,width}) => {
-  const vbox = '0 0 ${size} ${size}';
-  const radius = (size - width) / 2;
+const Circular = ({size,strokeWidth,percentage,color}) => {
+  const viewBox = '0 0 ${size} ${size}';
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * Math.PI *2;
+  const dash = (percentage*circumference) / 100;
   return(
-    <svg width={size} height={size} vbox={vbox}>
+    <svg width={size} height={size} viewBox={viewBox}>
       <circle
         fill="none"
         stroke="#ccc"
         cx={size / 2}
         cy={size / 2}
         r={radius}
-        width={'${width}px'}
+        strokeWidth={'${strokeWidth}px'}
+      />
+      <circle
+        fill="none"
+        strokeWidth={color}
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        strokeWidth={'${strokeWidth}px'}
+        transform={'rotate(-90 ${size / 2} ${size / 2})'}
+        strokeDasharray={[dash,circumference - dash]}
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -250,6 +263,10 @@ class Metronome extends Component {
             </Box>
           </Flex>
           <Box width={80}>
+          <Circular strokeWidth={10} percentage={100} size={35} color="green"/>
+            <Circular strokeWidth={10} percentage={100} size={35} color="green">
+            <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
+            </Circular>
             <CircularProgress value={this.state.currentBeatInBar >= 0 ? 100 : 0}
               size='22px' color='green' trackColor='rgba(1, 1, 1, 0.2)' thickness='18px'/>
             <CircularProgress value={this.state.currentBeatInBar >= 1 ? 100 : 0}

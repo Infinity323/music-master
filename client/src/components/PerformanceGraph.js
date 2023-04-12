@@ -156,10 +156,12 @@ class PerformanceGraph extends Component {
 
   componentDidMount() {
     const { measures } = this.state.data;
-    const labels = measures.map(item => item.actual_val.start);
+    const starttime = measures.map(item => item.actual_val.start);
     const ideal = measures.map(item => (item.ideal_val.pitch));
     const actual = measures.map(item => (item.actual_val.pitch));
     const difference = measures.map(item => Math.abs(item.actual_val.pitch-item.ideal_val.pitch));
+    const notenames = measures.map(item => (item.note_info.name));
+    const measpos = measures.map(item => ("("+item.note_info.measure+", "+item.note_info.position+")"));
 
     if (this.chart) {
       this.chart.destroy();
@@ -168,7 +170,7 @@ class PerformanceGraph extends Component {
     this.chart = new Chart(this.chartRef.current, { 
       type: 'bar',
       data: {
-        labels: labels,
+        labels: measpos,
         datasets: [
           {
             label: "Ideal",
@@ -203,12 +205,26 @@ class PerformanceGraph extends Component {
         responsive: true,
         scales: {
           x: {
+            title: {
+              display: true,
+              text: '(Measure, Position)',
+            },
             stacked: true,
           },
           y: {
+            title: {
+              display: true,
+              text: 'Pitch',
+            },
             stacked: true,
           },
         },
+        onClick: (e, elements, chart) => {
+          if (elements[0])
+            alert(notenames[elements[0].index])
+            //console.log(notenames[elements[0].index]);
+          // alert(this.chart.getElementById(e))
+        }
       }
     });
   }
