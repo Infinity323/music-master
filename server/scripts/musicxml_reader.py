@@ -1,7 +1,7 @@
 import json
 import pygame
 import pretty_midi
-from music21 import converter, environment, pitch, tempo, note as m21note
+from music21 import converter, environment, chord, pitch, tempo, note as m21note
 from mido import MidiFile
 
 FREQUENCY_OFFSETS = {
@@ -132,6 +132,23 @@ class MusicXMLReader:
             json.dump(data, outfile, indent=4)  # Indent the JSON output for better readability
 
         return json.dumps(data, indent=4)  # Indent the returned JSON string for better readability
+
+    def parse_chords(self, part_index=0):
+        # Parse chords in the score
+        chords = []
+        for element in self.xml_score.recurse():
+            if isinstance(element, chord.Chord):
+                # Get start and end times for the chord
+                start_time = element.offset
+                end_time = start_time + element.duration.quarterLength
+
+                # Get the average velocity for the chord
+                for individual_note in element.notes:
+                    velocity = individual_note.volume.velocity 
+
+                chords.append({'Chord': element.fullName, 'Start': start_time, 'End': end_time, 'Duration': element.duration.quarterLength, 'Velocity': velocity})
+
+        return chords
 
     def play(self):
         # Play the MIDI file using pygame
