@@ -43,6 +43,9 @@ class MusicXMLReader:
 
         # Initialize the PrettyMIDI object
         self.pretty_midi = pretty_midi.PrettyMIDI(midi_file_out)
+
+        # Save the chords
+        self.chords = self.get_chords()
     
     def set_custom_tempo(self, custom_tempo):
         # Set the custom tempo for all parts in the score
