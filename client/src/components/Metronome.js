@@ -4,6 +4,25 @@ import image_metronome_white from '../assets/images/metronome_white.png';
 import { Flex, Box, CircularProgress, CircularProgressLabel } from '@chakra-ui/react';
 import { ThemeContext } from '../utils/Contexts';
 
+//Circle
+//https://medium.com/tinyso/how-to-create-an-animated-svg-circular-progress-component-in-react-5123c7d24391
+const Circular = ({size,width}) => {
+  const vbox = '0 0 ${size} ${size}';
+  const radius = (size - width) / 2;
+  return(
+    <svg width={size} height={size} vbox={vbox}>
+      <circle
+        fill="none"
+        stroke="#ccc"
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        width={'${width}px'}
+      />
+    </svg>
+  );
+}
+
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
 class Metronome extends Component {

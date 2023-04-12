@@ -4,6 +4,7 @@ import { CSSTransition, SwitchTransition } from 'react-transition-group';
 import { routes } from './index';
 import './App.css';
 import { BpmContext, SheetMusicIdContext, ThemeContext, TunerContext } from './utils/Contexts';
+import PerformanceGraph from './components/PerformanceGraph';
 
 export const baseUrl = "http://127.0.0.1:5000";
 
