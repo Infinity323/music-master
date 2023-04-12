@@ -293,6 +293,9 @@ div.btn.cb.off {
 img#metronome {
   width: 50px;
 }
+.metrocirc{
+  color:green
+}
 
 /********************/
 /*      Tuner       */
