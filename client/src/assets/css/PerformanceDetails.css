@@ -1,0 +1,31 @@
+.cardWrapper {
+    padding: 1rem;
+  }
+  
+  .customCard {
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+  
+  .customCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .cardTitle {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .cardSubtitle {
+    font-size: 0.9rem;
+    color: #777;
+  }
+  
+  .cardText {
+    font-size: 0.9rem;
+  }
+  

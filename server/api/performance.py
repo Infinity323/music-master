@@ -27,6 +27,21 @@ def getAllPerformances():
         return [ i.serialize for i in performances ]
     else:
         return []
+    
+# Get diff file for performance
+@performance_blueprint.route("/performance/diff/<int:sheet_music_id>/<int:run_number>", methods=["GET"])
+def getDiffJson(sheet_music_id: int, run_number: int):
+    sheet_music_name = (db.session.query(SheetMusic)
+                        .filter(SheetMusic.id == sheet_music_id)
+                        .first().title)
+    subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    diff_json_path = ("{}/{}_diff.json".format(subdir, run_number))
+    try:
+        with open(diff_json_path, 'r') as diff_json_file:
+            data = json.load(diff_json_file)
+        return data
+    except FileNotFoundError:
+        return {"error": "File not found"}, 404
 
 # Get performance with specific ID from database
 @performance_blueprint.route("/performance/<int:id>", methods=["GET"])
@@ -58,7 +73,7 @@ def addPerformance():
     new_wav_file_data.save(new_wav_file_path)
 
     # Make new subdirectory
-    new_subdir = "{}/{}_{}/runs/".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    new_subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
     os.makedirs(new_subdir, exist_ok=True)
     
     # analyze recording

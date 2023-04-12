@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import PerformanceGraph from "../components/PerformanceGraph";
+import PerformanceDetails from '../components/PerformanceDetails';
 
 Chart.register(
   CategoryScale,
@@ -89,6 +90,7 @@ function Performance() {
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
           <PerformanceGraph/>
           <DeleteButton/>
+          <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
         </div>
       </>
     );
