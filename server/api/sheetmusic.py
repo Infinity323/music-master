@@ -119,12 +119,15 @@ def deleteSheetMusic(id):
         else:
             print("rec dat file does not exist and cannot be deleted.")
 
-        # delete now-empty run subfolder
-        runs_folder_name = str(sheet_music.id) + "_" + sheet_music.title + "/runs"
-        os.rmdir('data/json/' + runs_folder_name)
-
         # delete performance entries
         db.session.delete(performance)
+
+    # delete now-empty run subfolder
+    runs_folder_name = str(sheet_music.id) + "_" + sheet_music.title + "/runs"
+    try:
+        os.rmdir('data/json/' + runs_folder_name)
+    except FileNotFoundError:
+        pass
 
     # clear sheet music
     if sheet_music:
@@ -156,8 +159,11 @@ def deleteSheetMusic(id):
 
         # delete now-empty subfolders
         folder_name = str(sheet_music.id) + "_" + sheet_music.title
-        os.rmdir('data/json/' + folder_name)
-        os.rmdir('data/wav/' + folder_name)
+        try:
+            os.rmdir('data/json/' + folder_name)
+            os.rmdir('data/wav/' + folder_name)
+        except FileNotFoundError:
+            pass
 
         # delete entry
         db.session.delete(sheet_music)

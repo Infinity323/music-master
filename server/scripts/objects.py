@@ -1,4 +1,5 @@
 import numpy as np
+from config import NOTE_MATCH_PASS_CONF, PITCH_WEIGHT, VELOCITY_WEIGHT, END_WEIGHT, START_WEIGHT, PITCH_TOLERANCE, VELOCITY_TOLERANCE, START_TOLERANCE, END_TOLERANCE, EXTRA_NOTE_MAX_PENALTY_DURATION, EXTRA_NOTE_MAX_PENALTY
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
 class Difference_with_info:
@@ -61,7 +62,7 @@ class Note:
         if not isinstance(other, Note):
             return False
         confidence = self.compare_notes(other)
-        return confidence >= 0.7
+        return confidence >= NOTE_MATCH_PASS_CONF
     
     def compare_notes(self, other):
         if not isinstance(other, Note):
@@ -75,10 +76,10 @@ class Note:
 
         # Calculate the total confidence using the weights
         total_confidence = (
-            0.7 * pitch_confidence +
-            0.2 * start_confidence +
-            0.05 * end_confidence +
-            0.05 * velocity_confidence
+            PITCH_WEIGHT * pitch_confidence +
+            START_WEIGHT * start_confidence +
+            END_WEIGHT * end_confidence +
+            VELOCITY_WEIGHT * velocity_confidence
         )
 
         return total_confidence
@@ -94,23 +95,23 @@ class Note:
         return A4*2**(exponent/12.0)
     
     @staticmethod
-    def get_pitch_eq_confidence(freq1: float, freq2: float, tolerance=50) -> float:
+    def get_pitch_eq_confidence(freq1: float, freq2: float, tolerance=PITCH_TOLERANCE) -> float:
         return max(0, 1 - (abs(1200 * np.log2(freq1 / freq2)) / tolerance))
     
     @staticmethod
-    def get_velocity_eq_confidence(vel1: float, vel2: float, tolerance=30):
+    def get_velocity_eq_confidence(vel1: float, vel2: float, tolerance=VELOCITY_TOLERANCE):
         return max(0, 1 - abs(vel1 - vel2) / tolerance)
     
     @staticmethod
-    def get_start_eq_confidence(start1: float, start2: float, tolerance=0.25):
+    def get_start_eq_confidence(start1: float, start2: float, tolerance=START_TOLERANCE):
         return max(0, 1 - abs(start1 - start2) / tolerance)
     
     @staticmethod
-    def get_end_eq_confidence(end1, end2, tolerance=0.5):
+    def get_end_eq_confidence(end1, end2, tolerance=END_TOLERANCE):
         return max(0, 1 - abs(end1 - end2) / tolerance)
     
     @staticmethod
-    def get_extra_note_penalty(self, max_duration = 0.125, max_penalty = 0.025):
+    def get_extra_note_penalty(self, max_duration = EXTRA_NOTE_MAX_PENALTY_DURATION, max_penalty = EXTRA_NOTE_MAX_PENALTY):
         note_duration = self.end - self.start
         if note_duration >= max_duration:
             return max_penalty
