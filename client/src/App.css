@@ -128,7 +128,6 @@ h2.error, p.error {
   width: 60px;
   height: 60px;
   padding: 5px 5px;
-  overflow: hidden;
   position: absolute;
 }
 .btn.small {
@@ -293,6 +292,9 @@ div.btn.cb.off {
 }
 img#metronome {
   width: 50px;
+}
+.metrocirc{
+  color:green
 }
 
 /********************/
