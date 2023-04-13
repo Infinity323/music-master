@@ -1,6 +1,7 @@
 import numpy as np
 import json
 from .objects import Difference, Note
+from config import VELOCITY_PASS_CONF, PITCH_PASS_CONF, START_PASS_CONF, END_PASS_CONF
 
 import pandas as pd # Debugging
 
@@ -133,20 +134,20 @@ def compare_arrays(ideal_array, actual_array):
 
     for i, (ideal_note, actual_note) in enumerate(zip(aligned_ideal, aligned_actual)):
         if ideal_note is not None and actual_note is not None:
-            if (Note.get_pitch_eq_confidence(ideal_note.pitch, actual_note.pitch)) >= 0.7: # 70% confident
+            if (Note.get_pitch_eq_confidence(ideal_note.pitch, actual_note.pitch)) >= PITCH_PASS_CONF:
                 matches_notes += 1
             else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'pitch'))
-            if Note.get_velocity_eq_confidence(ideal_note.velocity, actual_note.velocity) >= 0.7: # 70% confident
+            if Note.get_velocity_eq_confidence(ideal_note.velocity, actual_note.velocity) >= VELOCITY_PASS_CONF:
                 matches_dynamics += 1
             else:
                 differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'velocity'))
-            if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) >= 0.7 and Note.get_end_eq_confidence(ideal_note.start, actual_note.start) >= 0.6): # start > 70% and end > 60%
+            if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) >= START_PASS_CONF and Note.get_end_eq_confidence(ideal_note.start, actual_note.start) >= END_PASS_CONF):
                 matches_start_stop += 1
             else:
-                if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) < 0.7): # less than 70% confident
+                if (Note.get_start_eq_confidence(ideal_note.start, actual_note.start) < START_PASS_CONF):
                     differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'start'))
-                if (Note.get_end_eq_confidence(ideal_note.start, actual_note.start) >= 0.6): # less than 60% confident
+                if (Note.get_end_eq_confidence(ideal_note.end, actual_note.end) < END_PASS_CONF):
                     differences.append(Difference(ideal_index, ideal_note, actual_index, actual_note, 'end'))
             ideal_index = ideal_index + 1
             actual_index = actual_index + 1
