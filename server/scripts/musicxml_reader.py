@@ -1,8 +1,9 @@
 import json
-import pygame
+# import pygame
 import pretty_midi
-from music21 import converter, environment, pitch, tempo, note as m21note
-from mido import MidiFile
+from music21 import converter, pitch, tempo, note as m21note
+# from music21 import environment
+# from mido import MidiFile
 
 FREQUENCY_OFFSETS = {
     "Piano": 0,
@@ -133,14 +134,14 @@ class MusicXMLReader:
 
         return json.dumps(data, indent=4)  # Indent the returned JSON string for better readability
 
-    def play(self):
-        # Play the MIDI file using pygame
-        with pygame.mixer.init():
-            pygame.mixer.music.load(self.midi_filename)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
-            pygame.mixer.quit()
+    # def play(self):
+    #     # Play the MIDI file using pygame
+    #     with pygame.mixer.init():
+    #         pygame.mixer.music.load(self.midi_filename)
+    #         pygame.mixer.music.play()
+    #         while pygame.mixer.music.get_busy():
+    #             pygame.time.Clock().tick(10)
+    #         pygame.mixer.quit()
 
 # def main():
     # Set the environment variable for the MuseScore path based on the operating system
