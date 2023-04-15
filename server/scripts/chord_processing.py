@@ -1,12 +1,13 @@
 from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
+from typing import List
 
 class Chord:
 
-    def __init__(self, root, chord_type, extensions, accidental, accidental_num, start_time = None):
+    def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, start_time = None):
         self.root = root
         self.chord_type = chord_type
-        self.extensions = extensions
+        self.extensions = extensions # Interval
         self.accidental = accidental
         self.accidental_num = accidental_num
         self.start_time = start_time
@@ -38,7 +39,6 @@ def find_chords(filename):
     return chords
 
 def parse_notation(chord):
-    # Does not handle dimished chords, augmented chords, or sus chords
     import re
 
     chord_str = chord.chord
@@ -52,144 +52,109 @@ def parse_notation(chord):
     if chord_str == "N":
         return Chord("N", None, extensions, accidental, accidental_num, chord_time)
 
-    # Finds the root and quality of a chord (where quality is the rest of the chord string)
-    match = re.match(r'([A-Ga-g][#b]?)([^/]*)', chord_str)
+    # Match root, chord quality, extension, and accidentals
+    match = re.match(r'([A-Ga-g][#b]?)(m|min|dim|aug|sus\d?|M)?(\d+)?([#b]\d+)?', chord_str)
 
     if not match:
         raise ValueError('Invalid chord notation')
-    
-    root, quality = match.groups()
 
-    # Checking if a chord is major or minor
+    root, quality, extension, accidental_str = match.groups()
 
-    minor = r'(?:m|M|min)'
-    if re.search(minor, quality):
-        quality = re.sub(minor, '', quality) # Removing it from the string
+    # Determine chord type
+    if quality in ("m", "min"):
         chord_type = "minor"
+    elif quality == "dim":
+        chord_type = "diminished"
+    elif quality == "aug":
+        chord_type = "augmented"
+    elif quality and quality.startswith("sus"):
+        chord_type = quality
     else:
         chord_type = "major"
 
-    # Checking if a chord is a 7, 9, 11, or 13, chord
-    if not quality:
-        # Empty check
-        return Chord(root, chord_type, extensions, accidental, accidental_num, chord_time)
+    # Check for extensions (7, 9, 11, 13, or 6)
+    if extension:
+        extensions = int(extension)
 
-    if quality[0] == "1":
-        extensions = int(quality[0:2]) # 11th or 13th chords
-        quality = quality[2:] # Removing the number from the string
-    elif quality[0] == "6" or quality[0] == "7" or quality[0] == "9":
-        extensions = int(quality[0]) # 7th or 9th chords
-        quality = quality[1:] # Removing the number from the string
-
-    # Checking if a chord has an accidental
-    if not quality:
-        # Empty check
-        return Chord(root, chord_type, extensions, accidental, accidental_num, chord_time)
-
-    if quality[0] == "#":
-        accidental = "sharp"
-        quality = quality[1:]
-        accidental_num = int(quality)
-        quality = ""
-    elif quality[0] == "b":
-        accidental = "flat"
-        quality = quality[1:]
-        accidental_num = int(quality)
-        quality = ""
-
-    if len(quality) != 0:
-        return ValueError('Invalid or unsupported chord notation')
+    # Check for accidentals (# or b)
+    if accidental_str:
+        accidental = "sharp" if accidental_str[0] == "#" else "flat"
+        accidental_num = int(accidental_str[1:])
 
     return Chord(root, chord_type, extensions, accidental, accidental_num, chord_time)
 
-def chords_to_notes(chord):
+def add_extension_notes(root_note: int, chord_type: str, extension: int, note_reverse: dict) -> List[str]:
+    extension_notes = []
+
+    if chord_type == "major":
+        if extension == 6:
+            extension_notes.append(interval_to_note(root_note, 9, note_reverse))
+        if extension == 7:
+            extension_notes.append(interval_to_note(root_note, 11, note_reverse))
+        if extension >= 9:
+            extension_notes.append(interval_to_note(root_note, 14, note_reverse))
+        if extension >= 11:
+            extension_notes.append(interval_to_note(root_note, 17, note_reverse))
+        if extension >= 13:
+            extension_notes.append(interval_to_note(root_note, 21, note_reverse))
+
+    elif chord_type == "minor":
+        if extension == 6:
+            extension_notes.append(interval_to_note(root_note, 9, note_reverse))
+        if extension == 7:
+            extension_notes.append(interval_to_note(root_note, 10, note_reverse))
+        if extension >= 9:
+            extension_notes.append(interval_to_note(root_note, 14, note_reverse))
+        if extension >= 11:
+            extension_notes.append(interval_to_note(root_note, 17, note_reverse))
+        if extension >= 13:
+            extension_notes.append(interval_to_note(root_note, 21, note_reverse))
+
+    elif chord_type == "diminished":
+        if extension == 7:
+            extension_notes.append(interval_to_note(root_note, 9, note_reverse))
+        # Diminished chords don't "really" have extensions beyond 7, they are rare in Western music
+        
+    elif chord_type == "augmented":
+        if extension == 7:
+            extension_notes.append(interval_to_note(root_note, 10, note_reverse))    
+        # Augmented chords don't "really" have extensions beyond 7, they are rare in Western music
+
+    return extension_notes
+
+
+def interval_to_note(root_note: int, interval: int, note_reverse: dict) -> str:
+    return note_reverse[(root_note + interval) % 12]
+
+def get_basic_chord_notes(root_note: int, chord_type: str, note_reverse: dict) -> List[str]:
+    if chord_type == "major":
+        intervals = [0, 4, 7]
+    elif chord_type == "minor":
+        intervals = [0, 3, 7]
+    elif chord_type == "diminished":
+        intervals = [0, 3, 6]
+    elif chord_type == "augmented":
+        intervals = [0, 4, 8]
+    else:
+        raise ValueError(f"Invalid chord type: {chord_type}")
+
+    return [interval_to_note(root_note, interval, note_reverse) for interval in intervals]
+
+
+def chords_to_notes(chord: Chord) -> List[str]:
     notes = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
-    note_reverse = {v: k for k, v in notes.items()} # Reverse of the dictionary
+    note_reverse = {v: k for k, v in notes.items()}  # Reverse of the dictionary
 
-    root = chord.root
+    accidental_value = notes[chord.accidental] if chord.accidental is not None else 0
+    root = notes[chord.root] + accidental_value * chord.accidental_num
     chord_type = chord.chord_type
-    extensions = chord.extensions
-    accidental = chord.accidental
-    accidental_num = chord.accidental_num
+    extension = chord.extensions
 
-    chord_notes = []
+    chord_notes = get_basic_chord_notes(root, chord_type, note_reverse)
+    extension_notes = add_extension_notes(root, chord_type, extension, note_reverse)
+    chord_notes.extend(extension_notes)
 
-    # Adding in the root note to the notes list
-    chord_notes.append(root)
-
-    # Assigning notes based on the chord type
-    if extensions == None:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-    elif extensions == 6:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 9) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 9) % 12])
-    elif extensions == 7:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-    elif extensions == 9:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-    elif extensions == 11:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 17) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 17) % 12])
-    elif extensions == 13:
-        if chord_type == "major":
-            chord_notes.append(note_reverse[(notes[root] + 4) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 17) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 21) % 12])
-        elif chord_type == "minor":
-            chord_notes.append(note_reverse[(notes[root] + 3) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 7) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 10) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 14) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 17) % 12])
-            chord_notes.append(note_reverse[(notes[root] + 21) % 12])
-
-    # Adding in the accidental
-    # Goes here
-    
     return chord_notes
-
-def notes_to_chords():
-    pass
 
 def run_chord_processing(file_name):
     chords = find_chords(file_name)
