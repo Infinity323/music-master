@@ -8,7 +8,7 @@ class Chord:
     def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, start_time = None):
         self.root = root
         self.chord_type = chord_type
-        self.extensions = extensions # Interval
+        self.extensions = extensions # Also known as the intervals (ex. Cm7, the 7 is the "extension")
         self.accidental = accidental
         self.accidental_num = accidental_num
         self.start_time = start_time
@@ -16,7 +16,7 @@ class Chord:
     def __str__(self):
         return f"Root: {self.root}, Type: {self.chord_type}, Extensions: {self.extensions}, Accidental: {self.accidental}, Accidental Number: {self.accidental_num}, Start Time: {self.start_time}"
 
-def find_chords(filename):
+def find_chords(filename: str) -> List[Chord]:
     """
     Function to find chords in a given audio file
 
@@ -28,7 +28,7 @@ def find_chords(filename):
     Returns
     -------
     chords : list
-        List of chords in the audio file
+        List of Chordino chords in the audio file
     """
 
     # Setup Chordino with one of several parameters that can be passed
@@ -39,7 +39,7 @@ def find_chords(filename):
     chords = chordino.extract(filename)
     return chords
 
-def parse_notation(chord):
+def parse_notation(chord: Chord) -> Chord:
     """
     Function to parse chord notation into a Chord object
 
@@ -51,7 +51,7 @@ def parse_notation(chord):
     Returns
     -------
     Chord
-        Chord object with parsed notation
+        A custom Chord object (not from Chordino)with parsed notation
     
     Raises
     ------
@@ -268,7 +268,7 @@ def chords_to_notes(chord: Chord) -> List[str]:
 
     return chord_notes
 
-def run_chord_processing(file_name):
+def run_chord_processing(file_name: str):
     """
     Function to run chord processing on a given audio file
 
@@ -284,4 +284,3 @@ def run_chord_processing(file_name):
         chord_obj = parse_notation(chord)
         print(chord_obj)
         chord_objects.append(chord_obj)
-        
