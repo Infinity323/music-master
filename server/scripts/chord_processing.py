@@ -1,3 +1,4 @@
+import re
 from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
 from typing import List
@@ -39,7 +40,24 @@ def find_chords(filename):
     return chords
 
 def parse_notation(chord):
-    import re
+    """
+    Function to parse chord notation into a Chord object
+
+    Parameters
+    ----------
+    chord : Chord
+        Chord object from chordino
+
+    Returns
+    -------
+    Chord
+        Chord object with parsed notation
+    
+    Raises
+    ------
+    ValueError
+        If chord notation is invalid
+    """
 
     chord_str = chord.chord
     chord_time = chord.timestamp
@@ -84,6 +102,31 @@ def parse_notation(chord):
     return Chord(root, chord_type, extensions, accidental, accidental_num, chord_time)
 
 def add_extension_notes(root_note: int, chord_type: str, extension: int, note_reverse: dict) -> List[str]:
+    """
+    Function to add extension notes to a chord
+
+    Parameters
+    ----------
+    root_note : int
+        Root note of the chord
+    chord_type : str
+        Type of chord (major, minor, diminished, augmented)
+    extension : int
+        Extension of the chord (7, 9, 11, 13, or 6)
+    note_reverse : dict
+        Dictionary mapping note values to note names
+
+    Returns
+    -------
+    extension_notes : list
+        List of extension notes
+        
+    Raises
+    ------
+    ValueError
+        If chord type is invalid
+    """
+
     extension_notes = []
 
     if chord_type == "major":
@@ -124,9 +167,55 @@ def add_extension_notes(root_note: int, chord_type: str, extension: int, note_re
 
 
 def interval_to_note(root_note: int, interval: int, note_reverse: dict) -> str:
+    """
+    Function to convert an interval to a note
+
+    Parameters
+    ----------
+    root_note : int
+        Root note of the chord
+    interval : int
+        Interval of the note
+    note_reverse : dict
+        Dictionary mapping note values to note names
+
+    Returns
+    -------
+    note : str
+        Note name
+    
+    Raises
+    ------
+    ValueError
+        If interval is invalid
+    """
+
     return note_reverse[(root_note + interval) % 12]
 
 def get_basic_chord_notes(root_note: int, chord_type: str, note_reverse: dict) -> List[str]:
+    """
+    Function to get the basic notes of a chord
+
+    Parameters
+    ----------
+    root_note : int
+        Root note of the chord
+    chord_type : str
+        Type of chord (major, minor, diminished, augmented)
+    note_reverse : dict
+        Dictionary mapping note values to note names
+
+    Returns
+    -------
+    chord_notes : list
+        List of basic chord notes
+
+    Raises
+    ------
+    ValueError
+        If chord type is invalid
+    """
+
     if chord_type == "major":
         intervals = [0, 4, 7]
     elif chord_type == "minor":
@@ -142,6 +231,29 @@ def get_basic_chord_notes(root_note: int, chord_type: str, note_reverse: dict) -
 
 
 def chords_to_notes(chord: Chord) -> List[str]:
+    """
+    Function to convert a Chord object to a list of notes
+
+    Parameters
+    ----------
+    chord : Chord
+        Chord object
+
+    Returns
+    -------
+    chord_notes : list
+        List of notes in the chord
+
+    Raises
+    ------
+    ValueError
+        If chord type is invalid
+    
+    Notes
+    -----
+    This function currently doesn't handle slash chords
+    """
+
     notes = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
     note_reverse = {v: k for k, v in notes.items()}  # Reverse of the dictionary
 
@@ -157,9 +269,19 @@ def chords_to_notes(chord: Chord) -> List[str]:
     return chord_notes
 
 def run_chord_processing(file_name):
+    """
+    Function to run chord processing on a given audio file
+
+    Parameters
+    ----------
+    file_name : str
+        Path to audio file
+    """
     chords = find_chords(file_name)
     chord_objects = []
+
     for chord in chords:
         chord_obj = parse_notation(chord)
         print(chord_obj)
         chord_objects.append(chord_obj)
+        
