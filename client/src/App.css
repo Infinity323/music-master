@@ -287,6 +287,15 @@ div.btn.cb {
   max-width: 120px;
   display: inline-block;
 }
+div.btn.inv {
+  margin: 1.5px;
+  padding: 0px;
+  height: 11px;
+  width: 11px;
+  max-width: 120px;
+  display: inline-block;
+  visibility: hidden;
+}
 div.btn.cb.off {
   background-color: rgba(1, 1, 1, 0.5);
 }
@@ -295,6 +304,9 @@ img#metronome {
 }
 .metrocirc{
   color:green
+}
+.progon{
+  background-color: green;
 }
 
 /********************/

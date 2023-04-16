@@ -136,12 +136,18 @@ class PerformanceGraph extends Component {
 
   componentDidMount() {
     const { measures } = this.state.data;
-    const starttime = measures.map(item => item.actual_val.start);
     const ideal = measures.map(item => (item.ideal_val.pitch));
     const actual = measures.map(item => (item.actual_val.pitch));
     const difference = measures.map(item => Math.abs(item.actual_val.pitch-item.ideal_val.pitch));
     const notenames = measures.map(item => (item.note_info.name));
+    const notetypes = measures.map(item => (item.note_info.type));
     const measpos = measures.map(item => ("("+item.note_info.measure+", "+item.note_info.position+")"));
+    const idealdyn = measures.map(item => (item.ideal_val.velocity));
+    const actualdyn = measures.map(item => (item.actual_val.velocity));
+    const differencedyn = measures.map(item => Math.abs(item.actual_val.velocity-item.ideal_val.velocity));
+    const starttime = measures.map(item => item.actual_val.start);
+    const endtime = measures.map(item => item.actual_val.end);
+    const duration = measures.map(item => (item.ideal_val.end-item.ideal_val.start));
 
     if (this.chart) {
       this.chart.destroy();
@@ -153,25 +159,52 @@ class PerformanceGraph extends Component {
         labels: measpos,
         datasets: [
           {
-            label: "Ideal",
+            label: "Ideal Pitch",
             data: ideal,
             backgroundColor: 'white',
             borderColor: 'white',
-            fill: false
+            fill: false,
+            hidden: true
           },
           {
-            label: "Difference",
+            label: "Pitch Difference",
             data: difference,
             backgroundColor: 'red',
             borderColor: 'red',
-            fill: false
+            fill: false,
+            hidden: false,
           },
           {
-            label: "Actual",
+            label: "Actual Pitch",
             data: actual,
+            backgroundColor: 'black',
+            borderColor: 'black',
+            fill: false,
+            hidden: true
+          },
+          {
+            label: "Ideal Dynamics",
+            data: idealdyn,
             backgroundColor: 'grey',
             borderColor: 'grey',
-            fill: false
+            fill: false,
+            hidden: true
+          },
+          {
+            label: "Dynamic Difference",
+            data: differencedyn,
+            backgroundColor: 'orange',
+            borderColor: 'orange',
+            fill: false,
+            hidden: true
+          },
+          {
+            label: "Actual Dynamics",
+            data: actualdyn,
+            backgroundColor: 'dark grey',
+            borderColor: 'dark grey',
+            fill: false,
+            hidden: true
           }
         ]
       },
@@ -181,6 +214,15 @@ class PerformanceGraph extends Component {
             display: true,
             text: 'Ideal V. Actual Pitch',
           },
+          tooltip: {
+            callbacks: {
+              label: (context, elements) => {
+                console.log(context);
+                console.log(elements);
+                return `Value: ${context.formattedValue}, Note: ${notenames[context.dataIndex]}, Type: ${notetypes[context.dataIndex]}, Start: ${starttime[context.dataIndex]}, End: ${endtime[context.dataIndex]}, Duration: ${duration[context.dataIndex]}`;
+              }
+            }
+          }
         },
         responsive: true,
         scales: {
@@ -199,12 +241,12 @@ class PerformanceGraph extends Component {
             stacked: true,
           },
         },
-        onClick: (e, elements, chart) => {
-          if (elements[0])
-            alert(notenames[elements[0].index])
+        //onClick: (e, elements, chart) => {
+          //if (elements[0])
+            //alert(notenames[elements[0].index])
             //console.log(notenames[elements[0].index]);
           // alert(this.chart.getElementById(e))
-        }
+        //}
       }
     });
   }

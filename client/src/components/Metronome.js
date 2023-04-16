@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
-import { Flex, Box, CircularProgress, CircularProgressLabel } from '@chakra-ui/react';
+import { Flex, Box, CircularProgress, CircularProgressLabel, Button } from '@chakra-ui/react';
 import { ThemeContext } from '../utils/Contexts';
-
+/*
 //Circle
 //https://medium.com/tinyso/how-to-create-an-animated-svg-circular-progress-component-in-react-5123c7d24391
 const Circular = ({size,strokeWidth,percentage,color}) => {
@@ -34,7 +34,7 @@ const Circular = ({size,strokeWidth,percentage,color}) => {
       />
     </svg>
   );
-}
+}*/
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -54,6 +54,7 @@ class Metronome extends Component {
       btn4: true,
       btn5: false,
       btn6: false,
+      lastbeat: false,
       // Internal state variables
       lookahead: 25,
       scheduleAheadTime: 0.1,
@@ -174,6 +175,11 @@ class Metronome extends Component {
    * Schedules next beat when needed (as opposed to infinitely).
    */
   scheduler = () => {
+    if(this.state.beatsPerBar === (this.state.currentBeatInBar+1) && this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime){
+      this.setState({
+        lastbeat: true
+      });
+    }
     if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
       this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
       this.nextBeat();
@@ -183,7 +189,8 @@ class Metronome extends Component {
     }
     else{
       this.setState({
-        isBeat: false
+        isBeat: false,
+        lastbeat: false
       });
     }
   }
@@ -263,50 +270,27 @@ class Metronome extends Component {
             </Box>
           </Flex>
           <Box width={80}>
-          <Circular strokeWidth={10} percentage={100} size={35} color="green"/>
-            <Circular strokeWidth={10} percentage={100} size={35} color="green">
+            
+             <Button className={this.state.currentBeatInBar > 0 ? "progon" : "progoff"}>
+                <div className='btn inv'/>
+             </Button>
+            <Button className={(this.state.currentBeatInBar > 1 | this.state.lastbeat) ? "progon" : "progoff"}>
+            <div className='btn inv'/>
+            </Button>
+            <Button className={((this.state.currentBeatInBar > 2 | this.state.lastbeat) && this.state.btn3 === true) ? "progon" : "progoff"}>
             <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
-            </Circular>
-            <CircularProgress value={this.state.currentBeatInBar >= 0 ? 100 : 0}
-              size='22px' color='green' trackColor='rgba(1, 1, 1, 0.2)' thickness='18px'/>
-            <CircularProgress value={this.state.currentBeatInBar >= 1 ? 100 : 0}
-              size='22px' color='green' trackColor='rgba(1, 1, 1, 0.2)' thickness='18px'/>
-            <CircularProgress value={(this.state.currentBeatInBar >= 2 && this.state.btn3 === true) ? 100 : 0}
-              size='22px' color='green'
-              trackColor={this.state.btn3 ? 'rgba(1, 1, 1, 0.2)' : 'rgba(1, 1, 1, 0.5)'}
-              thickness='18px'
-            >
-              <CircularProgressLabel lineHeight='11px'>
-                <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
-              </CircularProgressLabel>
-            </CircularProgress>
-            <CircularProgress value={(this.state.currentBeatInBar >= 3 && this.state.btn4 === true) ? 100 : 0}
-              size='22px' color='green'
-              trackColor={this.state.btn4 ? 'rgba(1, 1, 1, 0.2)' : 'rgba(1, 1, 1, 0.5)'}
-              thickness='18px'
-            >
-              <CircularProgressLabel lineHeight='11px'>
-                <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
-              </CircularProgressLabel>
-            </CircularProgress>
-            <CircularProgress value={(this.state.currentBeatInBar >= 4 && this.state.btn5 === true) ? 100 : 0}
-              size='22px' color='green'
-              trackColor={this.state.btn5 ? 'rgba(1, 1, 1, 0.2)' : 'rgba(1, 1, 1, 0.5)'}
-              thickness='18px'
-            >
-              <CircularProgressLabel lineHeight='11px'>
-                <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
-              </CircularProgressLabel>
-            </CircularProgress>
-            <CircularProgress value={((this.state.currentBeatInBar >= 5 && this.state.btn6 === true) ? 100 : 0)}
-              size='22px' color='green'
-              trackColor={this.state.btn6 ? 'rgba(1, 1, 1, 0.2)' : 'rgba(1, 1, 1, 0.5)'}
-              thickness='18px'
-            >
-              <CircularProgressLabel lineHeight='11px'>
-                <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
-              </CircularProgressLabel>
-            </CircularProgress>
+            </Button>
+            
+            <Button className={((this.state.currentBeatInBar > 3 | this.state.lastbeat) && this.state.btn4 === true) ? "progon" : "progoff"}>
+                  <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
+            </Button>
+            <Button className={((this.state.currentBeatInBar > 4 | this.state.lastbeat) && this.state.btn5 === true) ? "progon" : "progoff"}>
+                  <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
+            </Button>
+            <Button className={((this.state.currentBeatInBar > 5 | this.state.lastbeat) && this.state.btn6 === true) ? "progon" : "progoff"}>
+                  <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
+            
+            </Button>
           </Box>
         </Flex>
       </div>
