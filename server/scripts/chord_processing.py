@@ -268,6 +268,36 @@ def chords_to_notes(chord: Chord) -> List[str]:
 
     return chord_notes
 
+def notes_to_chord_object(notes: List[str]):
+    """
+    Function to convert a list of notes to a Chord object that is used in the xml reader
+
+    Parameters
+    ----------
+    notes : list
+        List of notes in the chord
+    
+    Returns
+    -------
+    chord : Chord
+        Chord object used in the xml reader
+    """
+    
+    start = 0
+    end = 0
+    duration = 0
+    velocity = 0
+
+    chord = 'Chord {' + ' | '.join(notes) + '}'
+    obj = {
+        'Chord': chord,
+        'Start': start,
+        'End': end,
+        'Duration': duration,
+        'Velocity': velocity,
+    }
+    return obj
+
 def run_chord_processing(file_name: str):
     """
     Function to run chord processing on a given audio file
