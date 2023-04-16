@@ -1,6 +1,7 @@
 import json
 import pygame
 import pretty_midi
+import re
 from music21 import converter, environment, chord, pitch, tempo, note as m21note
 from mido import MidiFile
 
@@ -15,6 +16,17 @@ FREQUENCY_OFFSETS = {
 }
 
 SEMITONE_RATIO = 1.05946
+
+# used to filter out the chord name from the chord string
+def filter_chord(chord_str):
+    pattern = r'(Chord\s*{)((?:\s*[A-Ga-g]#?[0-9]?\s*in\s*octave\s*[0-9]+\s*\|?\s*)+)}'
+    match = re.search(pattern, chord_str)
+    if match:
+        chord_notes = re.findall(r'([A-Ga-g]#?[0-9]?)\s*in\s*octave\s*[0-9]+', match.group(2))
+        formatted_chord_notes = ' | '.join(chord_notes)
+        return f"{match.group(1)}{formatted_chord_notes}" + "}"
+    else:
+        return None
 
 # used for indicating things like "dotted quarter note"
 def get_type_with_dots(element):
@@ -149,7 +161,7 @@ class MusicXMLReader:
                 for individual_note in element.notes:
                     velocity = individual_note.volume.velocity 
 
-                chords.append({'Chord': element.fullName, 'Start': start_time, 'End': end_time, 'Duration': element.duration.quarterLength, 'Velocity': velocity})
+                chords.append({'Chord': filter_chord(element.fullName), 'Start': start_time, 'End': end_time, 'Duration': element.duration.quarterLength, 'Velocity': velocity})
 
         return chords
 
