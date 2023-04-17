@@ -45,16 +45,21 @@ def getSpecificDiffJson(performance_id: int):
     sheet_music_id = performance.sheet_music_id
     run_number = performance.run_number
 
-    # Taken from getDiffJson
     sheet_music_name = (db.session.query(SheetMusic)
                         .filter(SheetMusic.id == sheet_music_id)
                         .first().title)
     subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
-    diff_json_path = ("{}/{}_diff.json".format(subdir, run_number))
+    rec_json_path = ("{}/{}_rec.json".format(subdir, run_number))
+    master_json_path = ("{}/{}_{}/master.json".format(JSON_DIR, sheet_music_id, sheet_music_name))
     try:
-        with open(diff_json_path, 'r') as diff_json_file:
-            data = json.load(diff_json_file)
-        return data
+        with open(rec_json_path, 'r') as rec_json_file:
+            rec_data = json.load(rec_json_file)
+        with open(master_json_path, 'r') as master_json_file:
+            master_data = json.load(master_json_file)
+        return {
+            "actual": rec_data,
+            "expected": master_data
+        }
     except FileNotFoundError:
         return {"error": "File not found"}, 404
 

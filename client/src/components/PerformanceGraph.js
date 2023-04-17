@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { baseUrl } from '../App';
+import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
+import { Scatter } from 'react-chartjs-2';
+import { baseUrl, style } from '../App';
+import { getNote, getNoteName, getOctave } from '../utils/AudioAnalyzer';
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend);
+Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend);
 Chart.defaults.font.family = "AppleRegular";
 
 class PerformanceGraph extends Component {
@@ -15,16 +16,6 @@ class PerformanceGraph extends Component {
       measures: [],
       ideal: [],
       actual: [],
-      difference: [],
-      notenames: [],
-      notetypes: [],
-      measpos: [],
-      idealdyn: [],
-      actualdyn: [],
-      differencedyn: [],
-      starttime: [],
-      endtime: [],
-      duration: [],
       pitchOptions: {},
       pitchData: {
         datasets: []
@@ -35,6 +26,9 @@ class PerformanceGraph extends Component {
       }
     };
 
+    this.textColor = style.getPropertyValue('--text-color');
+    this.lineColor = style.getPropertyValue('--select-color');
+
     this.loadGraph = this.loadGraph.bind(this);
     this.toggleView = this.toggleView.bind(this);
   }
@@ -42,43 +36,31 @@ class PerformanceGraph extends Component {
   loadGraph() {
     this.setState({
       pitchData: {
-        labels: this.state.measpos,
         datasets: [
-          {
-            label: "Ideal Pitch",
-            data: this.state.ideal,
-            backgroundColor: 'white',
-            borderColor: 'white',
-            hidden: false,
-            stepped: true,
-          },
           {
             label: "Actual Pitch",
-            data: this.state.actual,
-            backgroundColor: 'black',
-            borderColor: 'black',
-            hidden: false,
-            stepped: true,
-          },
-        ]
-      },
-      dynamicsData: {
-        labels: this.state.measpos,
-        datasets: [
-          {
-            label: "Ideal Dynamics",
-            data: this.state.idealdyn,
-            backgroundColor: 'grey',
-            borderColor: 'grey',
-            hidden: false,
+            data: this.state.actual.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.pitch
+              }
+            }),
+            backgroundColor: this.lineColor,
+            borderColor: this.lineColor,
+            showLine: true,
             stepped: true,
           },
           {
-            label: "Actual Dynamics",
-            data: this.state.actualdyn,
-            backgroundColor: 'dark grey',
-            borderColor: 'dark grey',
-            hidden: false,
+            label: "Ideal Pitch",
+            data: this.state.ideal.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.pitch
+              }
+            }),
+            backgroundColor: '#B2BABB',
+            borderColor: '#B2BABB',
+            showLine: true,
             stepped: true,
           }
         ]
@@ -87,17 +69,23 @@ class PerformanceGraph extends Component {
         plugins: {
           title: {
             display: true,
-            text: 'Ideal V. Actual Pitch',
+            text: 'Notes Detected',
+            color: this.textColor
           },
           tooltip: {
             callbacks: {
               label: (context, elements) => {
-                console.log(context);
-                console.log(elements);
+                let label = context.dataset.label;
+                let notes = label === "Actual Pitch"
+                  ? this.state.actual.notes : this.state.ideal.notes;
+                let i = context.dataIndex;
+                let freq = notes[i].pitch;
+                let noteName = getNoteName(getNote(freq));
+                let octave = getOctave(getNote(freq));
                 return [
-                  `${this.state.notenames[context.dataIndex]} - ${this.state.notetypes[context.dataIndex]}`,
-                  `Played for ${this.state.duration[context.dataIndex]} seconds`,
-                  `(From t=${this.state.starttime[context.dataIndex].toFixed(2)} to t=${this.state.endtime[context.dataIndex].toFixed(2)})`,
+                  `Pitch: ${noteName}${octave} (${freq.toFixed(2)} Hz)`,
+                  `Volume: ${notes[i].velocity}`,
+                  `(From t=${notes[i].start.toFixed(2)} to t=${notes[i].end.toFixed(2)})`,
                 ];
               }
             }
@@ -108,32 +96,71 @@ class PerformanceGraph extends Component {
           x: {
             title: {
               display: true,
-              text: '(Measure, Position)',
+              text: 'Time (s)',
+              color: this.textColor
             }
           },
           y: {
             title: {
               display: true,
-              text: 'Pitch',
-            }
+              text: 'Pitch (Hz)',
+              color: this.textColor
+            },
+            type: 'logarithmic'
           },
         }
+      },
+      dynamicsData: {
+        datasets: [
+          {
+            label: "Actual Volume",
+            data: this.state.actual.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.velocity
+              }
+            }),
+            backgroundColor: this.lineColor,
+            borderColor: this.lineColor,
+            showLine: true,
+            stepped: true,
+          },
+          {
+            label: "Ideal Volume",
+            data: this.state.ideal.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.velocity
+              };
+            }),
+            backgroundColor: '#B2BABB',
+            borderColor: '#B2BABB',
+            showLine: true,
+            stepped: true,
+          }
+        ]
       },
       dynamicsOptions: {
         plugins: {
           title: {
             display: true,
-            text: 'Ideal V. Actual Dynamics',
+            text: 'Volume Level',
+            color: this.textColor
           },
           tooltip: {
             callbacks: {
               label: (context, elements) => {
-                console.log(context);
-                console.log(elements);
+                let label = context.dataset.label;
+                let notes = label === "Actual Volume"
+                  ? this.state.actual.notes : this.state.ideal.notes;
+                let i = context.dataIndex;
+                let freq = notes[i].pitch;
+                let noteName = getNoteName(getNote(freq));
+                let octave = getOctave(getNote(freq));
                 return [
-                  `${this.state.notenames[context.dataIndex]} - ${this.state.notetypes[context.dataIndex]}`,
-                  `Played for ${this.state.duration[context.dataIndex]} seconds`,
-                  `(From t=${this.state.starttime[context.dataIndex].toFixed(2)} to t=${this.state.endtime[context.dataIndex].toFixed(2)})`,
+                  `Pitch: ${noteName}${octave} (${freq.toFixed(2)} Hz)`,
+                  `Volume: ${notes[i].velocity}`,
+                  `(From t=${notes[i].start.toFixed(2)} to t=${notes[i].end.toFixed(2)})`,
                 ];
               }
             }
@@ -144,14 +171,18 @@ class PerformanceGraph extends Component {
           x: {
             title: {
               display: true,
-              text: '(Measure, Position)',
+              text: 'Time (s)',
+              color: this.textColor
             }
           },
           y: {
             title: {
               display: true,
-              text: 'Tempo',
-            }
+              text: 'Volume',
+              color: this.textColor
+            },
+            min: 0,
+            max: 127
           },
         }
       }
@@ -162,19 +193,8 @@ class PerformanceGraph extends Component {
     fetch(baseUrl + "/performance/" + this.performanceId + "/diff")
       .then(res => res.json())
       .then(result => this.setState({
-        measures: result,
-        ideal: result.map(item => (item.diff.ideal_val.pitch)),
-        actual: result.map(item => (item.diff.actual_val.pitch)),
-        difference: result.map(item => Math.abs(item.diff.actual_val.pitch-item.diff.ideal_val.pitch)),
-        notenames: result.map(item => (item.note_info.name)),
-        notetypes: result.map(item => (item.note_info.type)),
-        measpos: result.map(item => ("("+item.note_info.measure+", "+item.note_info.position+")")),
-        idealdyn: result.map(item => (item.diff.ideal_val.velocity)),
-        actualdyn: result.map(item => (item.diff.actual_val.velocity)),
-        differencedyn: result.map(item => Math.abs(item.diff.actual_val.velocity-item.diff.ideal_val.velocity)),
-        starttime: result.map(item => item.diff.actual_val.start),
-        endtime: result.map(item => item.diff.actual_val.end),
-        duration: result.map(item => (item.diff.ideal_val.end-item.diff.ideal_val.start))
+        ideal: result.expected,
+        actual: result.actual
       }))
       .then(this.loadGraph)
       .catch(error => console.error(error));
@@ -190,8 +210,8 @@ class PerformanceGraph extends Component {
     return (
       <div>
         { this.state.viewPitch
-          ? <Line options={this.state.pitchOptions} data={this.state.pitchData}/>
-          : <Line options={this.state.dynamicsOptions} data={this.state.dynamicsData}/>
+          ? <Scatter options={this.state.pitchOptions} data={this.state.pitchData}/>
+          : <Scatter options={this.state.dynamicsOptions} data={this.state.dynamicsData}/>
         }
         <div className="btn small" onClick={this.toggleView}>
           Toggle View
