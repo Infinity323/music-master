@@ -3,7 +3,7 @@ import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale
 import 'chartjs-adapter-date-fns';
 import { format } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
-import { Line } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2';
 import { useNavigate } from 'react-router-dom';
 import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'

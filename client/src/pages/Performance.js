@@ -75,10 +75,10 @@ function Performance() {
       <>
         <ChartButton/>
         <div className="content">
-          Results for performance {performance.id}, sheet music {performance.sheet_music_id}
-          <PerformanceGraph/>
-          <DeleteButton/>
+          <h2>Performance Details</h2>
+          <PerformanceGraph performanceId={performanceId}/>
           <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
+          <DeleteButton/>
         </div>
       </>
     );

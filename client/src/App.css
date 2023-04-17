@@ -302,13 +302,17 @@ div.btn.cb.off {
 img#metronome {
   width: 50px;
 }
-.metrocirc{
-  color:green
+div.prog.on, div.prog.off {
+  background-color: var(--select-color);
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  display: inline-block;
 }
-.progon{
-  background-color: green;
+div.prog.off {
+  background-color: var(--btn-color);
 }
-
 /********************/
 /*      Tuner       */
 /********************/

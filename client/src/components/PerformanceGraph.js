@@ -1,225 +1,92 @@
 import React, { Component } from 'react';
-import Chart from 'chart.js/auto';
+import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
+import { Scatter } from 'react-chartjs-2';
+import { baseUrl, style } from '../App';
+import { getNote, getNoteName, getOctave } from '../utils/AudioAnalyzer';
+
+Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend);
+Chart.defaults.font.family = "AppleRegular";
 
 class PerformanceGraph extends Component {
   constructor(props) {
     super(props);
-    this.chartRef = React.createRef();
-    this.chart = null;
+    this.performanceId = props.performanceId;
     this.state = {
-      data: {
-        measures: [
-          {
-            "ideal_idx": 1, /* index number in musicXML array */
-            "ideal_val": { /* note object in musicXML array */
-                "pitch": 293.66, /* frequency */
-                "velocity": 80, /* 0-127 MIDI velocity */
-                "start": 1.3, /* start time of note in seconds */
-                "end": 2 /* end time of note in seconds */
-            },
-            "actual_idx": 1, /* index number in recording .wav array */
-            "actual_val": { /* note object in .way array */
-                "pitch": 440.0,
-                "velocity": 80,
-                "start": 1.3,
-                "end": 2
-            },
-            "diff_type": "pitch", /* difference type (pitch, velocity, start, end, extra, and missing) */
-            "note_info": { /* note info object */
-                "element": "note", /* can be note or rest */
-                "name": "B-3", /* the name of the note */
-                "type": "quarter", /* the type of note */
-                "measure": 1, /* measure number */
-                 "position": 1 /* position of the note in the measure */
-            }
-        },
-        {
-            "ideal_idx": 2, /* index number in musicXML array */
-            "ideal_val": { /* note object in musicXML array */
-                "pitch": 273.66, /* frequency */
-                "velocity": 80, /* 0-127 MIDI velocity */
-                "start": 3.0, /* start time of note in seconds */
-                "end": 4 /* end time of note in seconds */
-            },
-            "actual_idx": 1, /* index number in recording .wav array */
-            "actual_val": { /* note object in .way array */
-                "pitch": 340.0,
-                "velocity": 80,
-                "start": 3.0,
-                "end": 4
-            },
-            "diff_type": "pitch", /* difference type (pitch, velocity, start, end, extra, and missing) */
-            "note_info": { /* note info object */
-                "element": "note", /* can be note or rest */
-                "name": "B-3", /* the name of the note */
-                "type": "quarter", /* the type of note */
-                "measure": 2, /* measure number */
-                 "position": 2 /* position of the note in the measure */
-            }
-        },
-        {
-          "ideal_idx": 2, /* index number in musicXML array */
-          "ideal_val": { /* note object in musicXML array */
-              "pitch": 213.66, /* frequency */
-              "velocity": 80, /* 0-127 MIDI velocity */
-              "start": 3.23, /* start time of note in seconds */
-              "end": 3.5 /* end time of note in seconds */
-          },
-          "actual_idx": 1, /* index number in recording .wav array */
-          "actual_val": { /* note object in .way array */
-              "pitch": 370.0,
-              "velocity": 80,
-              "start": 3.23,
-              "end": 3.5
-          },
-          "diff_type": "pitch", /* difference type (pitch, velocity, start, end, extra, and missing) */
-          "note_info": { /* note info object */
-              "element": "note", /* can be note or rest */
-              "name": "B-3", /* the name of the note */
-              "type": "quarter", /* the type of note */
-              "measure": 2, /* measure number */
-               "position": 2 /* position of the note in the measure */
-          }
-        },
-        {
-          "ideal_idx": 2, /* index number in musicXML array */
-          "ideal_val": { /* note object in musicXML array */
-              "pitch": 390.66, /* frequency */
-              "velocity": 80, /* 0-127 MIDI velocity */
-              "start": 5.1, /* start time of note in seconds */
-              "end": 5.8 /* end time of note in seconds */
-          },
-          "actual_idx": 1, /* index number in recording .wav array */
-          "actual_val": { /* note object in .way array */
-              "pitch": 400.0,
-              "velocity": 80,
-              "start": 5.1,
-              "end": 5.8
-          },
-          "diff_type": "pitch", /* difference type (pitch, velocity, start, end, extra, and missing) */
-          "note_info": { /* note info object */
-              "element": "note", /* can be note or rest */
-              "name": "B-3", /* the name of the note */
-              "type": "quarter", /* the type of note */
-              "measure": 2, /* measure number */
-               "position": 2 /* position of the note in the measure */
-          }
+      viewPitch: true,
+      measures: [],
+      ideal: [],
+      actual: [],
+      pitchOptions: {},
+      pitchData: {
+        datasets: []
       },
-        {
-            "ideal_idx": 3, /* index number in musicXML array */
-            "ideal_val": { /* note object in musicXML array */
-                "pitch": 333.66, /* frequency */
-                "velocity": 80, /* 0-127 MIDI velocity */
-                "start": 5.5, /* start time of note in seconds */
-                "end": 6 /* end time of note in seconds */
-            },
-            "actual_idx": 3, /* index number in recording .wav array */
-            "actual_val": { /* note object in .way array */
-                "pitch": 320.0,
-                "velocity": 80,
-                "start": 5.5,
-                "end": 6
-            },
-            "diff_type": "pitch", /* difference type (pitch, velocity, start, end, extra, and missing) */
-            "note_info": { /* note info object */
-                "element": "note", /* can be note or rest */
-                "name": "B-3", /* the name of the note */
-                "type": "quarter", /* the type of note */
-                "measure": 3, /* measure number */
-                 "position": 3 /* position of the note in the measure */
-            }
-        }
-        ]
+      dynamicsOptions: {},
+      dynamicsData: {
+        datasets: []
       }
     };
+
+    this.textColor = style.getPropertyValue('--text-color');
+    this.lineColor = style.getPropertyValue('--select-color');
+
+    this.loadGraph = this.loadGraph.bind(this);
+    this.toggleView = this.toggleView.bind(this);
   }
 
-  componentDidMount() {
-    const { measures } = this.state.data;
-    const ideal = measures.map(item => (item.ideal_val.pitch));
-    const actual = measures.map(item => (item.actual_val.pitch));
-    const difference = measures.map(item => Math.abs(item.actual_val.pitch-item.ideal_val.pitch));
-    const notenames = measures.map(item => (item.note_info.name));
-    const notetypes = measures.map(item => (item.note_info.type));
-    const measpos = measures.map(item => ("("+item.note_info.measure+", "+item.note_info.position+")"));
-    const idealdyn = measures.map(item => (item.ideal_val.velocity));
-    const actualdyn = measures.map(item => (item.actual_val.velocity));
-    const differencedyn = measures.map(item => Math.abs(item.actual_val.velocity-item.ideal_val.velocity));
-    const starttime = measures.map(item => item.actual_val.start);
-    const endtime = measures.map(item => item.actual_val.end);
-    const duration = measures.map(item => (item.ideal_val.end-item.ideal_val.start));
-
-    if (this.chart) {
-      this.chart.destroy();
-    }
-
-    this.chart = new Chart(this.chartRef.current, { 
-      type: 'bar',
-      data: {
-        labels: measpos,
+  loadGraph() {
+    this.setState({
+      pitchData: {
         datasets: [
           {
-            label: "Ideal Pitch",
-            data: ideal,
-            backgroundColor: 'white',
-            borderColor: 'white',
-            fill: false,
-            hidden: true
-          },
-          {
-            label: "Pitch Difference",
-            data: difference,
-            backgroundColor: 'red',
-            borderColor: 'red',
-            fill: false,
-            hidden: false,
-          },
-          {
             label: "Actual Pitch",
-            data: actual,
-            backgroundColor: 'black',
-            borderColor: 'black',
-            fill: false,
-            hidden: true
+            data: this.state.actual.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.pitch
+              }
+            }),
+            backgroundColor: this.lineColor,
+            borderColor: this.lineColor,
+            showLine: true,
+            stepped: true,
           },
           {
-            label: "Ideal Dynamics",
-            data: idealdyn,
-            backgroundColor: 'grey',
-            borderColor: 'grey',
-            fill: false,
-            hidden: true
-          },
-          {
-            label: "Dynamic Difference",
-            data: differencedyn,
-            backgroundColor: 'orange',
-            borderColor: 'orange',
-            fill: false,
-            hidden: true
-          },
-          {
-            label: "Actual Dynamics",
-            data: actualdyn,
-            backgroundColor: 'dark grey',
-            borderColor: 'dark grey',
-            fill: false,
-            hidden: true
+            label: "Ideal Pitch",
+            data: this.state.ideal.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.pitch
+              }
+            }),
+            backgroundColor: '#B2BABB',
+            borderColor: '#B2BABB',
+            showLine: true,
+            stepped: true,
           }
         ]
       },
-      options: {
+      pitchOptions: {
         plugins: {
           title: {
             display: true,
-            text: 'Ideal V. Actual Pitch',
+            text: 'Notes Detected',
+            color: this.textColor
           },
           tooltip: {
             callbacks: {
               label: (context, elements) => {
-                console.log(context);
-                console.log(elements);
-                return `Value: ${context.formattedValue}, Note: ${notenames[context.dataIndex]}, Type: ${notetypes[context.dataIndex]}, Start: ${starttime[context.dataIndex]}, End: ${endtime[context.dataIndex]}, Duration: ${duration[context.dataIndex]}`;
+                let label = context.dataset.label;
+                let notes = label === "Actual Pitch"
+                  ? this.state.actual.notes : this.state.ideal.notes;
+                let i = context.dataIndex;
+                let freq = notes[i].pitch;
+                let noteName = getNoteName(getNote(freq));
+                let octave = getOctave(getNote(freq));
+                return [
+                  `Pitch: ${noteName}${octave} (${freq.toFixed(2)} Hz)`,
+                  `Volume: ${notes[i].velocity}`,
+                  `(From t=${notes[i].start.toFixed(2)} to t=${notes[i].end.toFixed(2)})`,
+                ];
               }
             }
           }
@@ -229,33 +96,126 @@ class PerformanceGraph extends Component {
           x: {
             title: {
               display: true,
-              text: '(Measure, Position)',
-            },
-            stacked: true,
+              text: 'Time (s)',
+              color: this.textColor
+            }
           },
           y: {
             title: {
               display: true,
-              text: 'Pitch',
+              text: 'Pitch (Hz)',
+              color: this.textColor
             },
-            stacked: true,
+            type: 'logarithmic'
           },
+        }
+      },
+      dynamicsData: {
+        datasets: [
+          {
+            label: "Actual Volume",
+            data: this.state.actual.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.velocity
+              }
+            }),
+            backgroundColor: this.lineColor,
+            borderColor: this.lineColor,
+            showLine: true,
+            stepped: true,
+          },
+          {
+            label: "Ideal Volume",
+            data: this.state.ideal.notes.map(item => {
+              return {
+                x: item.start,
+                y: item.velocity
+              };
+            }),
+            backgroundColor: '#B2BABB',
+            borderColor: '#B2BABB',
+            showLine: true,
+            stepped: true,
+          }
+        ]
+      },
+      dynamicsOptions: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Volume Level',
+            color: this.textColor
+          },
+          tooltip: {
+            callbacks: {
+              label: (context, elements) => {
+                let label = context.dataset.label;
+                let notes = label === "Actual Volume"
+                  ? this.state.actual.notes : this.state.ideal.notes;
+                let i = context.dataIndex;
+                let freq = notes[i].pitch;
+                let noteName = getNoteName(getNote(freq));
+                let octave = getOctave(getNote(freq));
+                return [
+                  `Pitch: ${noteName}${octave} (${freq.toFixed(2)} Hz)`,
+                  `Volume: ${notes[i].velocity}`,
+                  `(From t=${notes[i].start.toFixed(2)} to t=${notes[i].end.toFixed(2)})`,
+                ];
+              }
+            }
+          }
         },
-        //onClick: (e, elements, chart) => {
-          //if (elements[0])
-            //alert(notenames[elements[0].index])
-            //console.log(notenames[elements[0].index]);
-          // alert(this.chart.getElementById(e))
-        //}
+        responsive: true,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Time (s)',
+              color: this.textColor
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Volume',
+              color: this.textColor
+            },
+            min: 0,
+            max: 127
+          },
+        }
       }
     });
   }
-  
+
+  componentDidMount() {
+    fetch(baseUrl + "/performance/" + this.performanceId + "/diff")
+      .then(res => res.json())
+      .then(result => this.setState({
+        ideal: result.expected,
+        actual: result.actual
+      }))
+      .then(this.loadGraph)
+      .catch(error => console.error(error));
+  }
+
+  toggleView() {
+    this.setState(state => {
+      return {viewPitch: !state.viewPitch}
+    });
+  }
 
   render() {
     return (
       <div>
-        <canvas ref={this.chartRef} />
+        { this.state.viewPitch
+          ? <Scatter options={this.state.pitchOptions} data={this.state.pitchData}/>
+          : <Scatter options={this.state.dynamicsOptions} data={this.state.dynamicsData}/>
+        }
+        <div className="btn small" onClick={this.toggleView}>
+          Toggle View
+        </div>
       </div>
     );
   }

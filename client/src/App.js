@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
 import { CSSTransition, SwitchTransition } from 'react-transition-group';
+import axios from 'axios';
 import { routes } from './index';
 import './App.css';
 import { BpmContext, SheetMusicIdContext, ThemeContext, TunerContext } from './utils/Contexts';
-import PerformanceGraph from './components/PerformanceGraph';
-import axios from 'axios';
 import loading_gif from './assets/images/loading_gif.gif'
 
 export const baseUrl = "http://127.0.0.1:5000";
@@ -41,8 +40,11 @@ function App() {
   if (!isBackendReady) {
     return (
       <div className="App">
-        <h1>Loading...</h1>
-        <img src={loading_gif} width="40px" alt="Loading..."/>
+        <div className="content">
+          <h1>Music Master</h1>
+          <h2>Loading...</h2>
+          <img src={loading_gif} width="40px" alt="Loading..."/>
+        </div>
       </div>
     );
   }

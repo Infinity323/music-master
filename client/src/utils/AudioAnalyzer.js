@@ -7,10 +7,18 @@ const A = 440;
 const SEMITONE = 69;
 const noteStrings = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 
-const getNote = freq => {
+export const getNote = freq => {
   const note = 12 * (Math.log(freq / A) / Math.log(2));
   return Math.round(note) + SEMITONE;
 };
+
+export const getNoteName = note => {
+  return noteStrings[note % 12];
+}
+
+export const getOctave = note => {
+  return parseInt(note / 12) - 1;
+}
 
 const getStandardFrequency = note => {
   return A * Math.pow(2, (note - SEMITONE) / 12);
@@ -43,8 +51,8 @@ function AudioAnalyzer({audio}) {
       const freq = pitch * 1.09;
       const note = getNote(freq);
       const cents = getCents(freq, note);
-      const noteName = noteStrings[note % 12];
-      const octave = parseInt(note / 12) - 1;
+      const noteName = getNoteName(note);
+      const octave = getOctave(note);
       setCurrentNote({freq, cents, noteName, octave});
     }
     rafId.current = requestAnimationFrame(tick);
