@@ -285,36 +285,6 @@ def chords_to_notes(chord: ParsedChord) -> List[str]:
 
     return chord_notes
 
-def notes_to_chord_object(notes: List[str]) -> str:
-    """
-    Function to convert a list of notes to a Chord object that is used in the xml reader
-
-    Parameters
-    ----------
-    notes : list
-        List of notes in the chord
-    
-    Returns
-    -------
-    chord : dict
-        A dictionary holding the chord object that can be used by the xml reader
-    """
-
-    start = 0
-    end = 0
-    duration = 0
-    velocity = 0
-
-    chord = 'Chord {' + ' | '.join(notes) + '}'
-    obj = {
-        'Chord': chord,
-        'Start': start,
-        'End': end,
-        'Duration': duration,
-        'Velocity': velocity,
-    }
-    return str(obj)
-
 def set_all_start_times(chords):
     """
     Function to set the start time of all chords in a list of chords
@@ -336,6 +306,38 @@ def set_all_start_times(chords):
         chords[i].set_start_time(chords[i-1].end_time)
     return chords
 
+def chord_to_xml_string(chord: ParsedChord) -> List[str]:
+    """
+    Function to convert a ParsedChord object to a string that can be used by the xml reader
+
+    Parameters
+    ----------
+    notes : list
+        List of notes in the chord
+    
+    Returns
+    -------
+    xml_chord : list[str]
+        An list holding all of the chord objects for a wav file recording that can be used by the xml reader
+    """
+
+    velocity = 0
+
+    if chord.notes is None:
+        chord_str = 'Chord {N}'
+    else:
+        chord_str = 'Chord {' + ' | '.join(chord.notes) + '}'
+
+    obj = {
+        'Chord': chord_str,
+        'Start': chord.start_time,
+        'End': chord.end_time,
+        'Duration': chord.end_time - chord.start_time,
+        'Velocity': velocity,
+    }
+    
+    return str(obj)
+
 def run_chord_processing(file_name):
     wav_chords = find_chords(file_name)
     chord_objects = []
@@ -347,4 +349,10 @@ def run_chord_processing(file_name):
     
     chord_objects = set_all_start_times(chord_objects)
 
-    return chord_objects
+    xml_chords = []
+
+    for chord_obj in chord_objects:
+        xml_string = chord_to_xml_string(chord_obj)
+        xml_chords.append(xml_string)
+
+    return xml_chords
