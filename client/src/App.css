@@ -306,9 +306,19 @@ img#metronome {
   color:green
 }
 .progon{
-  background-color: green;
+  background-color: var(--select-color);
+  outline-color: black;
+  width: min-content;
+  height:min-content;
+  border-radius: 50%;
 }
-
+.progoff{
+  background-color: var(--bg-color);
+  outline-color: black;
+  width: min-content;
+  height:min-content;
+  border-radius: 50%;
+}
 /********************/
 /*      Tuner       */
 /********************/

@@ -269,29 +269,30 @@ class Metronome extends Component {
               </div>
             </Box>
           </Flex>
-          <Box width={80}>
-            
-             <Button className={this.state.currentBeatInBar > 0 ? "progon" : "progoff"}>
-                <div className='btn inv'/>
-             </Button>
-            <Button className={(this.state.currentBeatInBar > 1 | this.state.lastbeat) ? "progon" : "progoff"}>
+
+            <Box width={40}>
+            <div className={this.state.currentBeatInBar > 0 ? "progon" : "progoff"}>
+              <div className='btn inv'/>
+            </div>
+            <div className={(this.state.currentBeatInBar > 1 | this.state.lastbeat) ? "progon" : "progoff"}>
             <div className='btn inv'/>
-            </Button>
-            <Button className={((this.state.currentBeatInBar > 2 | this.state.lastbeat) && this.state.btn3 === true) ? "progon" : "progoff"}>
+            </div>
+            <div className={((this.state.currentBeatInBar > 2 | this.state.lastbeat) && this.state.btn3 === true) ? "progon" : "progoff"}>
             <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
-            </Button>
-            
-            <Button className={((this.state.currentBeatInBar > 3 | this.state.lastbeat) && this.state.btn4 === true) ? "progon" : "progoff"}>
+            </div>
+            </Box>
+            <Box width={40}>
+            <div className={((this.state.currentBeatInBar > 3 | this.state.lastbeat) && this.state.btn4 === true) ? "progon" : "progoff"}>
                   <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
-            </Button>
-            <Button className={((this.state.currentBeatInBar > 4 | this.state.lastbeat) && this.state.btn5 === true) ? "progon" : "progoff"}>
+            </div>
+            <div className={((this.state.currentBeatInBar > 4 | this.state.lastbeat) && this.state.btn5 === true) ? "progon" : "progoff"}>
                   <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
-            </Button>
-            <Button className={((this.state.currentBeatInBar > 5 | this.state.lastbeat) && this.state.btn6 === true) ? "progon" : "progoff"}>
+            </div>
+            <div className={((this.state.currentBeatInBar > 5 | this.state.lastbeat) && this.state.btn6 === true) ? "progon" : "progoff"}>
                   <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
-            
-            </Button>
-          </Box>
+            </div>
+            </Box>
+        
         </Flex>
       </div>
     );
