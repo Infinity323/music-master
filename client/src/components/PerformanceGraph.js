@@ -1,25 +1,5 @@
-import data1 from '../assets/dat/test.json';
 import React, { Component } from 'react';
-import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import axios from 'axios';
-
-Chart.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import Chart from 'chart.js/auto';
 
 class PerformanceGraph extends Component {
   constructor(props) {

@@ -4,19 +4,8 @@ import { ChartButton } from '../components/Buttons';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { useNavigate } from 'react-router-dom';
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
 import PerformanceGraph from "../components/PerformanceGraph";
-
-Chart.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import PerformanceDetails from '../components/PerformanceDetails';
 
 export const options = {
   responsive: true,
@@ -89,6 +78,7 @@ function Performance() {
           Results for performance {performance.id}, sheet music {performance.sheet_music_id}
           <PerformanceGraph/>
           <DeleteButton/>
+          <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
         </div>
       </>
     );
