@@ -3,20 +3,25 @@ from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
 from typing import List
 
-class Chord:
+class ParsedChord:
 
-    def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, start_time = None):
+    def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, start_time = None, end_time = None):
         self.root = root
         self.chord_type = chord_type
-        self.extensions = extensions # Also known as the intervals (ex. Cm7, the 7 is the "extension")
+        self.extensions = extensions # Interval
         self.accidental = accidental
         self.accidental_num = accidental_num
         self.start_time = start_time
+        self.end_time = end_time
+        self.notes = None
 
     def __str__(self):
         return f"Root: {self.root}, Type: {self.chord_type}, Extensions: {self.extensions}, Accidental: {self.accidental}, Accidental Number: {self.accidental_num}, Start Time: {self.start_time}"
 
-def find_chords(filename: str) -> List[Chord]:
+    def set_notes(self, notes: List[str]):
+        self.notes = notes
+
+def find_chords(filename):
     """
     Function to find chords in a given audio file
 
@@ -28,7 +33,7 @@ def find_chords(filename: str) -> List[Chord]:
     Returns
     -------
     chords : list
-        List of Chordino chords in the audio file
+        List of chords in the audio file
     """
 
     # Setup Chordino with one of several parameters that can be passed
@@ -39,9 +44,9 @@ def find_chords(filename: str) -> List[Chord]:
     chords = chordino.extract(filename)
     return chords
 
-def parse_notation(chord: Chord) -> Chord:
+def parse_notation(chord):
     """
-    Function to parse chord notation into a Chord object
+    Function to parse chord notation into a ParsedChord object
 
     Parameters
     ----------
@@ -50,8 +55,8 @@ def parse_notation(chord: Chord) -> Chord:
 
     Returns
     -------
-    Chord
-        A custom Chord object (not from Chordino)with parsed notation
+    ParsedChord
+        Chord object with parsed notation
     
     Raises
     ------
@@ -63,12 +68,12 @@ def parse_notation(chord: Chord) -> Chord:
     chord_time = chord.timestamp
 
     chord_type = ""
-    extensions = None
+    extensions = 0
     accidental = None
-    accidental_num = None
+    accidental_num = 0
 
     if chord_str == "N":
-        return Chord("N", None, extensions, accidental, accidental_num, chord_time)
+        return ParsedChord("N", None, extensions, accidental, accidental_num, chord_time)
 
     # Match root, chord quality, extension, and accidentals
     match = re.match(r'([A-Ga-g][#b]?)(m|min|dim|aug|sus\d?|M)?(\d+)?([#b]\d+)?', chord_str)
@@ -99,9 +104,9 @@ def parse_notation(chord: Chord) -> Chord:
         accidental = "sharp" if accidental_str[0] == "#" else "flat"
         accidental_num = int(accidental_str[1:])
 
-    return Chord(root, chord_type, extensions, accidental, accidental_num, chord_time)
+    return ParsedChord(root, chord_type, extensions, accidental, accidental_num, chord_time)
 
-def add_extension_notes(root_note: int, chord_type: str, extension: int, note_reverse: dict) -> List[str]:
+def add_extension_notes(root_note: int, chord_type: str, extension: int, note_reverse: dict):
     """
     Function to add extension notes to a chord
 
@@ -230,13 +235,13 @@ def get_basic_chord_notes(root_note: int, chord_type: str, note_reverse: dict) -
     return [interval_to_note(root_note, interval, note_reverse) for interval in intervals]
 
 
-def chords_to_notes(chord: Chord) -> List[str]:
+def chords_to_notes(chord: ParsedChord) -> List[str]:
     """
-    Function to convert a Chord object to a list of notes
+    Function to convert a ParsedChord object to a list of notes
 
     Parameters
     ----------
-    chord : Chord
+    chord : ParsedChord
         Chord object
 
     Returns
@@ -254,10 +259,13 @@ def chords_to_notes(chord: Chord) -> List[str]:
     This function currently doesn't handle slash chords
     """
 
+    if chord.root == "N":
+        return None
+
     notes = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
     note_reverse = {v: k for k, v in notes.items()}  # Reverse of the dictionary
 
-    accidental_value = notes[chord.accidental] if chord.accidental is not None else 0
+    accidental_value = notes[chord.accidental] if chord.accidental else 0
     root = notes[chord.root] + accidental_value * chord.accidental_num
     chord_type = chord.chord_type
     extension = chord.extensions
@@ -268,7 +276,7 @@ def chords_to_notes(chord: Chord) -> List[str]:
 
     return chord_notes
 
-def notes_to_chord_object(notes: List[str]):
+def notes_to_chord_object(notes: List[str]) -> str:
     """
     Function to convert a list of notes to a Chord object that is used in the xml reader
 
@@ -279,10 +287,10 @@ def notes_to_chord_object(notes: List[str]):
     
     Returns
     -------
-    chord : Chord
-        Chord object used in the xml reader
+    chord : dict
+        A dictionary holding the chord object that can be used by the xml reader
     """
-    
+
     start = 0
     end = 0
     duration = 0
@@ -296,21 +304,15 @@ def notes_to_chord_object(notes: List[str]):
         'Duration': duration,
         'Velocity': velocity,
     }
-    return obj
+    return str(obj)
 
-def run_chord_processing(file_name: str):
-    """
-    Function to run chord processing on a given audio file
-
-    Parameters
-    ----------
-    file_name : str
-        Path to audio file
-    """
-    chords = find_chords(file_name)
+def run_chord_processing(file_name):
+    wav_chords = find_chords(file_name)
     chord_objects = []
-
-    for chord in chords:
+    for chord in wav_chords:
         chord_obj = parse_notation(chord)
         print(chord_obj)
+        chord_obj.set_notes(chords_to_notes(chord_obj))
         chord_objects.append(chord_obj)
+    
+    return chord_objects
