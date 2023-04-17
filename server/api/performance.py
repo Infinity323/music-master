@@ -27,7 +27,38 @@ def getAllPerformances():
         return [ i.serialize for i in performances ]
     else:
         return []
-    
+
+# Get performance with specific ID from database
+@performance_blueprint.route("/performance/<int:id>", methods=["GET"])
+def getSpecificPerformance(id: int):
+    performance = db.session.query(Performance).filter(Performance.id == id).first()
+    if performance:
+        return performance.serialize
+    else:
+        return {}
+
+@performance_blueprint.route("/performance/<int:performance_id>/diff", methods=["GET"])
+def getSpecificDiffJson(performance_id: int):
+    performance = (db.session.query(Performance)
+                   .filter(Performance.id == performance_id)
+                   .first())
+    sheet_music_id = performance.sheet_music_id
+    run_number = performance.run_number
+
+    # Taken from getDiffJson
+    sheet_music_name = (db.session.query(SheetMusic)
+                        .filter(SheetMusic.id == sheet_music_id)
+                        .first().title)
+    subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    diff_json_path = ("{}/{}_diff.json".format(subdir, run_number))
+    try:
+        with open(diff_json_path, 'r') as diff_json_file:
+            data = json.load(diff_json_file)
+        return data
+    except FileNotFoundError:
+        return {"error": "File not found"}, 404
+
+
 # Get diff file for performance
 @performance_blueprint.route("/performance/diff/<int:sheet_music_id>/<int:run_number>", methods=["GET"])
 def getDiffJson(sheet_music_id: int, run_number: int):
@@ -42,15 +73,6 @@ def getDiffJson(sheet_music_id: int, run_number: int):
         return data
     except FileNotFoundError:
         return {"error": "File not found"}, 404
-
-# Get performance with specific ID from database
-@performance_blueprint.route("/performance/<int:id>", methods=["GET"])
-def getSpecificPerformance(id: int):
-    performance = db.session.query(Performance).filter(Performance.id == id).first()
-    if performance:
-        return performance.serialize
-    else:
-        return {}
 
 # Add performance to database
 @performance_blueprint.route("/performance", methods=["POST"])
