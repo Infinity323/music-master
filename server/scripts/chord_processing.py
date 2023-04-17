@@ -285,7 +285,7 @@ def chords_to_notes(chord: ParsedChord) -> List[str]:
 
     return chord_notes
 
-def set_all_start_times(chords):
+def set_all_start_times(chords: List[ParsedChord]):
     """
     Function to set the start time of all chords in a list of chords
 
@@ -328,7 +328,7 @@ def chord_to_xml_string(chord: ParsedChord) -> List[str]:
     else:
         chord_str = 'Chord {' + ' | '.join(chord.notes) + '}'
 
-    obj = {
+    xml_chord = {
         'Chord': chord_str,
         'Start': chord.start_time,
         'End': chord.end_time,
@@ -336,9 +336,23 @@ def chord_to_xml_string(chord: ParsedChord) -> List[str]:
         'Velocity': velocity,
     }
     
-    return str(obj)
+    return str(xml_chord)
 
-def run_chord_processing(file_name):
+def run_chord_processing(file_name: str) -> List[str]:
+    """
+    Function to run chord processing on a wav file
+    
+    Parameters
+    ----------
+    file_name : str
+        Path to wav file
+    
+    Returns
+    -------
+    xml_chords : list[str]
+        An list holding all of the chord objects for a wav file recording that can be used by the xml reader
+    """
+    
     wav_chords = find_chords(file_name)
     chord_objects = []
 
