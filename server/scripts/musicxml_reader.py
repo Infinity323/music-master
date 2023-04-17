@@ -154,7 +154,7 @@ class MusicXMLReader:
         for element in self.xml_score.recurse():
             if isinstance(element, chord.Chord):
                 # Get start and end times for the chord
-                start_time = element.offset
+                start_time = float(element.offset) + float(element.activeSite.offset)
                 end_time = start_time + element.duration.quarterLength
 
                 # Get the average velocity for the chord
