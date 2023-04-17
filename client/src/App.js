@@ -23,7 +23,6 @@ function App() {
 
   return (
     <div className="App">
- 
       <ThemeContext.Provider value={[theme, setTheme]}>
         <SheetMusicIdContext.Provider value={[selectedMusic, setSelectedMusic]}>
           <TunerContext.Provider value={[currentNote, setCurrentNote]}>
