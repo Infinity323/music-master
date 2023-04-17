@@ -174,7 +174,7 @@ class PerformanceGraph extends Component {
     }
 
     this.chart = new Chart(this.chartRef.current, { 
-      type: 'bar',
+      type: 'line',
       data: {
         labels: measpos,
         datasets: [
