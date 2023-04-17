@@ -164,7 +164,8 @@ class PerformanceGraph extends Component {
             backgroundColor: 'white',
             borderColor: 'white',
             fill: false,
-            hidden: true
+            hidden: true,
+            stepped: true,
           },
           {
             label: "Pitch Difference",
@@ -173,6 +174,7 @@ class PerformanceGraph extends Component {
             borderColor: 'red',
             fill: false,
             hidden: false,
+            stepped: true,
           },
           {
             label: "Actual Pitch",
@@ -180,7 +182,8 @@ class PerformanceGraph extends Component {
             backgroundColor: 'black',
             borderColor: 'black',
             fill: false,
-            hidden: true
+            hidden: true,
+            stepped: true,
           },
           {
             label: "Ideal Dynamics",
@@ -188,7 +191,8 @@ class PerformanceGraph extends Component {
             backgroundColor: 'grey',
             borderColor: 'grey',
             fill: false,
-            hidden: true
+            hidden: true,
+            stepped: true,
           },
           {
             label: "Dynamic Difference",
@@ -196,7 +200,8 @@ class PerformanceGraph extends Component {
             backgroundColor: 'orange',
             borderColor: 'orange',
             fill: false,
-            hidden: true
+            hidden: true,
+            stepped: true,
           },
           {
             label: "Actual Dynamics",
@@ -204,7 +209,8 @@ class PerformanceGraph extends Component {
             backgroundColor: 'dark grey',
             borderColor: 'dark grey',
             fill: false,
-            hidden: true
+            hidden: true,
+            stepped: true,
           }
         ]
       },
