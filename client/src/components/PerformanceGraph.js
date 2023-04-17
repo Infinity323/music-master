@@ -60,12 +60,17 @@ class PerformanceGraph extends Component {
             hidden: false,
             stepped: true,
           },
+        ]
+      },
+      dynamicsData: {
+        labels: this.state.measpos,
+        datasets: [
           {
             label: "Ideal Dynamics",
             data: this.state.idealdyn,
             backgroundColor: 'grey',
             borderColor: 'grey',
-            hidden: true,
+            hidden: false,
             stepped: true,
           },
           {
@@ -73,7 +78,7 @@ class PerformanceGraph extends Component {
             data: this.state.actualdyn,
             backgroundColor: 'dark grey',
             borderColor: 'dark grey',
-            hidden: true,
+            hidden: false,
             stepped: true,
           }
         ]
@@ -110,6 +115,42 @@ class PerformanceGraph extends Component {
             title: {
               display: true,
               text: 'Pitch',
+            }
+          },
+        }
+      },
+      dynamicsOptions: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Ideal V. Actual Dynamics',
+          },
+          tooltip: {
+            callbacks: {
+              label: (context, elements) => {
+                console.log(context);
+                console.log(elements);
+                return [
+                  `${this.state.notenames[context.dataIndex]} - ${this.state.notetypes[context.dataIndex]}`,
+                  `Played for ${this.state.duration[context.dataIndex]} seconds`,
+                  `(From t=${this.state.starttime[context.dataIndex].toFixed(2)} to t=${this.state.endtime[context.dataIndex].toFixed(2)})`,
+                ];
+              }
+            }
+          }
+        },
+        responsive: true,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: '(Measure, Position)',
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Tempo',
             }
           },
         }
