@@ -1,11 +1,14 @@
 import re
+import librosa
 from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
 from typing import List
 
+# Note to get velocity use the librosa library at the chords start time (or maybe at the middle of the start and end times)
+
 class ParsedChord:
 
-    def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, start_time = None, end_time = None):
+    def __init__(self, root, chord_type, extensions, accidental = None, accidental_num = 0, end_time = None, start_time = None):
         self.root = root
         self.chord_type = chord_type
         self.extensions = extensions # Interval
@@ -20,6 +23,12 @@ class ParsedChord:
 
     def set_notes(self, notes: List[str]):
         self.notes = notes
+    
+    def set_start_time(self, start_time):
+        self.start_time = start_time
+    
+    def set_end_time(self, end_time):
+        self.end_time = end_time
 
 def find_chords(filename):
     """
@@ -306,13 +315,36 @@ def notes_to_chord_object(notes: List[str]) -> str:
     }
     return str(obj)
 
+def set_all_start_times(chords):
+    """
+    Function to set the start time of all chords in a list of chords
+
+    Parameters
+    ----------
+    chords : list
+        List of chords
+
+    Returns
+    -------
+    chords : list
+        List of chords with start times set
+    """
+
+    chords[0].set_start_time(0)
+
+    for i in range(1, len(chords)):
+        chords[i].set_start_time(chords[i-1].end_time)
+    return chords
+
 def run_chord_processing(file_name):
     wav_chords = find_chords(file_name)
     chord_objects = []
+
     for chord in wav_chords:
         chord_obj = parse_notation(chord)
-        print(chord_obj)
         chord_obj.set_notes(chords_to_notes(chord_obj))
         chord_objects.append(chord_obj)
     
+    chord_objects = set_all_start_times(chord_objects)
+
     return chord_objects
