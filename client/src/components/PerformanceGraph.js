@@ -16,11 +16,17 @@ class PerformanceGraph extends Component {
       viewPitch: true,
       ideal: null,
       actual: null,
-      pitchOptions: {},
+      pitchOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       pitchData: {
         datasets: []
       },
-      dynamicsOptions: {},
+      dynamicsOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       dynamicsData: {
         datasets: []
       },
@@ -70,9 +76,11 @@ class PerformanceGraph extends Component {
         ]
       },
       pitchOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
-            display: true,
+            display: false,
             text: 'Notes Detected',
             color: this.textColor
           },
@@ -112,23 +120,32 @@ class PerformanceGraph extends Component {
             })
           }
         },
-        responsive: true,
         scales: {
           x: {
             title: {
               display: true,
-              text: 'Time (s)',
+              text: 'Measure Numbers',
               color: this.textColor
+            },
+            ticks: {
+              display: false
             }
           },
           y: {
             title: {
               display: true,
-              text: 'Pitch (Hz)',
+              text: 'Pitch',
               color: this.textColor
             },
+            ticks: {
+              callback: x => {
+                let noteName = getNoteName(getNote(x));
+                let octave = getOctave(getNote(x));
+                return `${noteName}${octave}`;
+              }
+            },
             type: 'logarithmic'
-          },
+          }
         }
       },
       dynamicsData: {
@@ -162,9 +179,11 @@ class PerformanceGraph extends Component {
         ]
       },
       dynamicsOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
-            display: true,
+            display: false,
             text: 'Volume Level',
             color: this.textColor
           },
@@ -204,13 +223,15 @@ class PerformanceGraph extends Component {
             })
           }
         },
-        responsive: true,
         scales: {
           x: {
             title: {
               display: true,
-              text: 'Time (s)',
+              text: 'Measure Numbers',
               color: this.textColor
+            },
+            ticks: {
+              display: false
             }
           },
           y: {
@@ -221,7 +242,7 @@ class PerformanceGraph extends Component {
             },
             min: 0,
             max: 127
-          },
+          }
         }
       }
     });
@@ -281,15 +302,17 @@ class PerformanceGraph extends Component {
 
   render() {
     return (
-      <div>
-        { this.state.viewPitch
-          ? <Scatter options={this.state.pitchOptions} data={this.state.pitchData}/>
-          : <Scatter options={this.state.dynamicsOptions} data={this.state.dynamicsData}/>
-        }
+      <>
+        <div className="chart performance">
+          { this.state.viewPitch
+            ? <Scatter options={this.state.pitchOptions} data={this.state.pitchData}/>
+            : <Scatter options={this.state.dynamicsOptions} data={this.state.dynamicsData}/>
+          }
+        </div>
         <div className="btn small" onClick={this.toggleView}>
           Toggle View
         </div>
-      </div>
+      </>
     );
   }
 }

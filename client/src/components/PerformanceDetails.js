@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Card, Container, Row, Col } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
+import { log2, abs } from 'mathjs';
+import Modal from 'react-modal';
 import { baseUrl } from '../App';
-import '../assets/css/PerformanceDetails.css'
-import { log2, abs } from 'mathjs'
+import '../assets/css/PerformanceDetails.css';
 
 function frequencyToNoteName(frequency, tolerance = 50) {
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -32,6 +33,8 @@ function frequencyToNoteName(frequency, tolerance = 50) {
 
 function PerformanceDetails({ sheet_music_id, run_number }) {
   const [performanceDiffs, setPerformanceDiffs] = useState([]);
+  const [measureGroups, setMeasureGroups] = useState([]);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   useEffect(() => {
     const loadDiffData = async () => {
@@ -44,6 +47,15 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
 
         const data = await response.json();
         setPerformanceDiffs(data);
+        let tempMeasures = [];
+        data.forEach(diff => {
+          if (tempMeasures[diff.note_info.measure]) {
+            tempMeasures[diff.note_info.measure].push(diff);
+          } else {
+            tempMeasures[diff.note_info.measure] = [diff];
+          }
+        });
+        setMeasureGroups(tempMeasures);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -61,7 +73,7 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       end: 'End',
     };
 
-    if (diff_type == 'pitch') {
+    if (diff_type === 'pitch') {
       // calculate pitch difference in cents
       const pitch_difference = 1200 * log2(actual_val[diff_type] / ideal_val[diff_type]);
       let description = "";
@@ -86,15 +98,23 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       const difference = actual_val[diff_type].toFixed(0) - ideal_val[diff_type].toFixed(0);
       const percentageDifference = (abs(difference) / ideal_val[diff_type].toFixed(0)) * 100;
       if (ideal_val[diff_type].toFixed(0) > actual_val[diff_type].toFixed(0)) {
+        // Too quiet
         return (
           <>
-            Consider increasing dynamic by {percentageDifference.toFixed(0)}% here.
+            { percentageDifference < 50
+              ? "Played a little too quietly here."
+              : "Played too quietly here."
+            }
           </>
         );
       } else {
+        // Too loud
         return (
           <>
-            Consider decreasing dynamic by {percentageDifference.toFixed(0)}% here.
+            { percentageDifference < 50
+              ? "Played a little too loudly here."
+              : "Played too loudly here."
+            }
           </>
         );
       }
@@ -104,15 +124,11 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
       if (ideal_val[diff_type] > actual_val[diff_type]) {
         return (
-          <>
-            Started note too soon, by {difference.toFixed(2)} seconds.
-          </>
+          <>Started note too early.</>
         );
       } else {
         return (
-          <>
-            Started note too late, by {difference.toFixed(2)} seconds.
-          </>
+          <>Started note too late.</>
         );
       }
     }
@@ -121,21 +137,17 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
       if (ideal_val[diff_type] > actual_val[diff_type]) {
         return (
-          <>
-            Ended note too soon, by {difference.toFixed(2)} seconds.
-          </>
+          <>Ended note too early.</>
         );
       } else {
         return (
-          <>
-            Ended note too late, by {difference.toFixed(2)} seconds.
-          </>
+          <>Ended note too late.</>
         );
       }
     }
 
     if (diff_type === 'missing') {
-      return <span>Note is {diff_type}.</span>;
+      return <span>Note is missing.</span>;
     }
 
     if (diff_type === 'extra') {
@@ -143,7 +155,7 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
         <div>
           {diff.note_info.map((info, index) => (
             <span key={index}>
-              {info.name} ({info.type}) in Measure {info.measure}, Note #{info.position}
+              {info.name} ({info.type}) in Measure {info.measure}, Note {info.position}
               <br />
             </span>
           ))}
@@ -171,30 +183,49 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
 
     return (
       <Card.Subtitle className="mb-2 text-muted cardSubtitle">
-        {diff.note_info.name} ({diff.note_info.type}) in Measure {diff.note_info.measure}, Note #{diff.note_info.position}
+        {`Note ${diff.note_info.position}, ${diff.note_info.name.replace('-', '♭')} (${diff.note_info.type})`}
       </Card.Subtitle>
     );
   };
 
+  function openModal() {
+    setModalIsOpen(true);
+  }
+  function closeModal() {
+    setModalIsOpen(false);
+  }
+
   if (performanceDiffs.length)
     return (
       <>
-        <h2>Differences Found</h2>
-        <div className="cardStack">
-          { performanceDiffs.map((diff, index) => (
-            <div className="cardWrapper">
-              <Card className="customCard">
-                <Card.Body>
-                  <Card.Title className="cardTitle">Difference {index + 1} {"(" + diff.diff.diff_type + ")"} </Card.Title>
-                  {renderSubtitle(diff)}
-                  <Card.Text className="cardText">
-                    {renderDiff(diff)}
-                  </Card.Text>
-                </Card.Body>
-              </Card>
-            </div>
-          ))}
+        <div className="btn small" onClick={openModal}>
+          Differences
         </div>
+        <Modal isOpen={modalIsOpen} onRequestClose={closeModal} className="modal" overlayClassName="modal-overlay">
+          <h3>Differences Found</h3>
+          { measureGroups.map((measure, index) => (
+            <>
+              Measure {index}
+              <div className="cardGroup">
+                { measure.map((diff, index) => (
+                    <Card className="customCard">
+                      <Card.Body>
+                        <Card.Title className="cardTitle">
+                          {index + 1}. {diff.diff.diff_type.charAt(0).toUpperCase() + diff.diff.diff_type.slice(1)}
+                        </Card.Title>
+                        {renderSubtitle(diff)}
+                        <Card.Text className="cardText">
+                          {renderDiff(diff)}
+                        </Card.Text>
+                      </Card.Body>
+                    </Card>
+                  ))
+                }
+              </div>
+            </>
+          ))}
+          <div className="btn medium" onClick={closeModal}>Close</div>
+        </Modal>
       </>
     );
 }
