@@ -28,20 +28,19 @@ function Performance() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [performance, setPerformance] = useState(null);
+  const [sheetMusic, setSheetMusic] = useState(null);
 
   useEffect(() => {
     fetch(baseUrl + "/performance/" + performanceId)
       .then(res => res.json())
-      .then(
-        (result) => {
-          setIsLoaded(true);
-          setPerformance(result);
-        },
-        (error) => {
-          setIsLoaded(false);
-          setError(error);
-        }
-      )
+      .then(result => {
+        setIsLoaded(true);
+        setPerformance(result);
+      })
+      .catch(error => {
+        setIsLoaded(false);
+        setError(error);
+      });
   }, []);
 
   function deletePerformance() {
@@ -76,7 +75,8 @@ function Performance() {
         <ChartButton/>
         <div className="content">
           <h2>Performance Details</h2>
-          <PerformanceGraph performanceId={performanceId}/>
+          <PerformanceGraph performance={performance}/>
+          <br/>
           <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
           <DeleteButton/>
         </div>
