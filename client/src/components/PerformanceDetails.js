@@ -176,26 +176,27 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
     );
   };
 
-  return (
-    <div>
-      <h2>Differences Found</h2>
-      <div className="cardStack">
-        {performanceDiffs.map((diff, index) => (
-          <div className="cardWrapper">
-            <Card className="customCard">
-              <Card.Body>
-                <Card.Title className="cardTitle">Difference {index + 1} {"(" + diff.diff.diff_type + ")"} </Card.Title>
-                {renderSubtitle(diff)}
-                <Card.Text className="cardText">
-                  {renderDiff(diff)}
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  if (performanceDiffs.length)
+    return (
+      <>
+        <h2>Differences Found</h2>
+        <div className="cardStack">
+          { performanceDiffs.map((diff, index) => (
+            <div className="cardWrapper">
+              <Card className="customCard">
+                <Card.Body>
+                  <Card.Title className="cardTitle">Difference {index + 1} {"(" + diff.diff.diff_type + ")"} </Card.Title>
+                  {renderSubtitle(diff)}
+                  <Card.Text className="cardText">
+                    {renderDiff(diff)}
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </>
+    );
 }
 
 export default PerformanceDetails;

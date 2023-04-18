@@ -76,6 +76,7 @@ function Performance() {
         <div className="content">
           <h2>Performance Details</h2>
           <PerformanceGraph performance={performance}/>
+          <br/>
           <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
           <DeleteButton/>
         </div>
