@@ -20,7 +20,7 @@ function App() {
   const [theme, setTheme] = useState("light");
   const [selectedMusic, setSelectedMusic] = useState(-1);
   const [currentNote, setCurrentNote] = useState(-1);
-  const [bpm, setBpm] = useState(100);
+  const [bpm, setBpm] = useState(120);
   const [isBackendReady, setIsBackendReady] = useState(false);
 
   useEffect(() => {

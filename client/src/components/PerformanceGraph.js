@@ -1,21 +1,21 @@
 import React, { Component } from 'react';
 import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import { baseUrl, style } from '../App';
 import { getNote, getNoteName, getOctave } from '../utils/AudioAnalyzer';
 
-Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend);
+Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "AppleRegular";
 
 class PerformanceGraph extends Component {
   constructor(props) {
     super(props);
-    this.performanceId = props.performanceId;
+    this.performance = props.performance;
     this.state = {
       viewPitch: true,
-      measures: [],
-      ideal: [],
-      actual: [],
+      ideal: null,
+      actual: null,
       pitchOptions: {},
       pitchData: {
         datasets: []
@@ -23,19 +23,23 @@ class PerformanceGraph extends Component {
       dynamicsOptions: {},
       dynamicsData: {
         datasets: []
-      }
+      },
+      measureTimes: null
     };
 
     this.textColor = style.getPropertyValue('--text-color');
+    this.hoverColor = style.getPropertyValue('--hover-color');
     this.lineColor = style.getPropertyValue('--select-color');
 
     this.loadGraph = this.loadGraph.bind(this);
+    this.loadMeasureAnnotations = this.loadMeasureAnnotations.bind(this);
     this.toggleView = this.toggleView.bind(this);
   }
 
   loadGraph() {
     this.setState({
       pitchData: {
+        labels: this.state.measureNumbers,
         datasets: [
           {
             label: "Actual Pitch",
@@ -89,6 +93,23 @@ class PerformanceGraph extends Component {
                 ];
               }
             }
+          },
+          annotation: {
+            annotations: this.state.measureTimes.map((x, index) => {
+              return {
+                type: 'line',
+                xMin: x,
+                xMax: x,
+                borderColor: this.hoverColor,
+                borderDash: [5, 15],
+                borderWidth: 2,
+                label: {
+                  content: `${index + 1}`,
+                  position: 'start',
+                  display: true
+                },
+              };
+            })
           }
         },
         responsive: true,
@@ -164,6 +185,23 @@ class PerformanceGraph extends Component {
                 ];
               }
             }
+          },
+          annotation: {
+            annotations: this.state.measureTimes.map((x, index) => {
+              return {
+                type: 'line',
+                xMin: x,
+                xMax: x,
+                borderColor: this.hoverColor,
+                borderDash: [5, 15],
+                borderWidth: 2,
+                label: {
+                  content: `${index + 1}`,
+                  position: 'start',
+                  display: true
+                },
+              };
+            })
           }
         },
         responsive: true,
@@ -189,15 +227,50 @@ class PerformanceGraph extends Component {
     });
   }
 
+  loadMeasureAnnotations() {
+    let idealBpm = this.state.ideal.tempo;
+    let actualBpm = this.performance.average_tempo;
+    // Time scale ideal beats based on bpm difference
+    let measureTimes = this.state.ideal.downbeat_locations.map(
+      x => x * idealBpm / actualBpm
+    );
+    this.setState({
+      measureTimes: measureTimes
+    });
+    this.setState(state => {
+      let newIdeal = state.ideal;
+      newIdeal.notes = newIdeal.notes.map(note => {
+        return {
+          pitch: note.pitch,
+          velocity: note.velocity,
+          start: note.start * idealBpm / actualBpm,
+          end: note.end * idealBpm / actualBpm
+        };
+      });
+      return {
+        ideal: newIdeal
+      };
+    });
+  }
+
   componentDidMount() {
-    fetch(baseUrl + "/performance/" + this.performanceId + "/diff")
+    // Get performance details
+    fetch(baseUrl + "/performance/" + this.performance.id + "/diff")
       .then(res => res.json())
       .then(result => this.setState({
         ideal: result.expected,
         actual: result.actual
       }))
-      .then(this.loadGraph)
       .catch(error => console.error(error));
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.ideal && this.state.ideal) {
+      this.loadMeasureAnnotations();
+    }
+    if (prevState.measureTimes !== this.state.measureTimes) {
+      this.loadGraph();
+    }
   }
 
   toggleView() {
