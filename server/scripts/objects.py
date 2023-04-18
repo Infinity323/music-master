@@ -1,49 +1,7 @@
 import numpy as np
 import os
 import base64
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.fernet import Fernet
 from config import NOTE_MATCH_PASS_CONF, PITCH_WEIGHT, VELOCITY_WEIGHT, END_WEIGHT, START_WEIGHT, PITCH_TOLERANCE, VELOCITY_TOLERANCE, START_TOLERANCE, END_TOLERANCE, EXTRA_NOTE_MAX_PENALTY_DURATION, EXTRA_NOTE_MAX_PENALTY
-
-class Chord:
-    def __init__(self, chord):
-        self.notes_str = chord[0]
-        self.start = chord[1]
-        self.end = chord[2]
-        self.duration = chord[3]
-        self.velocity = chord[4]
-
-        # Generate a key for encryption and decryption
-        self.key = self.generate_key()
-
-        # Encrypt and encode the notes string
-        self.encoded_notes_str = self.encrypt_and_encode()
-
-    def generate_key(self):
-        password = b'password'
-        salt = os.urandom(16)
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=100000
-        )
-        key = base64.urlsafe_b64encode(kdf.derive(password))
-        return key
-
-    def encrypt_and_encode(self):
-        f = Fernet(self.key)
-        encrypted_data = f.encrypt(self.notes_str.encode("utf-8"))
-        encoded_value = int.from_bytes(encrypted_data, byteorder='big') + 90001
-        return encoded_value
-
-    @staticmethod
-    def decode_and_decrypt(encoded_value, key):
-        encrypted_data = (encoded_value - 90001).to_bytes((encoded_value.bit_length() + 7) // 8, byteorder='big')
-        f = Fernet(key)
-        decrypted_data = f.decrypt(encrypted_data)
-        return decrypted_data.decode("utf-8")
 
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
