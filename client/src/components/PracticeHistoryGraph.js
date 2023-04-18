@@ -27,7 +27,7 @@ function PracticeHistoryGraph() {
   const [performances, setPerformances] = useState([]);
   const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
-  const [showGoals, setShowGoals] = useState(true);
+  const [showGoals, setShowGoals] = useState(false);
   const [timeWindow, setTimeWindow] = useState("all");
   const [timeWindowOffset, setTimeWindowOffset] = useState(Number.MAX_SAFE_INTEGER);
   // Chart interactivity hooks
@@ -180,7 +180,7 @@ function PracticeHistoryGraph() {
       .then(result => {
         setIsLoaded(false);
         setPerformances(result.sort((a, b) => {
-          return a.date_time.localeCompare(b.date_time);
+          return Date.parse(a.date_time) - Date.parse(b.date_time);
         }));
       })
       .catch(error => {
