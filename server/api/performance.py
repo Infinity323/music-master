@@ -66,13 +66,13 @@ def addPerformance():
     notes_from_rec = signal_processing(new_wav_file_path, new_average_tempo) # returns a JSON dict
 
     # analyze chords
-    chords = run_chord_processing(new_wav_file_path, notes_from_rec)
+    notes_and_chords = run_chord_processing(new_wav_file_path, notes_from_rec) # combines notes and chords
 
     rec_json_path = ("{}/{}_rec.json".format(new_subdir, new_run_number))
 
     # save notes info into a json file
     with open(rec_json_path, 'w') as rec_json_file:
-        rec_json_file.write(notes_from_rec)
+        rec_json_file.write(notes_and_chords)
 
     # get json file paths
     wav_json_file_path = rec_json_path
