@@ -23,7 +23,9 @@ function createWindow() {
     });
 
     mainWindow.loadURL(startUrl);
-    mainWindow.webContents.openDevTools();
+
+    // used for launching browser with console open
+    // mainWindow.webContents.openDevTools();
 
     mainWindow.on('closed', () => {
         mainWindow = null;
