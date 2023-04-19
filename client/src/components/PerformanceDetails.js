@@ -5,6 +5,25 @@ import Modal from 'react-modal';
 import { baseUrl } from '../App';
 import '../assets/css/PerformanceDetails.css';
 
+const NOTE_SYMBOLS = {
+  "sixteenth": "𝅘𝅥𝅯",
+  "eighth": "♪",
+  "quarter": "♩",
+  "dotted quarter": "♩.",
+  "half": "𝅗𝅥",
+  "dotted half": "𝅗𝅥." ,
+  "whole": "𝅝",
+};
+
+const DIFF_NAMES = {
+  "start": "Wrong Start",
+  "end": "Wrong End",
+  "velocity": "Wrong Volume",
+  "pitch": "Wrong Note",
+  "extra": "Extra Note",
+  "missing": "Missing Note",
+};
+
 function frequencyToNoteName(frequency, tolerance = 50) {
   const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   const A4 = 440;
@@ -102,8 +121,8 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
         return (
           <>
             { percentageDifference < 50
-              ? "Played a little too quietly here."
-              : "Played too quietly here."
+              ? "You played a little too quietly here."
+              : "You played too quietly here."
             }
           </>
         );
@@ -112,8 +131,8 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
         return (
           <>
             { percentageDifference < 50
-              ? "Played a little too loudly here."
-              : "Played too loudly here."
+              ? "You played a little too loudly here."
+              : "You played too loudly here."
             }
           </>
         );
@@ -124,11 +143,11 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
       if (ideal_val[diff_type] > actual_val[diff_type]) {
         return (
-          <>Started note too early.</>
+          <>You started the note too early. ({difference.toFixed(2)} s)</>
         );
       } else {
         return (
-          <>Started note too late.</>
+          <>You started the note too late. ({difference.toFixed(2)} s)</>
         );
       }
     }
@@ -137,11 +156,11 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
       const difference = abs(actual_val[diff_type] - ideal_val[diff_type]);
       if (ideal_val[diff_type] > actual_val[diff_type]) {
         return (
-          <>Ended note too early.</>
+          <>You ended the note too early. ({difference.toFixed(2)} s)</>
         );
       } else {
         return (
-          <>Ended note too late.</>
+          <>You ended the note too late. ({difference.toFixed(2)} s)</>
         );
       }
     }
@@ -183,7 +202,7 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
 
     return (
       <Card.Subtitle className="mb-2 text-muted cardSubtitle">
-        {`Note ${diff.note_info.position}, ${diff.note_info.name.replace('-', '♭')} (${diff.note_info.type})`}
+        {`Note ${diff.note_info.position}, ${diff.note_info.name.replace('-', '♭')} (${NOTE_SYMBOLS[diff.note_info.type]})`}
       </Card.Subtitle>
     );
   };
@@ -211,7 +230,7 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
                     <Card className="customCard">
                       <Card.Body>
                         <Card.Title className="cardTitle">
-                          {index + 1}. {diff.diff.diff_type.charAt(0).toUpperCase() + diff.diff.diff_type.slice(1)}
+                          {index + 1}. {DIFF_NAMES[diff.diff.diff_type]}
                         </Card.Title>
                         {renderSubtitle(diff)}
                         <Card.Text className="cardText">

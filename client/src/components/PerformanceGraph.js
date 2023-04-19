@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
+import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { baseUrl, style } from '../App';
@@ -7,6 +7,11 @@ import { getNote, getNoteName, getOctave } from '../utils/AudioAnalyzer';
 
 Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
 Chart.defaults.font.family = "AppleRegular";
+
+const range = (from, to, step) =>
+  [...Array(Math.floor((to - from) / step) + 1)].map((_, i) => from + i * step);
+
+const FREQUENCY_TICKS = range(-24, 36, 1).map(x => 440.0*Math.pow(2, x/12)); // C2 to C7
 
 class PerformanceGraph extends Component {
   constructor(props) {
@@ -141,9 +146,11 @@ class PerformanceGraph extends Component {
               callback: x => {
                 let noteName = getNoteName(getNote(x));
                 let octave = getOctave(getNote(x));
-                return `${noteName}${octave}`;
+                let pitch = `${noteName}${octave}`;
+                return pitch;
               }
             },
+            afterBuildTicks: axis => axis.ticks = FREQUENCY_TICKS.map(v => ({ value: v })),
             type: 'logarithmic'
           }
         }
@@ -239,6 +246,9 @@ class PerformanceGraph extends Component {
               display: true,
               text: 'Volume',
               color: this.textColor
+            },
+            ticks: {
+              stepSize: 16
             },
             min: 0,
             max: 127
