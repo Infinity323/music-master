@@ -1,28 +1,32 @@
 import os
 import platform
 
-user_home = os.path.expanduser("~")
+# Set instance path for Flask app
+if platform.system() == "Linux":
+    user_home = os.path.expanduser("~")
+    instance_path = os.path.join(user_home, "music-master")
+else:
+    instance_path = "instance"
 
+# Config class for Flask app
 class Config(object):
-    if platform.system() == "Linux":
-        database_path = os.path.join(user_home, "music-master/music_master.db")
-    else:
-        database_path = "music_master.db"
+    database_path = os.path.join(instance_path, "music_master.db")
 
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{database_path}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-if platform.system() == "Linux":
-    # linux requires that files be stored in writable file system
-    JSON_DIR = os.path.join(user_home, "music-master/data/json")
-    WAV_DIR = os.path.join(user_home, "music-master/data/wav")
-    XML_DIR = os.path.join(user_home, "music-master/data/xml")
-    TMP_DIR = os.path.join(user_home, "music-master/data/tmp")
-else: 
-    JSON_DIR = "data/json"
-    WAV_DIR = "data/wav"
-    XML_DIR = "data/xml"
-    TMP_DIR = "data/tmp"
+# Data directories
+JSON_DIR = os.path.join(instance_path, "data/json")
+WAV_DIR = os.path.join(instance_path, "data/wav")
+XML_DIR = os.path.join(instance_path, "data/xml")
+TMP_DIR = os.path.join(instance_path, "data/tmp")
+
+DATA_DIRS = [
+    JSON_DIR,
+    WAV_DIR,
+    XML_DIR,
+    TMP_DIR,
+]
 
 # the following constants are used for the comparison algorithm (xml vs wav)
 
@@ -58,10 +62,3 @@ EXTRA_NOTE_MAX_PENALTY_DURATION = 0.125
 
 # maximum percentage that will be deducted from pitch accuracy when extra note is detected
 EXTRA_NOTE_MAX_PENALTY = 0.025
-
-DATA_DIRS = [
-    JSON_DIR,
-    WAV_DIR,
-    XML_DIR,
-    TMP_DIR,
-]
