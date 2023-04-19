@@ -50,7 +50,6 @@ platformdirs==3.2.0
 pooch==1.7.0
 portend==3.1.0
 pretty-midi==0.2.10
-psycopg2-binary==2.9.5
 pycparser==2.21
 pydantic==1.10.7
 pyinstaller==5.9.0
