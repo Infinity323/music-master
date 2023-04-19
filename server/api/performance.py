@@ -61,13 +61,13 @@ def addPerformance():
     # Make new subdirectory
     new_subdir = "{}/{}_{}/runs/".format(JSON_DIR, sheet_music_id, sheet_music_name)
     os.makedirs(new_subdir, exist_ok=True)
-    
-    # analyze chords
-    chords = run_chord_processing(new_wav_file_path)
-    print(chords)
 
     # analyze recording
-    notes_from_rec = signal_processing(new_wav_file_path, new_average_tempo)
+    notes_from_rec = signal_processing(new_wav_file_path, new_average_tempo) # returns a JSON dict
+
+    # analyze chords
+    chords = run_chord_processing(new_wav_file_path, notes_from_rec)
+
     rec_json_path = ("{}/{}_rec.json".format(new_subdir, new_run_number))
 
     # save notes info into a json file

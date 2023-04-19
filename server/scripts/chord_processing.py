@@ -1,5 +1,9 @@
 import re
 import librosa
+import json
+from scripts.objects import Note
+from scripts.musicxml_reader import Chord as XMLChord
+from scripts.signal_processing import NpEncoder
 from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
 from typing import List
@@ -315,7 +319,7 @@ def set_all_start_times(chords: List[ParsedChord]):
         chords[i].set_start_time(chords[i-1].end_time)
     return chords
 
-def chord_to_xml_string(chord: ParsedChord) -> List[str]:
+def chord_to_xml(chord: ParsedChord) -> List[dict]:
     """
     Function to convert a ParsedChord object to a string that can be used by the xml reader
 
@@ -345,9 +349,13 @@ def chord_to_xml_string(chord: ParsedChord) -> List[str]:
         'Velocity': velocity,
     }
     
-    return str(xml_chord)
+    return xml_chord
 
-def run_chord_processing(file_name: str) -> List[str]:
+def xml_dict_to_chord(xml_dict: dict):
+    chord = XMLChord(xml_dict)
+    return chord
+
+def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     """
     Function to run chord processing on a wav file
     
@@ -358,13 +366,14 @@ def run_chord_processing(file_name: str) -> List[str]:
     
     Returns
     -------
-    xml_chords : list[str]
-        An list holding all of the chord objects for a wav file recording that can be used by the xml reader
+    result_objec : str
+        A string holding all of the notes in chords in a WAV file
     """
     
     wav_chords = find_chords(file_name)
     chord_objects = []
 
+    # Getting the chords from the WAV file and creating a ParsedChord object
     for chord in wav_chords:
         chord_obj = parse_notation(chord)
         chord_obj.set_notes(chords_to_notes(chord_obj))
@@ -372,10 +381,46 @@ def run_chord_processing(file_name: str) -> List[str]:
     
     chord_objects = set_all_start_times(chord_objects)
 
-    xml_chords = []
+    # Turning the parsed chords into xml dictionaries
+    xml_dicts = []
 
     for chord_obj in chord_objects:
-        xml_string = chord_to_xml_string(chord_obj)
-        xml_chords.append(xml_string)
+        xml_string = chord_to_xml(chord_obj)
+        xml_dicts.append(xml_string)
+    
+    # Turning the xml dictionaries into the XMLChord object
+    xml_chords = []
 
-    return xml_chords
+    for xml_dict in xml_dicts:
+        xml_chord = xml_dict_to_chord(xml_dict)
+        xml_chords.append(xml_chord)
+
+
+    # TODO: Add velocity to these chords!
+    # Use the encode and encrypt function to get the "frequency" of the chord
+    # From there create an object with all of the necessary data in it
+    # Then turn that object into a json file and input that into the comaprison algorithm
+
+    # Turning the xml chord objects into note objects with the encoded pitch
+    result_chords = []
+
+    for xml_chord in xml_chords:
+        pitch = xml_chord.encrypt_and_encode()
+        velocity = xml_chord.velocity
+        start = xml_chord.start
+        end = xml_chord.end
+
+        chord_to_note = Note(pitch, velocity, start, end)
+
+        result_chords.append(chord_to_note)    
+
+    json_notes_dict = json.loads(json_notes)
+
+    # Throwing in the results into the json file
+    for chord in result_chords:
+        json_notes_dict['notes'].append(chord.to_dict())
+        json_notes_dict['size'] += 1
+    
+    result_object = json.dumps(json_notes_dict, indent=4)
+
+    return result_object
