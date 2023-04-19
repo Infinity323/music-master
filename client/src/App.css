@@ -6,6 +6,7 @@
   /* These colors get overwritten in Buttons.js */
   --bg-color: #E8EAF6;
   --text-color: black;
+  --subtext-color: rgba(1, 1, 1, 0.5);
   --btn-color: #9FA8DA;
   --hover-color: #5C6BC0;
   --select-color: #3949AB;
@@ -40,7 +41,7 @@ body {
   font-size: 1.2rem;
 
 }
-div .content {
+div.content {
   font-family: 'AppleRegular';
   width: 80vw;
   height: 80vh;
@@ -69,6 +70,7 @@ h2 {
   bottom: 40px;
   background-color: var(--bg-color);
   padding: 10px;
+  overflow-y: auto;
 }
 .modal:focus {
   outline: 0;
@@ -218,9 +220,12 @@ th#title {
 /********************/
 /*   Chart Styles   */
 /********************/
-div .chart {
+div.chart {
   height: 80%;
   position: relative;
+}
+div.chart.performance {
+  height: 90%;
 }
 
 /********************/
@@ -287,14 +292,31 @@ div.btn.cb {
   max-width: 120px;
   display: inline-block;
 }
+div.btn.inv {
+  margin: 1.5px;
+  padding: 0px;
+  height: 11px;
+  width: 11px;
+  max-width: 120px;
+  display: inline-block;
+  visibility: hidden;
+}
 div.btn.cb.off {
   background-color: rgba(1, 1, 1, 0.5);
 }
 img#metronome {
   width: 50px;
 }
-.metrocirc{
-  color:green
+div.prog.on, div.prog.off {
+  background-color: var(--select-color);
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+}
+div.prog.off {
+  background-color: var(--btn-color);
 }
 
 /********************/

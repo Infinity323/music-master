@@ -3,11 +3,11 @@ import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale
 import 'chartjs-adapter-date-fns';
 import { format } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
-import { Line } from 'react-chartjs-2'
+import { Line } from 'react-chartjs-2';
 import { useNavigate } from 'react-router-dom';
 import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
-import { SheetMusicIdContext } from '../utils/Contexts';
+import { SheetMusicContext } from '../utils/Contexts';
 import { AddGoalButton, DeleteGoalButton } from './PracticeHistoryGoalButtons';
 import PracticeHistoryGraphOptions from './PracticeHistoryOptions';
 
@@ -23,11 +23,11 @@ function PracticeHistoryGraph() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   // Chart data rendering hooks
-  const selectedMusic = useContext(SheetMusicIdContext)[0];
+  const selectedMusic = useContext(SheetMusicContext)[0].id;
   const [performances, setPerformances] = useState([]);
   const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
-  const [showGoals, setShowGoals] = useState(true);
+  const [showGoals, setShowGoals] = useState(false);
   const [timeWindow, setTimeWindow] = useState("all");
   const [timeWindowOffset, setTimeWindowOffset] = useState(Number.MAX_SAFE_INTEGER);
   // Chart interactivity hooks
@@ -180,7 +180,7 @@ function PracticeHistoryGraph() {
       .then(result => {
         setIsLoaded(false);
         setPerformances(result.sort((a, b) => {
-          return a.date_time.localeCompare(b.date_time);
+          return Date.parse(a.date_time) - Date.parse(b.date_time);
         }));
       })
       .catch(error => {

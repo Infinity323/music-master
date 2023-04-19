@@ -67,6 +67,7 @@ export function ThemeButton() {
   function setLightMode() {
     style.setProperty('--bg-color', '#E8EAF6');
     style.setProperty('--text-color', 'black');
+    style.setProperty('--subtext-color', 'rgba(1, 1, 1, 0.5)');
     style.setProperty('--btn-color', '#C5CAE9');
     style.setProperty('--hover-color', '#9FA8DA');
     style.setProperty('--select-color', '#5C6BC0');
@@ -76,6 +77,7 @@ export function ThemeButton() {
   function setDarkMode() {
     style.setProperty('--bg-color', '#313131');
     style.setProperty('--text-color', 'gainsboro');
+    style.setProperty('--subtext-color', 'grey');
     style.setProperty('--btn-color', '#414141');
     style.setProperty('--hover-color', '#525252');
     style.setProperty('--select-color', '#5C6BC0');
