@@ -13,6 +13,7 @@ from models.performance import Performance
 from models.sheetmusic import SheetMusic
 
 from scripts.signal_processing import signal_processing
+from scripts.chord_processing import run_chord_processing
 from scripts.compare import compare_arrays, shift_start_time_to_zero
 from scripts.objects import Difference, Difference_with_info, Note
 from config import JSON_DIR, WAV_DIR
@@ -61,10 +62,14 @@ def addPerformance():
     new_subdir = "{}/{}_{}/runs/".format(JSON_DIR, sheet_music_id, sheet_music_name)
     os.makedirs(new_subdir, exist_ok=True)
     
+    # analyze chords
+    chords = run_chord_processing(new_wav_file_path)
+    print(chords)
+
     # analyze recording
     notes_from_rec = signal_processing(new_wav_file_path, new_average_tempo)
     rec_json_path = ("{}/{}_rec.json".format(new_subdir, new_run_number))
-    
+
     # save notes info into a json file
     with open(rec_json_path, 'w') as rec_json_file:
         rec_json_file.write(notes_from_rec)
