@@ -1,13 +1,19 @@
 import os
 import platform
 
+user_home = os.path.expanduser("~")
+
 class Config(object):
-    SQLALCHEMY_DATABASE_URI = "sqlite:///music_master.db"
+    if platform.system() == "Linux":
+        database_path = os.path.join(user_home, "music-master/music_master.db")
+    else:
+        database_path = "music_master.db"
+
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{database_path}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 if platform.system() == "Linux":
     # linux requires that files be stored in writable file system
-    user_home = os.path.expanduser("~")
     JSON_DIR = os.path.join(user_home, "music-master/data/json")
     WAV_DIR = os.path.join(user_home, "music-master/data/wav")
     XML_DIR = os.path.join(user_home, "music-master/data/xml")
