@@ -1,11 +1,22 @@
+import os
+import platform
+
 class Config(object):
     SQLALCHEMY_DATABASE_URI = "sqlite:///music_master.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-JSON_DIR = "data/json"
-WAV_DIR = "data/wav"
-XML_DIR = "data/xml"
-TMP_DIR = "data/tmp"
+if platform.system() == "Linux":
+    # linux requires that files be stored in writable file system
+    user_home = os.path.expanduser("~")
+    JSON_DIR = os.path.join(user_home, "music-master/data/json")
+    WAV_DIR = os.path.join(user_home, "music-master/data/wav")
+    XML_DIR = os.path.join(user_home, "music-master/data/xml")
+    TMP_DIR = os.path.join(user_home, "music-master/data/tmp")
+else: 
+    JSON_DIR = "data/json"
+    WAV_DIR = "data/wav"
+    XML_DIR = "data/xml"
+    TMP_DIR = "data/tmp"
 
 # the following constants are used for the comparison algorithm (xml vs wav)
 
