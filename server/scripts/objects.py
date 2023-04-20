@@ -1,8 +1,5 @@
 import numpy as np
-import os
-import base64
 from config import NOTE_MATCH_PASS_CONF, PITCH_WEIGHT, VELOCITY_WEIGHT, END_WEIGHT, START_WEIGHT, PITCH_TOLERANCE, VELOCITY_TOLERANCE, START_TOLERANCE, END_TOLERANCE, EXTRA_NOTE_MAX_PENALTY_DURATION, EXTRA_NOTE_MAX_PENALTY
-
 
 # Define the Difference class representing the differences between ideal and actual Note objects.
 class Difference_with_info:
