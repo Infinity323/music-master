@@ -1,5 +1,5 @@
 import cherrypy
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
 import os
 
@@ -28,17 +28,15 @@ def create_app():
         db.create_all()
 
     # Import endpoints
-    from api.sheetmusic import sheetmusic_blueprint
-    
-    # there is a noticable delay between end of import and start of next
-    
+    from api.status import status_blueprint
+    from api.sheetmusic import sheetmusic_blueprint    
     from api.performance import performance_blueprint
-
     from api.goal import goal_blueprint
 
     app.register_blueprint(model_goal_blueprint)
     app.register_blueprint(model_performance_blueprint)
     app.register_blueprint(model_sheetmusic_blueprint)
+    app.register_blueprint(status_blueprint)
     app.register_blueprint(sheetmusic_blueprint)
     app.register_blueprint(performance_blueprint)
     app.register_blueprint(goal_blueprint)
@@ -48,11 +46,6 @@ def create_app():
         os.makedirs(dir, exist_ok=True)
 
     logger.info('App initialization complete.')
-
-    # set up a check status route
-    @app.route('/status')
-    def status():
-        return jsonify({'status': 'ready'})
 
     return app
 

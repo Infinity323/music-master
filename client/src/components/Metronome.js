@@ -1,40 +1,9 @@
 import React, { Component } from 'react';
 import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
-import { Flex, Box, CircularProgress, CircularProgressLabel, Button } from '@chakra-ui/react';
+import { Flex, Box } from '@chakra-ui/react';
+import { baseUrl } from '../App'
 import { ThemeContext } from '../utils/Contexts';
-/*
-//Circle
-//https://medium.com/tinyso/how-to-create-an-animated-svg-circular-progress-component-in-react-5123c7d24391
-const Circular = ({size,strokeWidth,percentage,color}) => {
-  const viewBox = '0 0 ${size} ${size}';
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * Math.PI *2;
-  const dash = (percentage*circumference) / 100;
-  return(
-    <svg width={size} height={size} viewBox={viewBox}>
-      <circle
-        fill="none"
-        stroke="#ccc"
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={'${strokeWidth}px'}
-      />
-      <circle
-        fill="none"
-        strokeWidth={color}
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={'${strokeWidth}px'}
-        transform={'rotate(-90 ${size / 2} ${size / 2})'}
-        strokeDasharray={[dash,circumference - dash]}
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}*/
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -54,8 +23,8 @@ class Metronome extends Component {
       btn4: true,
       btn5: false,
       btn6: false,
-      lastbeat: false,
       // Internal state variables
+      isRasPi: false,
       lookahead: 25,
       scheduleAheadTime: 0.1,
       nextNoteTime: 0.0,
@@ -139,7 +108,11 @@ class Metronome extends Component {
    * Adjusts seconds per beat in case metronome was adjusted.
    */
   nextBeat = () => {
-    var secondsPerBeat = 60.0 / this.state.bpm;
+    let secondsPerBeat = 60.0 / this.state.bpm;
+    // Counteract lag by shortening beat interval
+    if (this.state.isRasPi) {
+      secondsPerBeat *= 0.693;
+    }
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
       currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
@@ -175,22 +148,15 @@ class Metronome extends Component {
    * Schedules next beat when needed (as opposed to infinitely).
    */
   scheduler = () => {
-    if(this.state.beatsPerBar === (this.state.currentBeatInBar+1) && this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime){
-      this.setState({
-        lastbeat: true
-      });
-    }
     if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
       this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
       this.nextBeat();
       this.setState({
         isBeat: true
       });
-    }
-    else{
+    } else {
       this.setState({
         isBeat: false,
-        lastbeat: false
       });
     }
   }
@@ -236,6 +202,18 @@ class Metronome extends Component {
         ? this.state.bpm
         : this.state.bpm + 10
     });
+  }
+
+  componentDidMount() {
+    // Since Pi is slow, need to modify beat timing
+    fetch(`${baseUrl}/status/platform`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.platform.includes("raspi")) {
+          this.setState({isRasPi: true})
+        }
+      })
+      .catch(error => console.error(error));
   }
 
   componentWillUnmount() {
