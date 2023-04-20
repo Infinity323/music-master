@@ -1,16 +1,18 @@
-const { app, BrowserWindow} = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
 const { spawn } = require('child_process');
+const fs = require('fs');
 
 let mainWindow;
-let flaskApp; // Declare flaskApp variable here so it's accessible throughout the file
+
+// Create a writable stream to the log file
+const logStream = fs.createWriteStream(path.join(app.getPath('userData'), 'debug.log'), { flags: 'a' });
 
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 500,
-        show: true,
         webPreferences: {
             nodeIntegration: true,
         },
@@ -23,42 +25,48 @@ function createWindow() {
     });
 
     mainWindow.loadURL(startUrl);
-    mainWindow.webContents.openDevTools();
 
     mainWindow.on('closed', () => {
         mainWindow = null;
-      });
-
-    // Start Flask app
-    const flaskAppPath = path.join(__dirname, 'music_master_backend');
-    console.log(`Flask app path: ${flaskAppPath}\n`);
-
-    flaskApp = spawn(flaskAppPath, { // Assign the spawned process to the flaskApp variable
-        cwd: __dirname,
     });
 
-    flaskApp.stdout.on('data', (data) => {
-        console.log(`Flask stdout: ${data}\n`);
+    let backend;
+    backend = path.join(__dirname, 'music_master_backend');
+
+    // const unpackedPath = electronUtil.fixPathForAsarUnpack(backend); // this is supposed to allow asar = true
+    // https://github.com/sindresorhus/electron-util#fixpathforasarunpackpath
+    // cant get proper import of electron-util to work
+    // solution for now is to set asar = false in package.json
+
+    var execfile = require('child_process').execFile;
+    logStream.write(`Flask app path: ${backend}\n`);
+    fs.readdir(__dirname, (err, files) => {
+        logStream.write(`Contents of directory: ${files.join(', ')}\n`);
     });
 
-    flaskApp.stderr.on('data', (data) => {
-        console.log(`Flask stderr: ${data}\n`);
-    });
-
-    flaskApp.on('close', (code) => {
-        console.log(`Flask app exited with code ${code}\n`);
-    });
+    execfile( backend, {windowsHide: true,},
+    (err, stdout, stderr) => {
+        if (err) {
+            logStream.write(`open Flask err: ${err}\n`);
+        }
+        if (stdout) {
+            logStream.write(`open Flask stdout: ${stdout}\n`);
+        }
+        if (stderr) {
+            logStream.write(`open Flask stderr: ${stderr}\n`);
+        }
+    })
 }
 
-app.on('ready', () => {
-    createWindow();
-  });
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
-    if (flaskApp) {
-        flaskApp.kill();
+    if (process.platform !== 'darwin') {
+        if (backend) {
+            backend.kill();
+        }
+        app.quit();
     }
-    app.quit();
 });
 
 app.on('activate', () => {
@@ -67,26 +75,24 @@ app.on('activate', () => {
     }
 });
 
-// const unpackedPath = electronUtil.fixPathForAsarUnpack(backend); // this is supposed to allow asar = true
-// https://github.com/sindresorhus/electron-util#fixpathforasarunpackpath
-// cant get proper import of electron-util to work
-// solution for now is to set asar = false in package.json
+    // Start Flask app
+    // const flaskAppPath = path.join(__dirname, 'music_master_backend');
+    // logStream.write(`Flask app path: ${flaskAppPath}\n`);
+    // fs.readdir(__dirname, (err, files) => {
+    //     logStream.write(`Contents of directory: ${files.join(', ')}\n`);
+    // });
+    // const flaskApp = spawn([flaskAppPath], {
+    //     cwd: __dirname,
+    // });
 
-// let backend;
-// backend = path.join(__dirname, 'music_master_backend');
+    // flaskApp.stdout.on('data', (data) => {
+    //     logStream.write(`Flask stdout: ${data}\n`);
+    // });
 
-// var execfile = require('child_process').execFile;
-// console.log(`Flask app path: ${backend}\n`);
+    // flaskApp.stderr.on('data', (data) => {
+    //     logStream.write(`Flask stderr: ${data}\n`);
+    // });
 
-// execfile( backend, {windowsHide: true,},
-// (err, stdout, stderr) => {
-//     if (err) {
-//         console.log(`open Flask err: ${err}\n`);
-//     }
-//     if (stdout) {
-//         console.log(`open Flask stdout: ${stdout}\n`);
-//     }
-//     if (stderr) {
-//         console.log(`open Flask stderr: ${stderr}\n`);
-//     }
-// })
+    // flaskApp.on('close', (code) => {
+    //     logStream.write(`Flask app exited with code ${code}\n`);
+    // });

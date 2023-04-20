@@ -9,18 +9,10 @@ function Home() {
       <ThemeButton/>
       <div className="content">
         <h1 className="title">Music Master</h1>
-        <div className="btn menu" onClick={() => navigate("/tuner")}>
-          Tuner/Metronome
-        </div>
-        <div className="btn menu" onClick={() => navigate("/startpracticesession")}>
-          Start Practice Session
-        </div>
-        <div className="btn menu" onClick={() => navigate("/history")}>
-          View Practice History
-        </div>
-        <div className="btn menu" onClick={() => navigate("/sheetmusic")}>
-          View Sheet Music
-        </div>
+        <div className="btn menu" onClick={() => navigate("/tuner")}>Tuner/Metronome</div>
+        <div className="btn menu" onClick={() => navigate("/startpracticesession")}>Start Practice Session</div>
+        <div className="btn menu" onClick={() => navigate("/history")}>View Practice History</div>
+        <div className="btn menu" onClick={() => navigate("/sheetmusic")}>View Sheet Music</div>
       </div>
     </>
   );

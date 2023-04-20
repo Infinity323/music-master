@@ -1,5 +1,6 @@
 import json
 import os
+import pygame
 import pretty_midi
 import re
 import base64
@@ -207,12 +208,10 @@ class MusicXMLReader:
         # Save note data as a JSON file and return the JSON data as a string
         notes = self.get_notes(part_index)
         tempo = self.get_tempo()
-        downbeat_locations = self.pretty_midi.get_downbeats().tolist()
         data = {
             "size": len(notes),
             "tempo": tempo,
-            "downbeat_locations": downbeat_locations,
-            "notes": notes,
+            "notes": notes
         }
 
         with open(json_file_out, 'w') as outfile:

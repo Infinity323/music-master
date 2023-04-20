@@ -1,9 +1,9 @@
-import { HomeButton } from "../components/Buttons";
+import { BackButton } from "../components/Buttons";
 
 function NotFound() {
   return (
     <>
-      <HomeButton/>
+      <BackButton/>
       <div className="content">
         <h2 className="error">
           404: Page not found.

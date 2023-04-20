@@ -3,11 +3,11 @@ import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale
 import 'chartjs-adapter-date-fns';
 import { format } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
-import { Line } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2'
 import { useNavigate } from 'react-router-dom';
 import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
-import { SheetMusicContext } from '../utils/Contexts';
+import { SheetMusicIdContext } from '../utils/Contexts';
 import { AddGoalButton, DeleteGoalButton } from './PracticeHistoryGoalButtons';
 import PracticeHistoryGraphOptions from './PracticeHistoryOptions';
 
@@ -23,11 +23,11 @@ function PracticeHistoryGraph() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   // Chart data rendering hooks
-  const selectedMusic = useContext(SheetMusicContext)[0].id;
+  const selectedMusic = useContext(SheetMusicIdContext)[0];
   const [performances, setPerformances] = useState([]);
   const [goals, setGoals] = useState([]);
   const [data, setData] = useState({});
-  const [showGoals, setShowGoals] = useState(false);
+  const [showGoals, setShowGoals] = useState(true);
   const [timeWindow, setTimeWindow] = useState("all");
   const [timeWindowOffset, setTimeWindowOffset] = useState(Number.MAX_SAFE_INTEGER);
   // Chart interactivity hooks
@@ -157,10 +157,8 @@ function PracticeHistoryGraph() {
 
   // Time window offsets (ms)
   const timeWindowOffsets = [
-    { type: "hour", value: 3600000 },
-    { type: "few-hours", value: 10800000 },
     { type: "day", value: 86400000 },
-    { type: "few-days", value: 259200000 },
+    { type: "three-days", value: 259200000 },
     { type: "week", value: 604800000 },
     { type: "month", value: 2678400000 },
     { type: "all", value: Number.MAX_SAFE_INTEGER }
@@ -179,9 +177,7 @@ function PracticeHistoryGraph() {
       })
       .then(result => {
         setIsLoaded(false);
-        setPerformances(result.sort((a, b) => {
-          return Date.parse(a.date_time) - Date.parse(b.date_time);
-        }));
+        setPerformances(result);
       })
       .catch(error => {
         // Network connection error

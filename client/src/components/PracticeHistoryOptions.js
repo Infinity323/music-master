@@ -13,7 +13,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
       borderColor: "rgba(1, 1, 1, 0)",
       color: style.getPropertyValue('--text-color'),
       fontSize: 16,
-      width: 250
+      width: 300
     }),
     option: (styles) => {
       return {
@@ -21,7 +21,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
         backgroundColor: style.getPropertyValue('--bg-color'),
         color: style.getPropertyValue('--text-color'),
         fontSize: 16,
-        width: 250
+        width: 300
       };
     },
     singleValue: (styles) => {
@@ -34,16 +34,14 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
       return {
         ...styles,
         backgroundColor: style.getPropertyValue('--bg-color'),
-        width: 250
+        width: 300
       };
     }
   };
 
   const timeWindowOptions = [
-    { value: "hour", label: "Past Hour" },
-    { value: "few-hours", label: "Past Few Hours" },
     { value: "day", label: "Past Day" },
-    { value: "few-days", label: "Past Few Days" },
+    { value: "three-days", label: "Past Three Days" },
     { value: "week", label: "Past Week" },
     { value: "month", label: "Past Month" },
     { value: "all", label: "All Time" }
@@ -75,7 +73,7 @@ function PracticeHistoryGraphOptions({showGoals, toggleGoals, timeWindow, change
         </div>
         <br/>
         <br/>
-        Adjust Display Range
+        Change time window:
         <Select
           options={timeWindowOptions}
           styles={styles}

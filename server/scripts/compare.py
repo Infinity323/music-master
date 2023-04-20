@@ -44,16 +44,15 @@ def save_aligned_arrays_to_json(aligned_ideal, aligned_actual, output_file):
         json.dump(aligned_data, f, default=Note.custom_serializer, indent=4)
     
 # this will ensure that the start time for the actual array happens at 0.0
-def shift_start_time_to_zero(notes_array, ideal_first_note):
+def shift_start_time_to_zero(notes_array):
     if not notes_array:
         return
 
-    if notes_array[0 ] == ideal_first_note:
-        first_note_start_time = notes_array[0].start
+    first_note_start_time = notes_array[0].start
 
-        for note in notes_array:
-            note.start -= first_note_start_time
-            note.end -= first_note_start_time
+    for note in notes_array:
+        note.start -= first_note_start_time
+        note.end -= first_note_start_time
 
 # Implement the Needleman-Wunsch algorithm to find the optimal alignment of two arrays of musical notes.
 def needleman_wunsch(seq1, seq2, gap_penalty=-2, mismatch_penalty=-2, match_score=1):

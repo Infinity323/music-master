@@ -1,10 +1,10 @@
-import { HomeButton } from "../components/Buttons";
+import { BackButton } from "../components/Buttons";
 import SheetMusicTable from "../components/SheetMusicTable";
 
 function SheetMusic() {
   return (
     <>
-      <HomeButton/>
+      <BackButton/>
       <div className="content">
         <h2>Sheet Music</h2>
         <SheetMusicTable/>

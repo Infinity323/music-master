@@ -1,12 +1,22 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChartButton } from '../components/Buttons';
+import { BackButton } from '../components/Buttons';
 import { baseUrl } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
 import { useNavigate } from 'react-router-dom';
+import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import PerformanceGraph from "../components/PerformanceGraph";
-import PerformanceDetails from '../components/PerformanceDetails';
-import { SheetMusicContext } from '../utils/Contexts';
+
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export const options = {
   responsive: true,
@@ -29,19 +39,20 @@ function Performance() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [performance, setPerformance] = useState(null);
-  const sheetMusic = useContext(SheetMusicContext)[0];
 
   useEffect(() => {
     fetch(baseUrl + "/performance/" + performanceId)
       .then(res => res.json())
-      .then(result => {
-        setIsLoaded(true);
-        setPerformance(result);
-      })
-      .catch(error => {
-        setIsLoaded(false);
-        setError(error);
-      });
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setPerformance(result);
+        },
+        (error) => {
+          setIsLoaded(false);
+          setError(error);
+        }
+      )
   }, []);
 
   function deletePerformance() {
@@ -53,7 +64,7 @@ function Performance() {
 
   function DeleteButton() {
     return (
-      <div className="btn small delete" onClick={deletePerformance}
+      <div className="btn medium" onClick={deletePerformance}
         id="deletePerformance">Delete</div>
     );
   }
@@ -73,11 +84,10 @@ function Performance() {
   } else {
     return (
       <>
-        <ChartButton/>
+        <BackButton/>
         <div className="content">
-          <h2>Results for {sheetMusic.title}, Run #{performance.run_number}</h2>
-          <PerformanceGraph performance={performance}/>
-          <PerformanceDetails sheet_music_id={performance.sheet_music_id} run_number={performance.run_number} />
+          Results for performance {performance.id}, sheet music {performance.sheet_music_id}
+          <PerformanceGraph/>
           <DeleteButton/>
         </div>
       </>
