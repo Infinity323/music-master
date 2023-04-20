@@ -167,6 +167,8 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
         previous_amp = amplitudes[i-1]
         current_amp = amplitudes[i]
         
+        end_time = -1
+
         # Similar enough frequencies
         if Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE:
             # If the note is the same as the previous note, update the duration
