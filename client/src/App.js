@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useOutlet } from 'react-router-dom';
 import { CSSTransition, SwitchTransition } from 'react-transition-group';
+import axios from 'axios';
 import { routes } from './index';
 import './App.css';
-import { BpmContext, SheetMusicIdContext, ThemeContext, TunerContext } from './utils/Contexts';
+import { BpmContext, SheetMusicContext, ThemeContext, TunerContext } from './utils/Contexts';
+import loading_gif from './assets/images/loading_gif.gif'
 
 export const baseUrl = "http://127.0.0.1:5000";
 
@@ -16,14 +18,50 @@ function App() {
     ?? {};
 
   const [theme, setTheme] = useState("light");
-  const [selectedMusic, setSelectedMusic] = useState(-1);
+  const [selectedMusic, setSelectedMusic] = useState({
+    id: -1,
+    title: null,
+    composer: null,
+    instrument: null,
+    pdf_file_path: null,
+    data_file_path: null,
+    tempo: null,
+    note_info_file_path: null
+  });
   const [currentNote, setCurrentNote] = useState(-1);
-  const [bpm, setBpm] = useState(100);
+  const [bpm, setBpm] = useState(120);
+  const [isBackendReady, setIsBackendReady] = useState(false);
+
+  useEffect(() => {
+    async function fetchStatus() {
+      const response = await axios.get(`${baseUrl}/status`);
+      const status = response.data.status;
+      if (status === 'ready') {
+        setIsBackendReady(true);
+      }
+    }
+    if (!isBackendReady) {
+      let intervalId = setInterval(fetchStatus, 1000);
+      return () => clearInterval(intervalId);
+    }
+  }, [isBackendReady]);
+
+  if (!isBackendReady) {
+    return (
+      <div className="App">
+        <div className="content">
+          <h1>Music Master</h1>
+          <h2>Loading...</h2>
+          <img src={loading_gif} width="40px" alt="Loading..."/>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
       <ThemeContext.Provider value={[theme, setTheme]}>
-        <SheetMusicIdContext.Provider value={[selectedMusic, setSelectedMusic]}>
+        <SheetMusicContext.Provider value={[selectedMusic, setSelectedMusic]}>
           <TunerContext.Provider value={[currentNote, setCurrentNote]}>
             <BpmContext.Provider value={[bpm, setBpm]}>
               <SwitchTransition>
@@ -44,7 +82,7 @@ function App() {
               </SwitchTransition>
             </BpmContext.Provider>
           </TunerContext.Provider>
-        </SheetMusicIdContext.Provider>
+        </SheetMusicContext.Provider>
       </ThemeContext.Provider>
     </div>
   );

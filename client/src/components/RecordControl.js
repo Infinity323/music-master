@@ -2,7 +2,7 @@ import { useContext, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Recorder from 'matt-diamond-recorderjs';
 import { baseUrl } from '../App';
-import { BpmContext, SheetMusicIdContext } from '../utils/Contexts';
+import { BpmContext, SheetMusicContext } from '../utils/Contexts';
 import useMicrophone from '../utils/UseMicrophone';
 import loading_gif from '../assets/images/loading_gif.gif'
 
@@ -15,7 +15,7 @@ function RecordControl() {
   const [countdownDisplay, setCountdownDisplay] = useState(10);
   const inputRef = useRef();
 
-  const sheetMusicId = useContext(SheetMusicIdContext)[0];
+  const sheetMusicId = useContext(SheetMusicContext)[0].id;
   const bpm = useContext(BpmContext)[0];
   const navigate = useNavigate();
   const stream = useMicrophone();

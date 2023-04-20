@@ -1,11 +1,17 @@
-from flask import Flask
+import cherrypy
+from flask import Flask, jsonify
 from flask_cors import CORS
 import os
 
 from models import db
 import config
+import logging
 
 def create_app():
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    logger.info('Starting app initialization...')
+
     app = Flask(__name__)
     CORS(app)
     app.config.from_object(config.Config)
@@ -20,7 +26,11 @@ def create_app():
 
     # Import endpoints
     from api.sheetmusic import sheetmusic_blueprint
+    
+    # there is a noticable delay between end of import and start of next
+    
     from api.performance import performance_blueprint
+
     from api.goal import goal_blueprint
 
     app.register_blueprint(model_goal_blueprint)
@@ -34,9 +44,42 @@ def create_app():
     for dir in config.DATA_DIRS:
         os.makedirs(dir, exist_ok=True)
 
+    logger.info('App initialization complete.')
+
+    # set up a check status route
+    @app.route('/status')
+    def status():
+        return jsonify({'status': 'ready'})
+
     return app
 
 app = create_app()
 
 if __name__ == "__main__":
-    app.run()
+    # app.run() # (flask debugging mode)
+
+    # Reason for choosing cherrypy
+    # https://blog.appdynamics.com/engineering/a-performance-analysis-of-python-wsgi-servers-part-2/
+    #
+    # Flask application based on Quickstart
+    # http://flask.pocoo.org/docs/0.12/quickstart/
+    #
+    # CherryPy documentation for this
+    # http://docs.cherrypy.org/en/latest/deploy.html#wsgi-servers
+    # http://docs.cherrypy.org/en/latest/advanced.html#host-a-foreign-wsgi-application-in-cherrypy
+    # Install: pip install cherrypy
+
+    # WSGI Settings
+    cherrypy.tree.graft(app.wsgi_app, '/')
+    cherrypy.config.update({'server.socket_host': '127.0.0.1',
+                            'server.socket_port': 5000,
+                            'engine.autoreload.on': False,
+                            })
+    
+    try:
+        cherrypy.engine.start()
+        cherrypy.engine.block()  # Add this line to block the main thread
+    except (KeyboardInterrupt, SystemExit, BaseException):
+        cherrypy.engine.stop()  # Stop the server before exiting
+        cherrypy.engine.exit()
+        print("Shutting down server...")

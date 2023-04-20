@@ -38,6 +38,48 @@ def getSpecificPerformance(id: int):
     else:
         return {}
 
+@performance_blueprint.route("/performance/<int:performance_id>/diff", methods=["GET"])
+def getSpecificDiffJson(performance_id: int):
+    performance = (db.session.query(Performance)
+                   .filter(Performance.id == performance_id)
+                   .first())
+    sheet_music_id = performance.sheet_music_id
+    run_number = performance.run_number
+
+    sheet_music_name = (db.session.query(SheetMusic)
+                        .filter(SheetMusic.id == sheet_music_id)
+                        .first().title)
+    subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    rec_json_path = ("{}/{}_rec.json".format(subdir, run_number))
+    master_json_path = ("{}/{}_{}/master.json".format(JSON_DIR, sheet_music_id, sheet_music_name))
+    try:
+        with open(rec_json_path, 'r') as rec_json_file:
+            rec_data = json.load(rec_json_file)
+        with open(master_json_path, 'r') as master_json_file:
+            master_data = json.load(master_json_file)
+        return {
+            "actual": rec_data,
+            "expected": master_data
+        }
+    except FileNotFoundError:
+        return {"error": "File not found"}, 404
+
+
+# Get diff file for performance
+@performance_blueprint.route("/performance/diff/<int:sheet_music_id>/<int:run_number>", methods=["GET"])
+def getDiffJson(sheet_music_id: int, run_number: int):
+    sheet_music_name = (db.session.query(SheetMusic)
+                        .filter(SheetMusic.id == sheet_music_id)
+                        .first().title)
+    subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    diff_json_path = ("{}/{}_diff.json".format(subdir, run_number))
+    try:
+        with open(diff_json_path, 'r') as diff_json_file:
+            data = json.load(diff_json_file)
+        return data
+    except FileNotFoundError:
+        return {"error": "File not found"}, 404
+
 # Add performance to database
 @performance_blueprint.route("/performance", methods=["POST"])
 def addPerformance():
@@ -59,7 +101,7 @@ def addPerformance():
     new_wav_file_data.save(new_wav_file_path)
 
     # Make new subdirectory
-    new_subdir = "{}/{}_{}/runs/".format(JSON_DIR, sheet_music_id, sheet_music_name)
+    new_subdir = "{}/{}_{}/runs".format(JSON_DIR, sheet_music_id, sheet_music_name)
     os.makedirs(new_subdir, exist_ok=True)
 
     # analyze recording
@@ -103,25 +145,43 @@ def addPerformance():
         note_info_data = json.load(file)
 
     differences_with_info  = []
-    prev_ideal_index = 0
-    for diff in differences:
+    prev_ideal_index = None
+    next_ideal_index = None
+    for i, diff in enumerate(differences):
         # (pitch, velocity, start, or end)
         if diff.diff_type in ["pitch", "velocity", "start", "end"]:
             differences_with_info.append(Difference_with_info(diff,
                                                               note_info_data[diff.ideal_idx]))
             prev_ideal_index = diff.ideal_idx
 
-        # (extra or missing)
+        # (missing)
         if diff.diff_type == "missing":
             differences_with_info.append(Difference_with_info(diff,
                                                               note_info_data[diff.ideal_idx],
                                                               "note_info contains the missing note"))
             prev_ideal_index = diff.ideal_idx
 
+        # (extra)
         if diff.diff_type == "extra":
-            differences_with_info.append(Difference_with_info(diff,
-                                                              [note_info_data[prev_ideal_index]],
-                                                              "note_info contains the last known ideal note that was played correctly"))
+            # Find the next ideal index
+            next_ideal_index = None
+            for next_diff in differences[i+1:]:
+                if next_diff.diff_type in ["pitch", "velocity", "start", "end", "missing"]:
+                    next_ideal_index = next_diff.ideal_idx
+                    break
+            
+            if prev_ideal_index is None and next_ideal_index is not None:
+                differences_with_info.append(Difference_with_info(diff,
+                                                                [note_info_data[next_ideal_index]],
+                                                                "Before"))
+            elif prev_ideal_index is not None and next_ideal_index is None:
+                differences_with_info.append(Difference_with_info(diff,
+                                                                [note_info_data[prev_ideal_index]],
+                                                                "After"))
+            elif prev_ideal_index is not None and next_ideal_index is not None:
+                differences_with_info.append(Difference_with_info(diff,
+                                                                [note_info_data[prev_ideal_index], note_info_data[next_ideal_index]],
+                                                                "Between"))
 
     # save the diff file locally
     diff_json_path = ("{}/{}_diff.json".format(new_subdir, new_run_number))
@@ -150,6 +210,7 @@ def deletePerformance(id):
         os.remove(path)
 
         # TODO: delete data file
+        
 
         # remove entry from database
         db.session.delete(performance)

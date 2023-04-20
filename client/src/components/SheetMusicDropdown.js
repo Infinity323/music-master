@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import Select from 'react-select'
 import { baseUrl, style } from '../App';
 import loading_gif from '../assets/images/loading_gif.gif'
-import { SheetMusicIdContext } from '../utils/Contexts';
+import { SheetMusicContext } from '../utils/Contexts';
 
 function SheetMusicDropdown() {
   const backgroundColor = style.getPropertyValue('--bg-color');
@@ -46,11 +46,22 @@ function SheetMusicDropdown() {
   const [responseStatus, setResponseStatus] = useState(200);
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [items, setItems] = useState([]);
-  const [selected, setSelected] = useContext(SheetMusicIdContext);
+  const [sheetMusics, setSheetMusics] = useState([]);
+  const [selected, setSelected] = useContext(SheetMusicContext);
   
   useEffect(() => {
-    setSelected(-1);
+    // Reset selected sheet music on render
+    setSelected({
+      id: -1,
+      title: null,
+      composer: null,
+      instrument: null,
+      pdf_file_path: null,
+      data_file_path: null,
+      tempo: null,
+      note_info_file_path: null
+    });
+    // Fetch sheet music data from backend
     fetch(baseUrl + "/sheetmusic")
       .then(res => {
         setResponseStatus(res.status);
@@ -58,7 +69,7 @@ function SheetMusicDropdown() {
       })
       .then(result => {
         setIsLoaded(true);
-        setItems(result);
+        setSheetMusics(result);
       })
       .catch(error => {
         // Network connection error
@@ -88,12 +99,12 @@ function SheetMusicDropdown() {
     return (
       <>
         <Select
-          options={items.map(item => ({label: item.title, value: item.id}))}
+          options={sheetMusics.map(item => ({label: item.title, value: item}))}
           styles={styles}
           maxMenuHeight={300}
           onChange={e => setSelected(e.value)}
           defaultValue={{
-            label: selected === -1 ? "Select..." : items.find(item => item.id === selected).title,
+            label: selected.id === -1 ? "Select..." : sheetMusics.find(item => item.id === selected.id).title,
             value: selected
           }}
           isSearchable={false}
