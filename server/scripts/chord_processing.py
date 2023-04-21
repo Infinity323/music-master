@@ -392,6 +392,7 @@ def get_amplitude(file_name: str) -> List[float]:
 
     YIN_FRAME_LENGTH = 256
     YIN_HOP_LENGTH = YIN_FRAME_LENGTH//6 # Frame increment in samples. Default FRAME_LENGTH//4
+    YIN_WINDOW_LENGTH = YIN_FRAME_LENGTH//2
 
     # Loads in the audio file
     audio, sr = librosa.load(file_name)
