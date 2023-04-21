@@ -477,6 +477,4 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     
     result_object = json.dumps(json_notes_dict, indent=4)
 
-    print(result_object)
-
     return result_object
