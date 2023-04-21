@@ -379,7 +379,7 @@ def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
     # Convert the NumPy array to a list of native integers
     return midi_velocity.tolist()
 
-def get_amplitude(file_name: str) -> List[float]:
+def get_amplitude(file_name: str, audio, sr) -> List[float]:
     """
     Gets the amplitudes of a sound file.
 
@@ -391,11 +391,8 @@ def get_amplitude(file_name: str) -> List[float]:
     """
 
     YIN_FRAME_LENGTH = 256
-    YIN_HOP_LENGTH = YIN_FRAME_LENGTH//6 # Frame increment in samples. Default FRAME_LENGTH//4
+    YIN_HOP_LENGTH = YIN_FRAME_LENGTH // 6 # Frame increment in samples. Default FRAME_LENGTH//4
     YIN_WINDOW_LENGTH = YIN_FRAME_LENGTH//2
-
-    # Loads in the audio file
-    audio, sr = librosa.load(file_name)
 
     # Getting the amplitudes
     S = librosa.magphase(librosa.stft(audio, n_fft=YIN_FRAME_LENGTH, hop_length=YIN_HOP_LENGTH, win_length=YIN_WINDOW_LENGTH, window=np.ones))[0]
@@ -405,7 +402,6 @@ def get_amplitude(file_name: str) -> List[float]:
     midi_velocities = amplitude_to_midi_velocity(amplitudes)
 
     return midi_velocities
-
 
 def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     """
@@ -421,6 +417,9 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     result_objec : str
         A string holding all of the notes in chords in a WAV file
     """
+
+    YIN_FRAME_LENGTH = 256
+    YIN_HOP_LENGTH = YIN_FRAME_LENGTH // 6 # Frame increment in samples. Default FRAME_LENGTH//4
 
     # TODO (maybe?): Remove silence using librosa.effects.trim
     
@@ -449,19 +448,21 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
         xml_chord = xml_dict_to_chord(xml_dict)
         xml_chords.append(xml_chord)
 
-    # TODO: Add velocity to these chords!
-    velocities = get_amplitude(file_name)
-    print("Velocities: ")
-    print(velocities)
+    # Loads in the audio file
+    audio, sr = librosa.load(file_name)
+    midi_velocities = get_amplitude(file_name, audio, sr)
 
     # Turning the xml chord objects into note objects with the encoded pitch
     result_chords = []
 
     for xml_chord in xml_chords:
         pitch = xml_chord.encrypt_and_encode()
-        velocity = xml_chord.velocity
         start = xml_chord.start
         end = xml_chord.end
+
+        # Gets the velocity of the chords at the start of them
+        frame_index = int(round(xml_chord.start * sr / YIN_HOP_LENGTH))
+        velocity = midi_velocities[frame_index]
 
         chord_to_note = Note(pitch, velocity, start, end)
 
@@ -475,5 +476,7 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
         json_notes_dict['size'] += 1
     
     result_object = json.dumps(json_notes_dict, indent=4)
+
+    print(result_object)
 
     return result_object
