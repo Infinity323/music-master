@@ -1,6 +1,7 @@
 import re
 import librosa
 import json
+import numpy as np
 from scripts.objects import Note
 from scripts.musicxml_reader import Chord as XMLChord
 from scripts.signal_processing import NpEncoder
@@ -20,6 +21,7 @@ class ParsedChord:
         self.accidental_num = accidental_num
         self.start_time = start_time
         self.end_time = end_time
+        self.velocity = None
         self.notes = None
 
     def __str__(self):
@@ -355,6 +357,55 @@ def xml_dict_to_chord(xml_dict: dict):
     chord = XMLChord(xml_dict)
     return chord
 
+def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
+    """Converts raw amplitude values to velocity values.
+
+    Args:
+        amplitude (np.array): The raw amplitude values
+
+    Returns:
+        np.array: Normalized velocity values
+    """
+
+    # Amplitude value assigned to mezzo forte (velocity 80)
+    MF_RMS = np.log10(0.0282389)
+    amplitude = np.log10(amplitude)
+    lower = np.min(amplitude)
+    upper = MF_RMS
+    # Normalize notes to this mf value
+    normalized_amplitude = (amplitude - lower) / (upper - lower)
+    midi_velocity = np.round(normalized_amplitude * 80 + 1).astype(int)
+
+    # Convert the NumPy array to a list of native integers
+    return midi_velocity.tolist()
+
+def get_amplitude(file_name: str) -> List[float]:
+    """
+    Gets the amplitudes of a sound file.
+
+    Parameters:
+        file_name (str): The file path of the WAV file
+
+    Returns:
+        np.array: A numpy array of amplitudes
+    """
+
+    YIN_FRAME_LENGTH = 256
+    YIN_HOP_LENGTH = YIN_FRAME_LENGTH//6 # Frame increment in samples. Default FRAME_LENGTH//4
+
+    # Loads in the audio file
+    audio, sr = librosa.load(file_name)
+
+    # Getting the amplitudes
+    S = librosa.magphase(librosa.stft(audio, n_fft=YIN_FRAME_LENGTH, hop_length=YIN_HOP_LENGTH, win_length=YIN_WINDOW_LENGTH, window=np.ones))[0]
+    amplitudes = librosa.feature.rms(S=S, frame_length=YIN_FRAME_LENGTH, hop_length=YIN_HOP_LENGTH)[0]
+
+    # Convert amplitude to MIDI velocity
+    midi_velocities = amplitude_to_midi_velocity(amplitudes)
+
+    return midi_velocities
+
+
 def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     """
     Function to run chord processing on a wav file
@@ -369,6 +420,8 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     result_objec : str
         A string holding all of the notes in chords in a WAV file
     """
+
+    # TODO (maybe?): Remove silence using librosa.effects.trim
     
     wav_chords = find_chords(file_name)
     chord_objects = []
@@ -395,11 +448,10 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
         xml_chord = xml_dict_to_chord(xml_dict)
         xml_chords.append(xml_chord)
 
-
     # TODO: Add velocity to these chords!
-    # Use the encode and encrypt function to get the "frequency" of the chord
-    # From there create an object with all of the necessary data in it
-    # Then turn that object into a json file and input that into the comaprison algorithm
+    velocities = get_amplitude(file_name)
+    print("Velocities: ")
+    print(velocities)
 
     # Turning the xml chord objects into note objects with the encoded pitch
     result_chords = []

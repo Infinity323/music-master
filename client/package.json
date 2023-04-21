@@ -17,10 +17,12 @@
     "fs": "^0.0.1-security",
     "igniteui-react-core": "^18.1.2",
     "igniteui-react-gauges": "^18.1.2",
+    "mathjs": "latest",
     "matt-diamond-recorderjs": "https://github.com/mattdiamond/Recorderjs",
     "mdbreact": "^5.2.0",
     "pitchfinder": "^2.3.2",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.7.4",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-modal": "^3.16.1",
@@ -29,10 +31,8 @@
     "react-select": "^5.7.0",
     "react-slider": "^2.0.4",
     "react-transition-group": "^4.4.5",
-    "react-bootstrap": "latest",
     "recharts": "^2.5.0",
-    "web-vitals": "^2.1.4",
-    "mathjs": "latest"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
