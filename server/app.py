@@ -10,13 +10,16 @@ import logging
 def create_app():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
-    logger.info('Starting app initialization...')
+    logger.info("Starting app initialization...")
 
-    app = Flask(__name__)
+    os.makedirs(config.instance_path, exist_ok=True)
+
+    app = Flask(__name__, instance_path=config.instance_path)
     CORS(app)
     app.config.from_object(config.Config)
     
     # Initialize database connection and autogenerate tables
+    logger.info(f"Initializing db in {config.instance_path}")
     db.init_app(app)
     from models.goal import model_goal_blueprint
     from models.performance import model_performance_blueprint

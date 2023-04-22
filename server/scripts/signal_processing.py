@@ -6,8 +6,8 @@ of usable notes, store the list of extrapolated notes into a JSON, and then
 return that JSON to be stored locally in the file system.
 """
 import librosa
-import torchcrepe
-import torch
+# import torchcrepe
+# import torch
 import numpy as np
 import json
 from typing import List, Dict, Tuple
@@ -112,35 +112,35 @@ def get_f0_time_amp_yin(rec_file: str) -> Tuple[np.array, np.array, np.array]:
     
     return f0, times, midi_velocities
 
-def get_f0_time_amp_crepe(rec_file: str) -> Tuple[np.array, np.array, np.array, np.array]:
-    """Gets fundamental frequencies, timestamps, amplitudes, and confidences from a WAV
-    sound file. CREPE implementation.
+# def get_f0_time_amp_crepe(rec_file: str) -> Tuple[np.array, np.array, np.array, np.array]:
+#     """Gets fundamental frequencies, timestamps, amplitudes, and confidences from a WAV
+#     sound file. CREPE implementation.
 
-    Args:
-        rec_file (str): The file path of the WAV file
+#     Args:
+#         rec_file (str): The file path of the WAV file
 
-    Returns:
-        Tuple[np.array, np.array, np.array, np.array]: The arrays for fundamental
-            frequency, their times, amplitudes, and confidences
-    """
+#     Returns:
+#         Tuple[np.array, np.array, np.array, np.array]: The arrays for fundamental
+#             frequency, their times, amplitudes, and confidences
+#     """
     
-    audio, sr = librosa.load(rec_file, sr=CREPE_SAMPLE_RATE)
-    audio, _ = librosa.effects.trim(audio)
-    audio_tensor = torch.from_numpy(np.array([audio]))
+#     audio, sr = librosa.load(rec_file, sr=CREPE_SAMPLE_RATE)
+#     audio, _ = librosa.effects.trim(audio)
+#     audio_tensor = torch.from_numpy(np.array([audio]))
     
-    f0, periodicities = torchcrepe.predict(audio_tensor, sr, CREPE_HOP_LENGTH, FMIN, FMAX, 'tiny', return_periodicity=True)
+#     f0, periodicities = torchcrepe.predict(audio_tensor, sr, CREPE_HOP_LENGTH, FMIN, FMAX, 'tiny', return_periodicity=True)
 
-    # Get times for frequencies
-    times = np.array([CREPE_HOP_LENGTH/CREPE_SAMPLE_RATE*i for i in range(f0.size(1))])
+#     # Get times for frequencies
+#     times = np.array([CREPE_HOP_LENGTH/CREPE_SAMPLE_RATE*i for i in range(f0.size(1))])
 
-    # Gets the amplitude of the fundamental frequencies
-    S = librosa.magphase(librosa.stft(audio, n_fft=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2), win_length=int(CREPE_WINDOW_LENGTH/2), window=np.ones))[0]
-    amplitudes = librosa.feature.rms(S=S, frame_length=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2))[0]
+#     # Gets the amplitude of the fundamental frequencies
+#     S = librosa.magphase(librosa.stft(audio, n_fft=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2), win_length=int(CREPE_WINDOW_LENGTH/2), window=np.ones))[0]
+#     amplitudes = librosa.feature.rms(S=S, frame_length=CREPE_FRAME_LENGTH, hop_length=int(CREPE_HOP_LENGTH/2))[0]
 
-    # Convert amplitude to MIDI velocity
-    midi_velocities = amplitude_to_midi_velocity(amplitudes)
+#     # Convert amplitude to MIDI velocity
+#     midi_velocities = amplitude_to_midi_velocity(amplitudes)
     
-    return f0.numpy().flatten(), times, midi_velocities, periodicities.numpy().flatten()
+#     return f0.numpy().flatten(), times, midi_velocities, periodicities.numpy().flatten()
 
 def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: int) -> List[Note]:
     """Converts an array of frequencies, timestamps, and amplitudes into
@@ -245,60 +245,60 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
     
     return note_objects
 
-def freq_to_notes_crepe(f0, times, amplitudes, confidences):
+# def freq_to_notes_crepe(f0, times, amplitudes, confidences):
 
-    # Turns the frequencies into a list of Note objects
-    note_objects = []
-    i = 1
-    while i < len(f0):
-        previous_freq = f0[i-1]
-        current_freq = f0[i]
-        previous_amp = amplitudes[i-1]
-        current_amp = amplitudes[i]
+#     # Turns the frequencies into a list of Note objects
+#     note_objects = []
+#     i = 1
+#     while i < len(f0):
+#         previous_freq = f0[i-1]
+#         current_freq = f0[i]
+#         previous_amp = amplitudes[i-1]
+#         current_amp = amplitudes[i]
         
-        # Similar enough frequencies
-        if (confidences[i] >= MIN_CREPE_CONFIDENCE or
-            (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
-             confidences[i] >= MIN_CREPE_CONFIDENCE - 0.1)):
-            # If the note is the same as the previous note, update the duration
-            offset = times[i-1]
-            new_note = Note(current_freq, current_amp, offset, 0)
-            note_frequencies = [previous_freq]
-            note_amplitudes = [previous_amp]
-            while (i < len(f0) and
-                   (confidences[i] >= MIN_CREPE_CONFIDENCE or
-                    (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
-                     confidences[i] >= MIN_CREPE_CONFIDENCE - 0.15))):
-                end_time = times[i]
-                note_frequencies.append(current_freq)
-                note_amplitudes.append(current_amp)
-                i += 1
-                if i >= len(f0):
-                    break
-                previous_freq = f0[i-1]
-                current_freq = f0[i]
-                previous_amp = amplitudes[i-1]
-                current_amp = amplitudes[i]
-            # Average note's frequencies and reset end time
-            new_note.pitch = np.average(note_frequencies)
-            new_note.end = end_time
-            new_note.velocity = np.max(note_amplitudes)
-            note_objects.append(new_note)
+#         # Similar enough frequencies
+#         if (confidences[i] >= MIN_CREPE_CONFIDENCE or
+#             (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
+#              confidences[i] >= MIN_CREPE_CONFIDENCE - 0.1)):
+#             # If the note is the same as the previous note, update the duration
+#             offset = times[i-1]
+#             new_note = Note(current_freq, current_amp, offset, 0)
+#             note_frequencies = [previous_freq]
+#             note_amplitudes = [previous_amp]
+#             while (i < len(f0) and
+#                    (confidences[i] >= MIN_CREPE_CONFIDENCE or
+#                     (Note.difference_cents(current_freq, previous_freq) <= MAX_CENTS_DIFFERENCE and
+#                      confidences[i] >= MIN_CREPE_CONFIDENCE - 0.15))):
+#                 end_time = times[i]
+#                 note_frequencies.append(current_freq)
+#                 note_amplitudes.append(current_amp)
+#                 i += 1
+#                 if i >= len(f0):
+#                     break
+#                 previous_freq = f0[i-1]
+#                 current_freq = f0[i]
+#                 previous_amp = amplitudes[i-1]
+#                 current_amp = amplitudes[i]
+#             # Average note's frequencies and reset end time
+#             new_note.pitch = np.average(note_frequencies)
+#             new_note.end = end_time
+#             new_note.velocity = np.max(note_amplitudes)
+#             note_objects.append(new_note)
 
-        # (Notes that aren't duplicated at all are assumed to be errors and skipped)
-        i += 1
+#         # (Notes that aren't duplicated at all are assumed to be errors and skipped)
+#         i += 1
 
-    # Keep notes that are long enough
-    note_objects = [note for note in note_objects if
-                    note.end - note.start >= MIN_NOTE_LENGTH]
+#     # Keep notes that are long enough
+#     note_objects = [note for note in note_objects if
+#                     note.end - note.start >= MIN_NOTE_LENGTH]
     
-    # Time shift notes to start at 0
-    offset = note_objects[0].start
-    for note in note_objects:
-        note.start -= offset
-        note.end -= offset
+#     # Time shift notes to start at 0
+#     offset = note_objects[0].start
+#     for note in note_objects:
+#         note.start -= offset
+#         note.end -= offset
     
-    return note_objects
+#     return note_objects
 
 def notes_to_JSON(notes: List[Note]) -> Dict:
     """Converts a list of notes into a JSON.
