@@ -174,6 +174,7 @@ def freq_to_notes_yin(f0: np.array, times: np.array, amplitudes: np.array, bpm: 
             new_note = Note(current_freq, current_amp, offset, 0)
             note_frequencies = [Note.round_frequency(previous_freq)]
             note_amplitudes = [previous_amp]
+            end_time = times[i]
             while (i < len(f0) and
                    Note.difference_cents(current_freq, note_frequencies[0]) <= MAX_CENTS_DIFFERENCE):
                 end_time = times[i]

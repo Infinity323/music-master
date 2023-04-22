@@ -65,7 +65,7 @@ function PracticeHistoryGraph() {
             yMin: 0,
             yMax: 100,
             borderColor: 'red',
-            borderWidth: 2,
+            borderWidth: 3,
             label: {
               content: "TODAY",
               position: 'end',
@@ -84,7 +84,7 @@ function PracticeHistoryGraph() {
               yMax: 100,
               value: item.id,
               borderColor: 'rgb(98, 232, 31)',
-              borderWidth: 2,
+              borderWidth: 3,
               label: {
                 content: [
                   "Goal: " + item.name,
@@ -100,18 +100,18 @@ function PracticeHistoryGraph() {
               click({element}) {
                 setSelectedGoal(element.options.value);
                 element.label.options.display = true;
-                element.options.borderWidth = 5;
+                element.options.borderWidth = 6;
                 return true;
               },
               enter({element}) {
                 element.label.options.display = true;
-                element.options.borderWidth = 5;
+                element.options.borderWidth = 6;
                 return true;
               },
               leave({element}) {
                 if (element.options.value !== selectedGoal) {
                   element.label.options.display = false;
-                  element.options.borderWidth = 2;
+                  element.options.borderWidth = 3;
                 }
                 return true;
               }
@@ -228,6 +228,7 @@ function PracticeHistoryGraph() {
           ),
           borderColor: 'rgb(243, 156, 18)',
           backgroundColor: 'rgba(243, 156, 18, 0.5)',
+          pointRadius: 7,
           spanGaps: true
         },
         {
@@ -244,6 +245,7 @@ function PracticeHistoryGraph() {
           ),
           borderColor: 'rgb(53, 162, 235)',
           backgroundColor: 'rgba(53, 162, 235, 0.5)',
+          pointRadius: 7,
           spanGaps: true
         },
         {
@@ -260,6 +262,7 @@ function PracticeHistoryGraph() {
           ),
           borderColor: 'rgb(191, 85, 236)',
           backgroundColor: 'rgba(191, 85, 236, 0.5)',
+          pointRadius: 7,
           spanGaps: true
         }
       ],
