@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useState, useContext } from 'react';
 import { IgrLinearGauge, IgrLinearGaugeModule, IgrLinearGraphRange } from 'igniteui-react-gauges';
 import { TunerContext } from '../utils/Contexts';
 import AudioAnalyzer from '../utils/AudioAnalyzer';
@@ -13,12 +13,13 @@ function Tuner() {
   const selectColor = style.getPropertyValue('--select-color');
   const borderColor = "rgba(1, 1, 1, 0.2)";
 
-  const microphone = useMicrophone();
+  const [enabled, setEnabled] = useState(true);
+  const microphone = useMicrophone(enabled);
   const currentNote = useContext(TunerContext)[0];
 
   return (
     <>
-      <div className="tuner-center">
+      <div className={enabled ? "tuner-center" : "tuner-center off"}>
         <text className="tuner-center">
           <text className="note-name">{currentNote ? currentNote.noteName : ""}</text>
           <text>{currentNote ? currentNote.octave : ""}</text>
@@ -26,8 +27,7 @@ function Tuner() {
           <text className="freq">{currentNote.freq ? Math.round(currentNote.freq*100)/100 + " Hz" : ""}</text>
         </text>
       </div>
-      <br/>
-      <div className="tuner-gauge">
+      <div className={enabled ? "tuner-gauge" : "tuner-gauge off"}>
         <IgrLinearGauge
           height="60px"
           minimumValue={-50}
@@ -90,7 +90,10 @@ function Tuner() {
           />
         </IgrLinearGauge>
       </div>
-      {microphone ? <AudioAnalyzer audio={microphone} /> : ""}
+      <div className="btn small" onClick={() => setEnabled(!enabled)}>
+        {enabled ? "Tuner On" : "Tuner Off"}
+      </div>
+      {microphone ? <AudioAnalyzer audio={microphone} enabled={enabled}/> : ""}
     </>
   );
 }

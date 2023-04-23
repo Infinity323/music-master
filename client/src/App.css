@@ -332,12 +332,16 @@ div.tuner-center {
   vertical-align: middle;
   margin: auto;
   margin-top: 20px;
+  margin-bottom: 5px;
 }
 div.tuner-gauge {
   text-align: left;
   width: 60vw;
   margin: auto auto;
   box-shadow: 0px 0px 2px var(--shadow-color);
+}
+div.tuner-center.off, div.tuner-gauge.off {
+  opacity: 0.2;
 }
 text.tuner-center {
   margin: auto;
