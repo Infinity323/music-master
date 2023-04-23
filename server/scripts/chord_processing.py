@@ -438,6 +438,9 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     xml_dicts = []
 
     for chord_obj in chord_objects:
+        if chord_obj.root == 'N':
+            # Removing N chords (not a chord)
+            continue
         xml_string = chord_to_xml(chord_obj)
         xml_dicts.append(xml_string)
     
