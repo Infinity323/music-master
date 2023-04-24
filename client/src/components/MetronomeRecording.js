@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
-import { Flex, Box } from '@chakra-ui/react';
-import { baseUrl } from '../App'
+import { Flex, Box, CircularProgress, CircularProgressLabel, Button } from '@chakra-ui/react';
 import { ThemeContext } from '../utils/Contexts';
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
-class Metronome extends Component {
+class MetronomeRecording extends Component {
   constructor(props) {
     super(props);
 
@@ -19,12 +18,7 @@ class Metronome extends Component {
       currentBeatInBar: 0,
       beatsPerBar: 4,
       bpm: 100,
-      btn3: true,
-      btn4: true,
-      btn5: false,
-      btn6: false,
       // Internal state variables
-      isRasPi: false,
       lookahead: 25,
       scheduleAheadTime: 0.1,
       nextNoteTime: 0.0,
@@ -34,85 +28,12 @@ class Metronome extends Component {
     };
   }
 
-  chgbtn3 = () => {
-    if(this.state.btn3 === false){
-      this.setState(state => ({
-        btn3: true,
-        beatsPerBar: 3
-      }));
-    }
-    else{
-      this.setState(state => ({
-        btn3: false,
-        btn4: false,
-        btn5: false,
-        btn6: false,
-        beatsPerBar: 2
-      }));
-    }
-  }
-  chgbtn4 = () => {
-    if(this.state.btn4 === false){
-      this.setState(state => ({
-        btn3: true,
-        btn4: true,
-        beatsPerBar: 4
-      }));
-    }
-    else{
-      this.setState(state => ({
-        btn4: false,
-        btn5: false,
-        btn6: false,
-        beatsPerBar: 3
-      }));
-    }
-  }
-  chgbtn5 = () => {
-    if(this.state.btn5 === false){
-      this.setState(state => ({
-        btn3: true,
-        btn4: true,
-        btn5: true,
-        beatsPerBar: 5
-      }));
-    }
-    else{
-      this.setState(state => ({
-        btn5: false,
-        btn6: false,
-        beatsPerBar: 4
-      }));
-    }
-  }
-  chgbtn6 = () => {
-    if(this.state.btn6 === false){
-      this.setState(state => ({
-        btn3: true,
-        btn4: true,
-        btn5: true,
-        btn6: true,
-        beatsPerBar: 6
-      }));
-    }
-    else{
-      this.setState(state => ({
-        btn6: false,
-        beatsPerBar: 5
-      }));
-    }
-  }
-
   /**
    * Increments the next note time and current beat in bar.
    * Adjusts seconds per beat in case metronome was adjusted.
    */
   nextBeat = () => {
-    let secondsPerBeat = 60.0 / this.state.bpm;
-    // Counteract lag by shortening beat interval
-    // if (this.state.isRasPi) {
-    //   secondsPerBeat *= 0.693;
-    // }
+    var secondsPerBeat = 60.0 / this.state.bpm;
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
       currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
@@ -154,9 +75,11 @@ class Metronome extends Component {
       this.setState({
         isBeat: true
       });
-    } else {
+    }
+    else{
       this.setState({
         isBeat: false,
+        lastbeat: false
       });
     }
   }
@@ -204,18 +127,6 @@ class Metronome extends Component {
     });
   }
 
-  componentDidMount() {
-    // Since Pi is slow, need to modify beat timing
-    fetch(`${baseUrl}/status/platform`)
-      .then(res => res.json())
-      .then(result => {
-        if (result.platform.includes("raspi")) {
-          this.setState({isRasPi: true})
-        }
-      })
-      .catch(error => console.error(error));
-  }
-
   componentWillUnmount() {
     clearInterval(this.state.timerID);
   }
@@ -227,10 +138,17 @@ class Metronome extends Component {
         <Flex flexDir="column">
           <Flex flexDir="row" alignItems="center">
             <Box>
-              <div className={this.state.isPlaying ? "btn metro playing" : "btn metro"} onClick={this.startStopMetro}>
+              <div className={this.state.isPlaying ? (this.state.currentBeatInBar === 0 ? "btn metro playing rec0" 
+              : (this.state.currentBeatInBar === 1 ? "btn metro playing rec1" 
+              : (this.state.currentBeatInBar === 2 ? "btn metro playing rec2" 
+              : (this.state.currentBeatInBar === 3 ? "btn metro playing rec3" 
+              : (this.state.currentBeatInBar === 4 ? "btn metro playing rec4" 
+              : (this.state.currentBeatInBar === 5 ? "btn metro playing rec5" : "btn metro rec")))))) 
+              : "btn metro rec"} 
+              onClick={this.startStopMetro}>
                 <img
                   src={theme === "light" ? image_metronome : image_metronome_white}
-                  alt="Start/Stop Metronome" height={50} width={50}/>
+                  alt="Start/Stop Metronome" height={500} width={500}/>
               </div>
             </Box>
             <Flex flexDir="column" alignItems="center">
@@ -239,7 +157,7 @@ class Metronome extends Component {
                   {this.state.bpm}
                 </div>
               </Box>
-              <Box width={80}>
+              <Box width={100}>
                 <div className="btn bpm" onClick={this.decBPM}>
                   -
                 </div>
@@ -249,31 +167,11 @@ class Metronome extends Component {
               </Box>
             </Flex>
           </Flex>
-          <Box>
-            <div className={this.state.currentBeatInBar === 0 ? "prog on" : "prog off"}>
-              <div className='btn inv'/>
-            </div>
-            <div className={(this.state.currentBeatInBar === 1) ? "prog on" : "prog off"}>
-              <div className='btn inv'/>
-            </div>
-            <div className={(this.state.btn3 === false) ? "prog black" : (((this.state.currentBeatInBar === 2) && this.state.btn3 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
-            </div>
-            <div className={(this.state.btn4 === false) ? "prog black" : (((this.state.currentBeatInBar === 3 ) && this.state.btn4 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
-            </div>
-            <div className={(this.state.btn5 === false) ? "prog black" : (((this.state.currentBeatInBar === 4 ) && this.state.btn5 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
-            </div>
-            <div className={(this.state.btn6 === false) ? "prog black" : (((this.state.currentBeatInBar === 5 ) && this.state.btn6 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
-            </div>
-          </Box>
         </Flex>
       </div>
     );
   }
 }
-Metronome.contextType = ThemeContext;
+MetronomeRecording.contextType = ThemeContext;
 
-export default Metronome;
+export default MetronomeRecording;

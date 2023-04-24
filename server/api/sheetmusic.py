@@ -121,7 +121,7 @@ def deleteSheetMusic(id):
 
         # delete performance entries
         db.session.delete(performance)
-
+    #TODO: Delete everything in runs folder
     # delete now-empty run subfolder
     runs_folder_name = str(sheet_music.id) + "_" + sheet_music.title + "/runs"
     try:
