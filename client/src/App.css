@@ -315,8 +315,39 @@ div.prog.on, div.prog.off {
   border-radius: 50%;
   display: inline-block;
 }
+div.prog.black {
+  background-color: black;
+  height: 20px;
+  width: 20px;
+  line-height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+}
 div.prog.off {
   background-color: var(--btn-color);
+}
+.metrorecalign {
+  text-align: center;
+}
+.metronomerec {
+  background-color: var(--bg-color);
+  border-radius: 10px;
+  margin: 5px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0px 0px 2px var(--shadow-color);
+  width: 550px;
+  height: 550px;;
+}
+.btn.metro.rec {
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec {
+  background-color: var(--select-color);
+  transition-duration: 200ms;
 }
 
 /********************/
