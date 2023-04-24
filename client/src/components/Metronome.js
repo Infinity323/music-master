@@ -125,8 +125,8 @@ class Metronome extends Component {
     const envelope = this.audioContext.current.createGain();
       
     // Create beat noise. First beat in bar has higher frequency
-    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 1000 : 800;
-    envelope.gain.value = 1;
+    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 0 : 0; //1000 800
+    envelope.gain.value = 0; //1
     
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
