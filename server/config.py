@@ -6,7 +6,7 @@ if platform.system() == "Linux":
     user_home = os.path.expanduser("~")
     instance_path = os.path.join(user_home, "music-master")
 else:
-    instance_path = "instance"
+    instance_path = os.path.join(os.getcwd(), "instance")
 
 # Config class for Flask app
 class Config(object):
