@@ -345,9 +345,47 @@ div.prog.off {
   height: 550px;
   width: 550px;
 }
-.btn.metro.playing.rec {
-  background-color: var(--select-color);
+.btn.metro.playing.rec0 {
+  background-color: red;
   transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec1 {
+  background-color: green;
+  transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec2 {
+  background-color: blue;
+  transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec3 {
+  background-color: rgb(153, 239, 23);
+  transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec4 {
+  background-color: rgb(247, 11, 165);
+  transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
+}
+.btn.metro.playing.rec5 {
+  background-color: rgb(19, 244, 248);
+  transition-duration: 200ms;
+  padding: 10px;
+  height: 550px;
+  width: 550px;
 }
 
 /********************/

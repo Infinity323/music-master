@@ -5,7 +5,6 @@ import { baseUrl } from '../App';
 import { BpmContext, SheetMusicContext } from '../utils/Contexts';
 import useMicrophone from '../utils/UseMicrophone';
 import loading_gif from '../assets/images/loading_gif.gif'
-import MetronomeRecording from './MetronomeRecording';
 
 function RecordControl() {
   const [isRecording, setIsRecording] = useState(false);

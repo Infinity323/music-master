@@ -138,7 +138,14 @@ class MetronomeRecording extends Component {
         <Flex flexDir="column">
           <Flex flexDir="row" alignItems="center">
             <Box>
-              <div className={this.state.isPlaying ? "btn metro playing rec" : "btn metro rec"} onClick={this.startStopMetro}>
+              <div className={this.state.isPlaying ? (this.state.currentBeatInBar === 0 ? "btn metro playing rec0" 
+              : (this.state.currentBeatInBar === 1 ? "btn metro playing rec1" 
+              : (this.state.currentBeatInBar === 2 ? "btn metro playing rec2" 
+              : (this.state.currentBeatInBar === 3 ? "btn metro playing rec3" 
+              : (this.state.currentBeatInBar === 4 ? "btn metro playing rec4" 
+              : (this.state.currentBeatInBar === 5 ? "btn metro playing rec5" : "btn metro rec")))))) 
+              : "btn metro rec"} 
+              onClick={this.startStopMetro}>
                 <img
                   src={theme === "light" ? image_metronome : image_metronome_white}
                   alt="Start/Stop Metronome" height={500} width={500}/>
