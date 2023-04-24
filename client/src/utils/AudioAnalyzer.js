@@ -35,20 +35,16 @@ function AudioAnalyzer({audio}) {
   const rafId = useRef();
   const source = useRef();
   const audioContext = useRef();
-
-  const detectPitch = new Pitchfinder.AMDF({
-    maxFrequency: 800,
-    minFrequency: 50
-  });
+  const detectPitch = useRef();
 
   const setCurrentNote = useContext(TunerContext)[1];
 
   function tick() {
     const dataArray32 = new Float32Array(analyzer.current.fftSize);
     analyzer.current.getFloatTimeDomainData(dataArray32);
-    const pitch = detectPitch(dataArray32);
+    const pitch = detectPitch.current(dataArray32);
     if (pitch) {
-      const freq = pitch * 1.09;
+      const freq = pitch; // * 1.09
       const note = getNote(freq);
       const cents = getCents(freq, note);
       const noteName = getNoteName(note);
@@ -60,6 +56,11 @@ function AudioAnalyzer({audio}) {
 
   useEffect(() => {
     audioContext.current = new AudioContext();
+    detectPitch.current = new Pitchfinder.AMDF({
+      maxFrequency: 800,
+      minFrequency: 50,
+      sampleRate: audioContext.current.sampleRate
+    });
     analyzer.current = audioContext.current.createAnalyser();
     source.current = audioContext.current.createMediaStreamSource(audio);
     source.current.connect(analyzer.current);

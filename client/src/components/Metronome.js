@@ -110,9 +110,9 @@ class Metronome extends Component {
   nextBeat = () => {
     let secondsPerBeat = 60.0 / this.state.bpm;
     // Counteract lag by shortening beat interval
-    if (this.state.isRasPi) {
-      secondsPerBeat *= 0.693;
-    }
+    // if (this.state.isRasPi) {
+    //   secondsPerBeat *= 0.693;
+    // }
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
       currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar

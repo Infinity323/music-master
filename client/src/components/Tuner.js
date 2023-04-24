@@ -19,7 +19,10 @@ function Tuner() {
 
   return (
     <>
-      <div className={enabled ? "tuner-center" : "tuner-center off"}>
+      <div
+        className={enabled ? "tuner-center" : "tuner-center off"}
+        onClick={() => setEnabled(!enabled)}
+      >
         <text className="tuner-center">
           <text className="note-name">{currentNote ? currentNote.noteName : ""}</text>
           <text>{currentNote ? currentNote.octave : ""}</text>
@@ -90,10 +93,7 @@ function Tuner() {
           />
         </IgrLinearGauge>
       </div>
-      <div className="btn small" onClick={() => setEnabled(!enabled)}>
-        {enabled ? "Tuner On" : "Tuner Off"}
-      </div>
-      {microphone ? <AudioAnalyzer audio={microphone} enabled={enabled}/> : ""}
+      {microphone && enabled ? <AudioAnalyzer audio={microphone}/> : ""}
     </>
   );
 }
