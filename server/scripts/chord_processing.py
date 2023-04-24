@@ -7,7 +7,7 @@ from scripts.musicxml_reader import Chord as XMLChord
 from scripts.signal_processing import NpEncoder
 from music21 import chord, pitch
 from chord_extractor.extractors import Chordino
-from typing import List
+from typing import List, Dict
 
 # Note to get velocity use the librosa library at the chords start time (or maybe at the middle of the start and end times)
 
@@ -403,7 +403,30 @@ def get_amplitude(file_name: str, audio, sr) -> List[float]:
 
     return midi_velocities
 
-def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
+def chords_to_JSON(notes: List[Dict]) -> Dict:
+    """Converts a list of chords into a JSON.
+
+    Args:
+        notes (List[Dict]): The list of chords (in dictionary format)
+
+    Returns:t
+        Dict: A dict containing the number of chords and the list of chords
+    """
+    
+    chords_JSON_array = []
+    for i in range(len(notes)):
+        chords_JSON_array.append(notes[i].__dict__)
+
+    result_dict = {
+        "size": int(len(notes)),
+        "notes": chords_JSON_array
+    }
+
+    result_object = json.dumps(result_dict, indent=4, cls=NpEncoder)
+
+    return result_object
+
+def run_chord_processing(file_name: str, json_notes: dict = None, merge = False) -> str:
     """
     Function to run chord processing on a wav file
     
@@ -474,10 +497,15 @@ def run_chord_processing(file_name: str, json_notes: dict = None) -> str:
     json_notes_dict = json.loads(json_notes)
 
     # Throwing in the results into the json file
-    for chord in result_chords:
-        json_notes_dict['notes'].append(chord.to_dict())
-        json_notes_dict['size'] += 1
-    
-    result_object = json.dumps(json_notes_dict, indent=4)
+    if merge == True:
+        # Merges chords and notes
+        for chord in result_chords:
+            json_notes_dict['notes'].append(chord.to_dict())
+            json_notes_dict['size'] += 1
+        
+        result_object = json.dumps(json_notes_dict, indent= 4)
+    else:
+        # Returns chords separately
+        result_object = chords_to_JSON(result_chords)
 
     return result_object

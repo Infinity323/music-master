@@ -192,6 +192,7 @@ class MusicXMLReader:
             elif isinstance(element, m21note.Rest):
                 elements_list.append({
                                     "element": "rest",
+                                    "name" : "other",
                                     "type": get_type_with_dots(element),
                                     "measure": measure_number,
                                     "position": measure_position_count[measure_number]
