@@ -74,9 +74,9 @@ def amplitude_to_midi_velocity(amplitude: np.array) -> np.array:
     # Amplitude value assigned to mezzo forte (velocity 80)
     MF_RMS = np.log10(0.0282389)
     #TODO
-    for a in amplitude:
+    '''for a in amplitude:
         if(a == 0):
-            amplitude = 1
+            amplitude = 1'''
     amplitude = np.log10(amplitude)
     lower = np.min(amplitude)
     upper = MF_RMS
