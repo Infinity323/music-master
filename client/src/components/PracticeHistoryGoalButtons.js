@@ -3,10 +3,10 @@ import Modal from 'react-modal';
 import ReactSlider from 'react-slider';
 import { Box, Flex } from '@chakra-ui/react';
 import { baseUrl } from '../App';
-import { SheetMusicIdContext } from '../utils/Contexts';
+import { SheetMusicContext } from '../utils/Contexts';
 
 function AddGoalButton({goals, setGoals}) {
-  const selectedMusic = useContext(SheetMusicIdContext)[0];
+  const selectedMusic = useContext(SheetMusicContext)[0].id;
   const [modalIsOpen, setModalIsOpen] = useState(false);
   // Goal data
   const [name, setName] = useState("");

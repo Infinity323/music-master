@@ -2,14 +2,14 @@ import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HomeButton } from '../components/Buttons';
 import SheetMusicDropdown from '../components/SheetMusicDropdown';
-import { SheetMusicIdContext } from '../utils/Contexts';
+import { SheetMusicContext } from '../utils/Contexts';
 import BpmSelector from "../components/BpmSelector";
 
 function StartPracticeSession() {
 
   function RecordButton() {
     const navigate = useNavigate();
-    const sheetMusicId  = useContext(SheetMusicIdContext)[0];
+    const sheetMusicId  = useContext(SheetMusicContext)[0].id;
 
     return (
       <div

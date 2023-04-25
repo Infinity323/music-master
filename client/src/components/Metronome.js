@@ -3,38 +3,6 @@ import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
 import { Flex, Box, CircularProgress, CircularProgressLabel, Button } from '@chakra-ui/react';
 import { ThemeContext } from '../utils/Contexts';
-/*
-//Circle
-//https://medium.com/tinyso/how-to-create-an-animated-svg-circular-progress-component-in-react-5123c7d24391
-const Circular = ({size,strokeWidth,percentage,color}) => {
-  const viewBox = '0 0 ${size} ${size}';
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * Math.PI *2;
-  const dash = (percentage*circumference) / 100;
-  return(
-    <svg width={size} height={size} viewBox={viewBox}>
-      <circle
-        fill="none"
-        stroke="#ccc"
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={'${strokeWidth}px'}
-      />
-      <circle
-        fill="none"
-        strokeWidth={color}
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        strokeWidth={'${strokeWidth}px'}
-        transform={'rotate(-90 ${size / 2} ${size / 2})'}
-        strokeDasharray={[dash,circumference - dash]}
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}*/
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -157,8 +125,8 @@ class Metronome extends Component {
     const envelope = this.audioContext.current.createGain();
       
     // Create beat noise. First beat in bar has higher frequency
-    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 1000 : 800;
-    envelope.gain.value = 1;
+    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 0 : 0; //1000 800
+    envelope.gain.value = 0; //1
     
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
@@ -278,16 +246,16 @@ class Metronome extends Component {
             <div className={(this.state.currentBeatInBar === 1) ? "prog on" : "prog off"}>
               <div className='btn inv'/>
             </div>
-            <div className={((this.state.currentBeatInBar === 2) && this.state.btn3 === true) ? "prog on" : "prog off"}>
+            <div className={(this.state.btn3 === false) ? "prog black" : (((this.state.currentBeatInBar === 2) && this.state.btn3 === true) ? "prog on" : "prog off")}>
               <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
             </div>
-            <div className={((this.state.currentBeatInBar === 3 ) && this.state.btn4 === true) ? "prog on" : "prog off"}>
+            <div className={(this.state.btn4 === false) ? "prog black" : (((this.state.currentBeatInBar === 3 ) && this.state.btn4 === true) ? "prog on" : "prog off")}>
               <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
             </div>
-            <div className={((this.state.currentBeatInBar === 4 ) && this.state.btn5 === true) ? "prog on" : "prog off"}>
+            <div className={(this.state.btn5 === false) ? "prog black" : (((this.state.currentBeatInBar === 4 ) && this.state.btn5 === true) ? "prog on" : "prog off")}>
               <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
             </div>
-            <div className={((this.state.currentBeatInBar === 5 ) && this.state.btn6 === true) ? "prog on" : "prog off"}>
+            <div className={(this.state.btn6 === false) ? "prog black" : (((this.state.currentBeatInBar === 5 ) && this.state.btn6 === true) ? "prog on" : "prog off")}>
               <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
             </div>
           </Box>
