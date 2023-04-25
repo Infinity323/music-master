@@ -5,6 +5,7 @@ import { baseUrl } from '../App';
 import { BpmContext, SheetMusicContext } from '../utils/Contexts';
 import useMicrophone from '../utils/UseMicrophone';
 import loading_gif from '../assets/images/loading_gif.gif'
+import MetronomeRecording from './MetronomeRecording';
 
 function RecordControl() {
   const [isRecording, setIsRecording] = useState(false);
@@ -44,8 +45,8 @@ function RecordControl() {
 
   const startRecording = async () => {
     // Wait for countdown
-    setIsStarting(true);
-    await startCountdown();
+    // setIsStarting(true);
+    // await startCountdown();
     setIsStarting(false);
 
     // Then start recording
@@ -112,7 +113,7 @@ function RecordControl() {
         !isRecording && !isComplete
         ? <>
             <h2>Start Recording</h2>
-            <p>Begin playing after the countdown.</p>
+            <p>Start a new live recording or upload an existing one.</p>
             <div
               className={isLoading ? "btn small disabled" : "btn small"}
               onClick={startRecording}
@@ -141,16 +142,18 @@ function RecordControl() {
         : ""
       }
       { /* Countdown */
-        isStarting
-        ? <div className="countdown">
-            {"" + countdownDisplay}
-          </div>
-        : ""
+        // isStarting
+        // ? <div className="countdown">
+        //     {"" + countdownDisplay}
+        //   </div>
+        // : ""
       }
       { /* Recording in progress view */
         isRecording
         ? <>
             <h2>Recording in Progress</h2>
+            <p>Begin playing whenever ready.</p>
+            <MetronomeRecording bpm={bpm}/>
             <div className="btn small" onClick={stopRecording}>Stop</div>
             <div className="btn small" onClick={cancelRecording}>Cancel</div>
           </>

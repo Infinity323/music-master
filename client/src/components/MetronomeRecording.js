@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
-import { Flex, Box, Checkbox, CheckboxGroup , Button } from '@chakra-ui/react';
+import { Flex, Box, Center, Checkbox } from '@chakra-ui/react';
 import { ThemeContext } from '../utils/Contexts';
+import { style } from '../App';
 
 // Metronome built using this as guidance.
 // https://grantjam.es/creating-a-simple-metronome-using-javascript-and-the-web-audio-api/
@@ -17,11 +18,10 @@ class MetronomeRecording extends Component {
       // User-customizable state variables
       currentBeatInBar: 0,
       beatsPerBar: 4,
-      bpm: 100,
+      bpm: props.bpm,
       vol_f1: 1000,
       vol_f2: 800,
       vol_g: 1,
-      checklabel: 'UnMuted',
       // Internal state variables
       lookahead: 25,
       scheduleAheadTime: 0.1,
@@ -138,14 +138,12 @@ class MetronomeRecording extends Component {
   handleCheckboxChange = (event) => {
     if (event.target.checked) {
       this.setState({ 
-        checklabel: 'UnMuted',
         vol_f1: 1000,
         vol_f2: 800,
         vol_g: 1
       });
     } else {
       this.setState({ 
-        checklabel: 'Muted',
         vol_f1: 0,
         vol_f2: 0,
         vol_g: 0
@@ -155,44 +153,56 @@ class MetronomeRecording extends Component {
 
   render() {
     let theme = this.context[0];
+    let textColor = style.getPropertyValue("--text-color");
+    let btnColor = style.getPropertyValue("--btn-color");
     return ( 
-      <div className="metronome" style={this.state.isPlaying ? (this.state.currentBeatInBar === 0 ? { backgroundColor: 'red', width: '1500px', height: '750px'} 
-      : { backgroundColor: 'green', width: '1500px', height: '750px'})
-      : { backgroundColor: 'var(--bg-color)', width: '1500px', height: '750px'}}>
-        <Flex flexDir="column" style={{justifyContent: 'center', alignItems: 'center', textAlign: 'center'}}>
+      <div
+        className={
+          this.state.isPlaying
+          ? this.state.currentBeatInBar === 0
+            ? "metronome-rec beat downbeat"
+            : this.state.currentBeatInBar % 2 === 0
+              ? "metronome-rec beat even"
+              : "metronome-rec beat odd"
+          : "metronome-rec"
+        }
+      >
+        <Flex flexDir="column" justifyContent="center" alignItems="center" height="100%">
+          <Checkbox
+            iconColor={textColor}
+            iconSize="1rem"
+            defaultChecked
+            backgroundColor={btnColor}
+            margin="5px"
+            padding="2px"
+            borderRadius="5px"
+            boxShadow={"0px 0px 2px rgba(1, 1, 1, 0.2)"}
+            onChange={this.handleCheckboxChange}
+          >
+            Sound
+          </Checkbox>
+          <Box>
+            <div
+              className={this.state.isPlaying ? "btn metro-rec on" : "btn metro-rec"}
+              onClick={this.startStopMetro}
+            >
+              <img
+                className="metro-rec"
+                src={theme === "light" ? image_metronome : image_metronome_white}
+                alt="Start/Stop Metronome"
+              />
+            </div>
+          </Box>
           <Flex flexDir="row" alignItems="center">
-            <Box>
-              <div className={this.state.isPlaying ? (this.state.currentBeatInBar === 0 ? "btn metro playing rec0" 
-              : (this.state.currentBeatInBar === 1 ? "btn metro playing rec1" 
-              : (this.state.currentBeatInBar === 2 ? "btn metro playing rec1" 
-              : (this.state.currentBeatInBar === 3 ? "btn metro playing rec1" 
-              : (this.state.currentBeatInBar === 4 ? "btn metro playing rec1" 
-              : (this.state.currentBeatInBar === 5 ? "btn metro playing rec1" : "btn metro rec")))))) 
-              : "btn metro rec"} 
-              onClick={this.startStopMetro}>
-                <img
-                  src={theme === "light" ? image_metronome : image_metronome_white}
-                  alt="Start/Stop Metronome" height={500} width={500}/>
-              </div>
-            </Box>
-            <Flex flexDir="column" alignItems="center">
-              <Box>
-                <div className="metro bpm">
-                  {this.state.beatsPerBar}
-                </div>
-              </Box>
-              <Box width={100}>
-                <div className="btn bpm" onClick={this.decBPB}>
-                  -
-                </div>
-                <div className="btn bpm" onClick={this.incBPB}>
-                  +
-                </div>
-              </Box>
-              <Checkbox iconColor='black' iconSize='1rem' defaultChecked onChange={this.handleCheckboxChange}>
-                {this.state.checklabel}
-              </Checkbox>
-            </Flex>
+            <div className="btn bpm" onClick={this.decBPB}>
+              -
+            </div>
+            <div className="metro bpm">
+              {this.state.beatsPerBar}
+            </div>
+            <div className="btn bpm" onClick={this.incBPB}>
+              +
+            </div>
           </Flex>
         </Flex>
       </div>
