@@ -1,7 +1,8 @@
 import json
 # import pygame
 import pretty_midi
-from music21 import converter, pitch, tempo, note as m21note
+import music21
+from music21 import converter, pitch, tempo, note as m21note, repeat
 # from music21 import environment
 # from mido import MidiFile
 
@@ -29,6 +30,9 @@ class MusicXMLReader:
         # Parse the MusicXML file and create a MIDI file
         self.xml_score = converter.parse(xml_file)
 
+        # Handle al coda instructions
+        self.handle_al_coda()
+
         # Set the custom tempo
         self.set_custom_tempo(custom_tempo)
         
@@ -44,6 +48,39 @@ class MusicXMLReader:
 
         # Initialize the PrettyMIDI object
         self.pretty_midi = pretty_midi.PrettyMIDI(midi_file_out)
+
+    def handle_al_coda(self):
+        for part in self.xml_score.parts:
+            # Initialize variables to store positions of the instructions
+            coda_position = None
+            segno_position = None
+            to_coda_position = None
+
+            # Search for the instructions in the part
+            for measure in part.getElementsByClass(music21.stream.Measure):
+                for element in measure.elements:
+                    if isinstance(element, music21.repeat.Coda):
+                        coda_position = measure.number
+
+                    if isinstance(element, music21.repeat.Segno):
+                        segno_position = measure.number
+
+                    if isinstance(element, music21.expressions.TextExpression):
+                        if 'To Coda' in element.content:
+                            to_coda_position = measure.number
+
+            # If all positions are found, handle the Al Coda instructions
+            if coda_position is not None and segno_position is not None and to_coda_position is not None:
+                # Reorder the measures based on the Al Coda instructions
+                reordered_measures = music21.stream.Stream()
+                reordered_measures.append(part.measures(0, segno_position - 1).flat.elements)
+                reordered_measures.append(part.measures(segno_position, to_coda_position).flat.elements)
+                
+                # Append the remaining measures after the coda_position
+                reordered_measures.append(part.measures(coda_position + 1, None).flat.elements)
+
+                # Replace the original measures with the reordered measures
+                part.elements = reordered_measures.elements
     
     def set_custom_tempo(self, custom_tempo):
         # Set the custom tempo for all parts in the score
@@ -71,17 +108,31 @@ class MusicXMLReader:
             return 120
 
     def get_notes(self, part_index=0):
-        # Get a list of notes for the specified instrument
+        elements_list = self.get_notes_and_measure_num(part_index)
+        return self.get_notes_from_elements(elements_list)
+    
+    def get_notes_from_elements(self, elements_list):
         notes_list = []
-        notes = self.pretty_midi.instruments[part_index].notes
-        for note in notes:
-            notes_list.append({
-                "pitch": pitch.Pitch(midi=note.pitch).frequency * # use nameWithOctave for A4
-                    (SEMITONE_RATIO**FREQUENCY_OFFSETS.get(self.instrument)), # apply instrument pitch offset
-                "velocity": note.velocity,
-                "start": note.start,
-                "end": note.end
-            })
+        instrument_notes = self.pretty_midi.instruments[0].notes
+        for element in elements_list:
+            if element["element"] == "note":
+                note_pitch = pitch.Pitch(element["name"]).midi
+
+                # Find the corresponding note in the PrettyMIDI notes list
+                matched_note = None
+                for note in instrument_notes:
+                    if note.pitch == note_pitch:
+                        matched_note = note
+                        break
+
+                if matched_note is not None:
+                    notes_list.append({
+                        "pitch": pitch.Pitch(midi=note_pitch).frequency *
+                                (SEMITONE_RATIO ** FREQUENCY_OFFSETS.get(self.instrument)),
+                        "velocity": matched_note.velocity,
+                        "start": matched_note.start,
+                        "end": matched_note.end
+                    })
         return notes_list
     
     def get_notes_and_measure_num(self, part_index=0):
@@ -145,7 +196,7 @@ class MusicXMLReader:
     #             pygame.time.Clock().tick(10)
     #         pygame.mixer.quit()
 
-# def main():
+def main():
     # Set the environment variable for the MuseScore path based on the operating system
 
     # note: envronemnt must have MuseScore installed!
@@ -156,8 +207,8 @@ class MusicXMLReader:
     # environment.set('musescoreDirectPNGPath', environment_path)
 
     # Create a MusicXMLReader instance and print the JSON representation of note data
-    # reader = MusicXMLReader('example.musicxml')
-    # print(reader.save_notes_json())
+    # reader = MusicXMLReader('Scotland_the_Brave-_Clarinet.musicxml', instrument="Clarinet", midi_file_out="out.wav")
+    # print(reader.save_notes_json("out.json"))
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+     main()
