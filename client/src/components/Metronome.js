@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import image_metronome from '../assets/images/metronome.png';
 import image_metronome_white from '../assets/images/metronome_white.png';
-import { Flex, Box, CircularProgress, CircularProgressLabel, Button } from '@chakra-ui/react';
+import { Flex, Box } from '@chakra-ui/react';
+import { baseUrl } from '../App'
 import { ThemeContext } from '../utils/Contexts';
 
 // Metronome built using this as guidance.
@@ -22,8 +23,8 @@ class Metronome extends Component {
       btn4: true,
       btn5: false,
       btn6: false,
-      lastbeat: false,
       // Internal state variables
+      isRasPi: false,
       lookahead: 25,
       scheduleAheadTime: 0.1,
       nextNoteTime: 0.0,
@@ -107,7 +108,11 @@ class Metronome extends Component {
    * Adjusts seconds per beat in case metronome was adjusted.
    */
   nextBeat = () => {
-    var secondsPerBeat = 60.0 / this.state.bpm;
+    let secondsPerBeat = 60.0 / this.state.bpm;
+    // Counteract lag by shortening beat interval
+    // if (this.state.isRasPi) {
+    //   secondsPerBeat *= 0.693;
+    // }
     this.setState(state => ({
       nextNoteTime: state.nextNoteTime + secondsPerBeat,
       currentBeatInBar: (state.currentBeatInBar + 1) % state.beatsPerBar
@@ -125,8 +130,8 @@ class Metronome extends Component {
     const envelope = this.audioContext.current.createGain();
       
     // Create beat noise. First beat in bar has higher frequency
-    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 0 : 0; //1000 800
-    envelope.gain.value = 0; //1
+    osc.frequency.value = (beatNumber + 1) % this.state.beatsPerBar === 0 ? 1000 : 800;
+    envelope.gain.value = 1;
     
     envelope.gain.exponentialRampToValueAtTime(1, time + 0.001);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.02);
@@ -143,22 +148,15 @@ class Metronome extends Component {
    * Schedules next beat when needed (as opposed to infinitely).
    */
   scheduler = () => {
-    if(this.state.beatsPerBar === (this.state.currentBeatInBar+1) && this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime){
-      this.setState({
-        lastbeat: true
-      });
-    }
     if (this.state.nextNoteTime < this.audioContext.current.currentTime + this.state.scheduleAheadTime) {
       this.scheduleBeat(this.state.currentBeatInBar, this.state.nextNoteTime);
       this.nextBeat();
       this.setState({
         isBeat: true
       });
-    }
-    else{
+    } else {
       this.setState({
         isBeat: false,
-        lastbeat: false
       });
     }
   }
@@ -206,6 +204,18 @@ class Metronome extends Component {
     });
   }
 
+  componentDidMount() {
+    // Since Pi is slow, need to modify beat timing
+    fetch(`${baseUrl}/status/platform`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.platform.includes("raspi")) {
+          this.setState({isRasPi: true})
+        }
+      })
+      .catch(error => console.error(error));
+  }
+
   componentWillUnmount() {
     clearInterval(this.state.timerID);
   }
@@ -217,7 +227,9 @@ class Metronome extends Component {
         <Flex flexDir="column">
           <Flex flexDir="row" alignItems="center">
             <Box>
-              <div className={this.state.isPlaying ? "btn metro playing" : "btn metro"} onClick={this.startStopMetro}>
+              <div
+                className={this.state.isPlaying ? "btn metro playing" : "btn metro"}
+                onClick={this.startStopMetro}>
                 <img
                   src={theme === "light" ? image_metronome : image_metronome_white}
                   alt="Start/Stop Metronome" height={50} width={50}/>
@@ -243,20 +255,53 @@ class Metronome extends Component {
             <div className={this.state.currentBeatInBar === 0 ? "prog on" : "prog off"}>
               <div className='btn inv'/>
             </div>
-            <div className={(this.state.currentBeatInBar === 1) ? "prog on" : "prog off"}>
+            <div className={this.state.currentBeatInBar === 1 ? "prog on" : "prog off"}>
               <div className='btn inv'/>
             </div>
-            <div className={(this.state.btn3 === false) ? "prog black" : (((this.state.currentBeatInBar === 2) && this.state.btn3 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn3 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn3}/>
+            <div
+              className={
+                this.state.btn3 === false
+                ? "prog black"
+                : this.state.currentBeatInBar === 2 && this.state.btn3 === true
+                  ? "prog on" : "prog off"
+              }
+            >
+              <div
+                className={this.state.btn3 === true ? "btn cb" : "btn cb off"}
+                onClick={this.chgbtn3}/>
             </div>
-            <div className={(this.state.btn4 === false) ? "prog black" : (((this.state.currentBeatInBar === 3 ) && this.state.btn4 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn4 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn4}/>
+            <div className={
+              this.state.btn4 === false
+              ? "prog black"
+              : this.state.currentBeatInBar === 3 && this.state.btn4 === true
+                ? "prog on" : "prog off"}
+            >
+              <div
+                className={this.state.btn4 === true ? "btn cb" : "btn cb off"}
+                onClick={this.chgbtn4}/>
             </div>
-            <div className={(this.state.btn5 === false) ? "prog black" : (((this.state.currentBeatInBar === 4 ) && this.state.btn5 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn5 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn5}/>
+            <div
+              className={
+                this.state.btn5 === false
+                ? "prog black"
+                : this.state.currentBeatInBar === 4 && this.state.btn5 === true
+                  ? "prog on" : "prog off"
+              }
+            >
+              <div
+                className={this.state.btn5 === true ? "btn cb" : "btn cb off"}
+                onClick={this.chgbtn5}/>
             </div>
-            <div className={(this.state.btn6 === false) ? "prog black" : (((this.state.currentBeatInBar === 5 ) && this.state.btn6 === true) ? "prog on" : "prog off")}>
-              <div className={(this.state.btn6 === true) ? "btn cb" : "btn cb off"} onClick={this.chgbtn6}/>
+            <div className={
+              this.state.btn6 === false
+              ? "prog black"
+              : this.state.currentBeatInBar === 5 && this.state.btn6 === true
+                ? "prog on" : "prog off"
+              }
+            >
+              <div
+                className={this.state.btn6 === true ? "btn cb" : "btn cb off"}
+                onClick={this.chgbtn6}/>
             </div>
           </Box>
         </Flex>

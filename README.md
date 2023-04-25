@@ -68,9 +68,9 @@ pyinstaller music_master_backend.spec
 ```
 
 This will create an executable file of your Flask app in the dist directory.
-Move the generated executable file to your Electron app's project root directory. aka the src folder in client.
+Move the generated executable file into client/src directory.
 
-Package everything together:
+Package everything together (run this in the client dir):
 
 ```bash
 npm run build

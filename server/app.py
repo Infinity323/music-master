@@ -1,5 +1,5 @@
 import cherrypy
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
 import os
 
@@ -10,13 +10,16 @@ import logging
 def create_app():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
-    logger.info('Starting app initialization...')
+    logger.info("Starting app initialization...")
 
-    app = Flask(__name__)
+    os.makedirs(config.instance_path, exist_ok=True)
+
+    app = Flask(__name__, instance_path=config.instance_path)
     CORS(app)
     app.config.from_object(config.Config)
     
     # Initialize database connection and autogenerate tables
+    logger.info(f"Initializing db in {config.instance_path}")
     db.init_app(app)
     from models.goal import model_goal_blueprint
     from models.performance import model_performance_blueprint
@@ -25,17 +28,15 @@ def create_app():
         db.create_all()
 
     # Import endpoints
-    from api.sheetmusic import sheetmusic_blueprint
-    
-    # there is a noticable delay between end of import and start of next
-    
+    from api.status import status_blueprint
+    from api.sheetmusic import sheetmusic_blueprint    
     from api.performance import performance_blueprint
-
     from api.goal import goal_blueprint
 
     app.register_blueprint(model_goal_blueprint)
     app.register_blueprint(model_performance_blueprint)
     app.register_blueprint(model_sheetmusic_blueprint)
+    app.register_blueprint(status_blueprint)
     app.register_blueprint(sheetmusic_blueprint)
     app.register_blueprint(performance_blueprint)
     app.register_blueprint(goal_blueprint)
@@ -45,11 +46,6 @@ def create_app():
         os.makedirs(dir, exist_ok=True)
 
     logger.info('App initialization complete.')
-
-    # set up a check status route
-    @app.route('/status')
-    def status():
-        return jsonify({'status': 'ready'})
 
     return app
 

@@ -10,7 +10,8 @@ TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 WAV_DATA_PATH = TEST_DIR + "/data/wav/"
 JSON_DATA_PATH = TEST_DIR + "/data/dat/"
 
-MAX_CENTS_DIFFERENCE = 10
+MAX_CENTS_DIFF_PIANO = 10
+MAX_CENTS_DIFF_CLARINET = 15
 
 def initialize_notes(path):
     with open(JSON_DATA_PATH + path) as file:
@@ -29,7 +30,7 @@ def test_cmajor_expected():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
 
 def test_cmajor_actual():
     # File is an actual piano recording
@@ -40,7 +41,18 @@ def test_cmajor_actual():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
+
+def test_cmajor_clarinet():
+    # File is an actual clarinet recording
+    file = WAV_DATA_PATH + "cmaj_clarinet.wav"
+    f0, times, velocities = get_f0_time_amp_yin(file)
+    notes = freq_to_notes_yin(f0, times, velocities, 60)
+    xml_notes = initialize_notes("CMajor.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_CLARINET)
 
 def test_happy_birthday_expected():
     # File exported from MuseScore
@@ -51,7 +63,7 @@ def test_happy_birthday_expected():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
     
 def test_happy_birthday_actual():
     # File is an actual piano recording
@@ -62,7 +74,18 @@ def test_happy_birthday_actual():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
+
+def test_happy_birthday_clarinet():
+    # File is an actual clarinet recording
+    file = WAV_DATA_PATH + "happybirthday_clarinet.wav"
+    f0, times, velocities = get_f0_time_amp_yin(file)
+    notes = freq_to_notes_yin(f0, times, velocities, 60)
+    xml_notes = initialize_notes("Happy Birthday.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_CLARINET)
 
 def test_happy_birthday_staccato():
     # File exported from MuseScore (staccato)
@@ -73,7 +96,7 @@ def test_happy_birthday_staccato():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
 
 def test_wet_hands_expected():
     # File exported from MuseScore
@@ -84,7 +107,7 @@ def test_wet_hands_expected():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
 
 def test_wet_hands_actual():
     # File is an actual piano recording
@@ -95,7 +118,18 @@ def test_wet_hands_actual():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
+        
+def test_wet_hands_clarinet():
+    # File is an actual clarinet recording
+    file = WAV_DATA_PATH + "wethands_clarinet.wav"
+    f0, times, velocities = get_f0_time_amp_yin(file)
+    notes = freq_to_notes_yin(f0, times, velocities, 80)
+    xml_notes = initialize_notes("Wet Hands.json")
+    
+    assert(len(notes) == len(xml_notes))
+    for i in range(len(notes)):
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_CLARINET)
 
 def test_gerudo_valley_expected():
     # File exported from MuseScore
@@ -106,4 +140,4 @@ def test_gerudo_valley_expected():
     
     assert(len(notes) == len(xml_notes))
     for i in range(len(notes)):
-        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFFERENCE)
+        assert(Note.difference_cents(notes[i].pitch, xml_notes[i].pitch) <= MAX_CENTS_DIFF_PIANO)
