@@ -89,7 +89,8 @@ def addPerformance():
     sheet_music_name = (db.session.query(SheetMusic)
                                  .filter(SheetMusic.id == sheet_music_id)
                                  .first().title)
-    new_run_number = len(db.session.query(Performance).all()) + 1
+    new_run_number = len(db.session.query(Performance)
+                         .filter(Performance.sheet_music_id == sheet_music_id).all()) + 1
     new_average_tempo = int(request.form.get("average_tempo"))
     new_date_time = datetime.now(timezone.utc)
 
