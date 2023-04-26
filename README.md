@@ -1,15 +1,17 @@
 # Music Master
 
-## Setup and Installation
+Music Master is a musical training program whose purpose is to assist beginner to intermediate musicians in learning how to play pieces with accurate feedback, without the need for feedback from an actual instructor.
+
+For detailed instructions on using this program, check the [wiki](https://github.com/Infinity323/music-master/wiki/).
+
+## Setup and Installation from Source
 
 Prerequisites:
 
-* Raspberry Pi 4 with Debian Bullseye OS
-* Python 3
-* Pip
-* NPM
+- Python 3.8 and Pip
+- NPM 9.6.0+ and Node v16.14.2+
 
-Clone repository:
+First, clone the repository.
 
 ```bash
 git clone https://github.com/Infinity323/music-master.git
@@ -36,7 +38,9 @@ source env/bin/activate
 pip3 install -r requirements.txt
 ```
 
-## Running
+On some operating systems, you may be required to install additional binaries via your OS's package manager. Be sure to do so as needed.
+
+## Running Development Build
 
 To start the frontend, in one terminal:
 
@@ -55,24 +59,13 @@ flask run
 
 The frontend will run on `localhost:3000`, while the backend will run on `localhost:5000`.
 
-## Notes
-
-This project's organization is vaguely based on [React Flask Boilerplate](https://github.com/jeremyletran/react-flask-boilerplate): MIT © [Jeremy Le-Tran](https://github.com/jeremyletran).
-
 ## Building and Packaging
 
-Package Backend (run this in server dir):
+For convenience, a build shell script, `build.sh`, has been added to the project directory. **Make sure to run it in the project directory!**
 
 ```bash
-pyinstaller music_master_backend.spec
+# Inside **music**-master/
+./build.sh
 ```
 
-This will create an executable file of your Flask app in the dist directory.
-Move the generated executable file into client/src directory.
-
-Package everything together (run this in the client dir):
-
-```bash
-npm run build
-npm run electron-pack
-```
+This script will generate an executable in `client/dist/`. It can be run through command-line or double-clicking it in your file explorer.
