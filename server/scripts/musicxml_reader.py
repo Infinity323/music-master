@@ -159,6 +159,7 @@ class MusicXMLReader:
             elif isinstance(element, m21note.Rest):
                 elements_list.append({
                                     "element": "rest",
+                                    "name": "Rest",
                                     "type": get_type_with_dots(element),
                                     "measure": measure_number,
                                     "position": measure_position_count[measure_number]
@@ -209,6 +210,7 @@ def main():
     # Create a MusicXMLReader instance and print the JSON representation of note data
     # reader = MusicXMLReader('Scotland_the_Brave-_Clarinet.musicxml', instrument="Clarinet", midi_file_out="out.wav")
     # print(reader.save_notes_json("out.json"))
+    pass
 
 if __name__ == '__main__':
-     main()
+    main()
