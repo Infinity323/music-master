@@ -105,9 +105,8 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
 
       return (
         <>
-          You were {abs(pitch_difference).toFixed(0)} cents {description}.
-          <br />
-          You played {frequencyToNoteName(actual_val[diff_type])} instead of {diff.note_info.name}
+          You played {frequencyToNoteName(actual_val[diff_type])} instead of {diff.note_info.name}.
+          ({abs(pitch_difference).toFixed(0)} cents {description})
         </>
       );
 
