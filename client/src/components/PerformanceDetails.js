@@ -70,6 +70,11 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
         data.forEach(diff => {
           if (tempMeasures[diff.note_info.measure]) {
             tempMeasures[diff.note_info.measure].push(diff);
+          } else if (diff.diff.diff_type === "extra") {
+            if (tempMeasures[diff.note_info[0].measure])
+              tempMeasures[diff.note_info[0].measure].push(diff);
+            else
+              tempMeasures[diff.note_info.measure] = [diff];
           } else {
             tempMeasures[diff.note_info.measure] = [diff];
           }
@@ -165,19 +170,12 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
     }
 
     if (diff_type === 'missing') {
-      return <span>Note is missing.</span>;
+      return <>Note is missing.</>;
     }
 
     if (diff_type === 'extra') {
       return (
-        <div>
-          {diff.note_info.map((info, index) => (
-            <span key={index}>
-              {info.name} ({info.type}) in Measure {info.measure}, Note {info.position}
-              <br />
-            </span>
-          ))}
-        </div>
+        <>You played an extra note. ({frequencyToNoteName(actual_val["pitch"])})</>
       );
     }
 
@@ -191,17 +189,26 @@ function PerformanceDetails({ sheet_music_id, run_number }) {
   };
 
   const renderSubtitle = (diff) => {
-    if (diff.diff.diff_type === 'extra') {
+    const { diff_type } = diff.diff;
+    const description = diff.description;
+    const note_info = diff.note_info;
+
+    if (diff_type === 'extra') {
       return (
         <Card.Subtitle className="mb-2 text-muted cardSubtitle">
-          Extra Note Detected {diff.description}
+          { description === "Between"
+            ? `Extra note detected between ${note_info[0].name} and ${note_info[1].name}`
+            : description === "Before"
+              ? `Extra note detected before ${note_info[0].name}`
+              : `Extra note detected after ${note_info[0].name}`
+          }
         </Card.Subtitle>
       );
     }
 
     return (
       <Card.Subtitle className="mb-2 text-muted cardSubtitle">
-        {`Note ${diff.note_info.position}, ${diff.note_info.name.replace('-', '♭')} (${NOTE_SYMBOLS[diff.note_info.type]})`}
+        {`Note ${note_info.position}, ${note_info.name.replace('-', '♭')} (${NOTE_SYMBOLS[note_info.type]})`}
       </Card.Subtitle>
     );
   };
