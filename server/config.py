@@ -33,14 +33,16 @@ DATA_DIRS = [
 # pass confidence values are percentages
 # these values are only used for determining if a diff should be filed
 # if equality confidence is under these percentages then it is considered a mismatch
-# pitch: 70% confidence happens: tolerance of 50 cents and pitch difference of no more than 15 cents
+# pitch: 70% confidence happens: tolerance of 130 cents and pitch difference of no more than 39 cents
 # velocity: 60% confidence happens: tolerance of 30 and velocity difference of no more than 18 MIDI velocity units
 # start: 70% confidence happens: tolerance of 0.25 seconds and start difference of no more than 0.075 seconds
 # end: 60% confidence happens: tolerance of 0.5 seconds and end difference of no more than 0.2 seconds
-PITCH_PASS_CONF = 0.7
-VELOCITY_PASS_CONF = 0.6
-START_PASS_CONF = 0.7
-END_PASS_CONF = 0.6
+
+# using %1 as passing to negate these values since they are redundant calcuations
+PITCH_PASS_CONF = 0.01
+VELOCITY_PASS_CONF = 0.01
+START_PASS_CONF = 0.01
+END_PASS_CONF = 0.01
 
 # percent confidence for a note object to be considered equal
 NOTE_MATCH_PASS_CONF = 0.7
@@ -54,11 +56,11 @@ START_WEIGHT = 0.2
 # tolerance values upper/lower bounds where 0% confidence occurs
 PITCH_TOLERANCE = 50 # cents
 VELOCITY_TOLERANCE = 30 # MIDI velocity units
-START_TOLERANCE = 0.25 # seconds
-END_TOLERANCE = 0.5 # seconds
+START_TOLERANCE = 0.1 # seconds
+END_TOLERANCE = 0.2 # seconds
 
 # duration at which an extra note will recieve the maximum pitch accuracy penalty
 EXTRA_NOTE_MAX_PENALTY_DURATION = 0.125
 
 # maximum percentage that will be deducted from pitch accuracy when extra note is detected
-EXTRA_NOTE_MAX_PENALTY = 0.025
+EXTRA_NOTE_MAX_PENALTY = 0.5
