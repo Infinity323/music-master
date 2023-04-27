@@ -11,6 +11,10 @@ def create_app():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
     logger.info("Starting app initialization...")
+    
+    # Turn off numba debugging since it's annoying
+    numba_logger = logging.getLogger("numba")
+    numba_logger.setLevel("WARNING")
 
     os.makedirs(config.instance_path, exist_ok=True)
 

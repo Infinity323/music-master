@@ -3,6 +3,7 @@ import { Chart, CategoryScale, LinearScale, PointElement, LineElement, TimeScale
 import 'chartjs-adapter-date-fns';
 import { format } from 'date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { Line } from 'react-chartjs-2';
 import { useNavigate } from 'react-router-dom';
 import { baseUrl, style } from '../App';
@@ -11,7 +12,7 @@ import { SheetMusicContext } from '../utils/Contexts';
 import { AddGoalButton, DeleteGoalButton } from './PracticeHistoryGoalButtons';
 import PracticeHistoryGraphOptions from './PracticeHistoryOptions';
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin);
+Chart.register(CategoryScale, LinearScale, PointElement, LineElement, TimeScale, Title, Tooltip, Legend, annotationPlugin, zoomPlugin);
 Chart.defaults.font.family = "AppleRegular";
 
 function PracticeHistoryGraph() {
@@ -32,7 +33,7 @@ function PracticeHistoryGraph() {
   const [timeWindowOffset, setTimeWindowOffset] = useState(Number.MAX_SAFE_INTEGER);
   // Chart interactivity hooks
   const [selectedGoal, setSelectedGoal] = useState(-1);
-
+  
   // Line chart options
   const options = {
     responsive: true,
@@ -119,18 +120,33 @@ function PracticeHistoryGraph() {
           : [{}]
           )
         ).filter(value => Object.keys(value).length !== 0)
+      },
+      zoom: {
+        zoom: {
+          pinch: { enabled: true },
+          mode: 'x'
+        },
+        pan: {
+          enabled: true,
+          mode: 'x',
+        },
+        limits: {
+          x: { min: 'original', max: 'original' }
+        }
       }
     },
     scales: {
       y: {
-        min: 0,
-        max: 100,
+        min: -5,
+        max: 105,
         ticks: {
           color: textColor,
           font: {
             size: 13
           }
-        }
+        },
+        afterBuildTicks: axis =>
+          axis.ticks = [0, 20, 40, 60, 80, 100].map(v => ({ value: v }))
       },
       x: {
         type: 'time',

@@ -144,9 +144,9 @@ class MetronomeRecording extends Component {
       });
     } else {
       this.setState({ 
-        vol_f1: 0,
-        vol_f2: 0,
-        vol_g: 0
+        vol_f1: 0.01,
+        vol_f2: 0.01,
+        vol_g: 0.01
       });
     }
   };

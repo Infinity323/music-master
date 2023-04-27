@@ -87,7 +87,8 @@ class MusicXMLReader:
     def get_notes_and_measure_num(self, part_index=0):
         # Get a list of notes and rests for the specified instrument
         elements_list = []
-        elements = self.xml_score.parts[part_index].flat.getElementsByClass([m21note.Note, m21note.Rest])
+        elements = (self.xml_score.parts[part_index].expandRepeats().flatten()
+                    .getElementsByClass([m21note.Note, m21note.Rest]))
 
         # Dictionary to store the count of notes and rests in each measure
         measure_position_count = {}
@@ -108,6 +109,7 @@ class MusicXMLReader:
             elif isinstance(element, m21note.Rest):
                 elements_list.append({
                                     "element": "rest",
+                                    "name": "Rest",
                                     "type": get_type_with_dots(element),
                                     "measure": measure_number,
                                     "position": measure_position_count[measure_number]

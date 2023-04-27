@@ -121,11 +121,11 @@ def deleteSheetMusic(id):
 
         # delete performance entries
         db.session.delete(performance)
-    #TODO: Delete everything in runs folder
+
     # delete now-empty run subfolder
     runs_folder_name = str(sheet_music.id) + "_" + sheet_music.title + "/runs"
     try:
-        os.rmdir('data/json/' + runs_folder_name)
+        os.rmdir(os.path.join(JSON_DIR, runs_folder_name))
     except FileNotFoundError:
         pass
 
@@ -160,8 +160,8 @@ def deleteSheetMusic(id):
         # delete now-empty subfolders
         folder_name = str(sheet_music.id) + "_" + sheet_music.title
         try:
-            os.rmdir('data/json/' + folder_name)
-            os.rmdir('data/wav/' + folder_name)
+            os.rmdir(os.path.join(JSON_DIR, folder_name))
+            os.rmdir(os.path.join(WAV_DIR, folder_name))
         except FileNotFoundError:
             pass
 
