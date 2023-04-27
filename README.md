@@ -64,7 +64,7 @@ The frontend will run on `localhost:3000`, while the backend will run on `localh
 For convenience, a build shell script, `build.sh`, has been added to the project directory. **Make sure to run it in the project directory!**
 
 ```bash
-# Inside **music**-master/
+# Inside music-master/
 ./build.sh
 ```
 

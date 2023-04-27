@@ -2,16 +2,31 @@ import React, { Component } from 'react';
 import { Chart, LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import { baseUrl, style } from '../App';
 import { getNote, getNoteName, getOctave } from '../utils/AudioAnalyzer';
 
-Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
+Chart.register(LinearScale, LogarithmicScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin, zoomPlugin);
 Chart.defaults.font.family = "AppleRegular";
 
 const range = (from, to, step) =>
   [...Array(Math.floor((to - from) / step) + 1)].map((_, i) => from + i * step);
 
 const FREQUENCY_TICKS = range(-24, 36, 1).map(x => 440.0*Math.pow(2, x/12)); // C2 to C7
+
+const zoomOptions = {
+  zoom: {
+    pinch: { enabled: true },
+    mode: 'x'
+  },
+  pan: {
+    enabled: true,
+    mode: 'x',
+  },
+  limits: {
+    x: { min: 'original', max: 'original' }
+  }
+};
 
 class PerformanceGraph extends Component {
   constructor(props) {
@@ -24,6 +39,9 @@ class PerformanceGraph extends Component {
       pitchOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          zoom: zoomOptions
+        }
       },
       pitchData: {
         datasets: []
@@ -31,6 +49,9 @@ class PerformanceGraph extends Component {
       dynamicsOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          zoom: zoomOptions
+        }
       },
       dynamicsData: {
         datasets: []
@@ -123,7 +144,8 @@ class PerformanceGraph extends Component {
                 },
               };
             })
-          }
+          },
+          zoom: zoomOptions
         },
         scales: {
           x: {
@@ -228,7 +250,8 @@ class PerformanceGraph extends Component {
                 },
               };
             })
-          }
+          },
+          zoom: zoomOptions
         },
         scales: {
           x: {
