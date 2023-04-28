@@ -143,5 +143,4 @@ class Note:
         return f"Note: {self.pitch}, Velocity: {self.velocity}, Start Time: {self.start}, End Time: {self.end}"
     
     def __repr__(self):
-        return "{pitch:.2f} Hz, {velocity} m/s, {start:.2f}-{end:.2f} s".format(
-            pitch=self.pitch, velocity=self.velocity, start=self.start, end=self.end)
+        return f"{self.pitch:.2f} Hz, {self.velocity} m/s, {self.start:.2f}-{self.end:.2f} s"

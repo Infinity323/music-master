@@ -16,41 +16,56 @@ from config import JSON_DIR, XML_DIR, WAV_DIR, TMP_DIR
 
 sheetmusic_blueprint = Blueprint("sheetmusic", __name__)
 
-# Get all sheet music in database
 @sheetmusic_blueprint.route("/sheetmusic", methods=["GET"])
-def getAllSheetMusic():
+def get_all_sheet_music():
+    """Get all sheet music from the database.
+
+    Returns:
+        list: A list with all the sheet music
+    """
     sheet_musics = db.session.query(SheetMusic)
     if sheet_musics:
         return [ i.serialize for i in sheet_musics ]
     else:
         return []
 
-# Get sheet music with specific ID from database
 @sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["GET"])
-def getSpecificSheetMusic(id: int):
+def get_specific_sheet_music(id: int):
+    """Get the sheet music with the matching ID from the database.
+
+    Args:
+        id (int): The ID of the sheet music
+
+    Returns:
+        dict: A dict of the sheet music
+    """
     sheet_music = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
     if sheet_music:
         return sheet_music.serialize
     else:
         return {}
 
-# Add sheet music to database
 @sheetmusic_blueprint.route("/sheetmusic", methods=["POST"])
-def addSheetMusic():
+def add_sheet_music():
+    """Add a new sheet music to the database.
+
+    Returns:
+        dict: A dict of the new sheet music
+    """
     new_id = randint(1, 1000000)
     new_title = request.form.get("title")
     new_composer = request.form.get("composer")
     new_instrument = request.form.get("instrument")
 
     # Make new subdirectories for the sheet music
-    new_subdir = "/{}_{}".format(new_id, new_title)
+    new_subdir = f"/{new_id}_{new_title}"
     os.makedirs(JSON_DIR + new_subdir, exist_ok=True)
     os.makedirs(WAV_DIR + new_subdir, exist_ok=True)
     
     # Construct new file path and handle file upload
-    new_xml_file_path = "{}/{}.musicxml".format(XML_DIR, new_subdir)
-    new_midi_file_path = "{}/{}.mid".format(TMP_DIR, new_subdir)
-    new_dat_file_path = "{}/{}/master.json".format(JSON_DIR, new_subdir)
+    new_xml_file_path = f"{XML_DIR}/{new_subdir}.musicxml"
+    new_midi_file_path = f"{TMP_DIR}/{new_subdir}.mid"
+    new_dat_file_path = f"{JSON_DIR}/{new_subdir}/master.json"
     new_xml_file_data = request.files.get("file")
     new_xml_file_data.save(new_xml_file_path)
 
@@ -61,7 +76,7 @@ def addSheetMusic():
 
     # save note info locally
     note_info = xml_reader.get_notes_and_measure_num()
-    note_info_file_path = "{}/{}/note_info.json".format(JSON_DIR, new_subdir)
+    note_info_file_path = f"{JSON_DIR}/{new_subdir}/note_info.json"
     with open(note_info_file_path, 'w') as note_info_file:
         json.dump([info for info in note_info], note_info_file, indent=4)
 
@@ -80,9 +95,16 @@ def addSheetMusic():
     db.session.commit()
     return new_sheet_music.serialize
 
-# Delete sheet music from database
 @sheetmusic_blueprint.route("/sheetmusic/<int:id>", methods=["DELETE"])
-def deleteSheetMusic(id):
+def delete_sheet_music(id: int):
+    """Delete the sheet music with the matching ID from the database.
+
+    Args:
+        id (int): The ID of the sheet music
+
+    Returns:
+        dict: A dict of the deleted sheet music
+    """
     # get current sheet music object
     sheet_music = db.session.query(SheetMusic).filter(SheetMusic.id == id).first()
 
@@ -129,10 +151,9 @@ def deleteSheetMusic(id):
     except FileNotFoundError:
         pass
 
-    # clear sheet music
+    # clear sheet music and related files
     if sheet_music:
-        # delete all associated data files
-
+        
         # delete musicxml file
         musicxml_file_path = sheet_music.pdf_file_path
         if os.path.isfile(musicxml_file_path):

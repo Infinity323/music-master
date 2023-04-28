@@ -11,27 +11,42 @@ from models.goal import Goal
 
 goal_blueprint = Blueprint("goal", __name__)
 
-# Get all goals in database
 @goal_blueprint.route("/goal", methods=["GET"])
-def getAllGoals():
+def get_all_goals():
+    """Get all goals from the database.
+
+    Returns:
+        list: A list of all the goals
+    """
     goals = db.session.query(Goal)
     if goals:
         return [ i.serialize for i in goals ]
     else:
         return []
 
-# Get goal with specific ID from database
 @goal_blueprint.route("/goal/<int:id>", methods=["GET"])
-def getSpecificGoal(id: int):
+def get_specific_goal(id: int):
+    """Get the goal with the matching ID from the database.
+
+    Args:
+        id (int): The ID of the goal
+
+    Returns:
+        dict: A dict of the goal
+    """
     goal = db.session.query(Goal).filter(Goal.id == id).first()
     if goal:
         return goal.serialize
     else:
         return {}
 
-# Add goal to database
 @goal_blueprint.route("/goal", methods=["POST"])
-def addGoal():
+def add_goal():
+    """Add a goal to the database.
+
+    Returns:
+        dict: A dict of the new goal
+    """
     data = request.get_json()
     
     new_id = randint(1, 1000000)
@@ -53,11 +68,19 @@ def addGoal():
                     new_tuning_percent_accuracy, new_dynamics_percent_accuracy)
     db.session.add(new_goal)
     db.session.commit()
+    
     return new_goal.serialize
 
-# Delete goal from database
 @goal_blueprint.route("/goal/<int:id>", methods=["DELETE"])
-def deleteGoal(id):
+def delete_goal(id: int):
+    """Delete the goal with the matching ID from the database.
+
+    Args:
+        id (int): The ID of the goal
+
+    Returns:
+        dict: A dict of the deleted goal
+    """
     goal = db.session.query(Goal).filter(Goal.id == id).first()
     if goal:
         db.session.delete(goal)
