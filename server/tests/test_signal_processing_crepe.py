@@ -2,7 +2,7 @@
 
 Test signal processing note extrapolation.
 """
-from scripts.signal_processing import *
+from scripts.archived_scripts.signal_processing_crepe import *
 import os
 import json
 
