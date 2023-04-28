@@ -16,6 +16,7 @@ const FREQUENCY_TICKS = range(-24, 36, 1).map(x => 440.0*Math.pow(2, x/12)); // 
 
 const zoomOptions = {
   zoom: {
+    wheel: { enabled: true },
     pinch: { enabled: true },
     mode: 'x'
   },
@@ -309,7 +310,7 @@ class PerformanceGraph extends Component {
 
   componentDidMount() {
     // Get performance details
-    fetch(baseUrl + "/performance/" + this.performance.id + "/diff")
+    fetch(baseUrl + "/performance/" + this.performance.id + "/notes")
       .then(res => res.json())
       .then(result => this.setState({
         ideal: result.expected,
