@@ -78,13 +78,16 @@
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "./src/assets/images/logo.png"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "./src/assets/images/logo.png"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "./src/assets/images/logo.png"
     }
   },
   "devDependencies": {
